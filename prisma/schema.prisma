@@ -1,0 +1,158 @@
+// DrugFinder Uyo — MVP schema
+// Geospatial note: plain lat/lng Float columns + Haversine in raw SQL for the MVP
+// (city-scale data). To move to PostGIS later: add a generated geography column
+// + GiST index in a migration; app code only swaps the distance SQL.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PATIENT
+  PHARMACY_OWNER
+  PHARMACIST
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DrugForm {
+  TABLET
+  CAPSULE
+  SYRUP
+  SUSPENSION
+  INJECTION
+  CREAM
+  OINTMENT
+  GEL
+  DROPS
+  INHALER
+  SUPPOSITORY
+  OTHER
+}
+
+enum PrescriptionStatus {
+  PENDING
+  CLAIMED
+  ANSWERED
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String?  @unique
+  phone        String?  @unique // at least one of email/phone required — enforced in app code
+  passwordHash String
+  displayName  String?
+  role         Role     @default(PATIENT)
+  createdAt    DateTime @default(now())
+
+  pharmacy       Pharmacy? // set when role = PHARMACY_OWNER
+  uploads        PrescriptionUpload[]  @relation("PatientUploads")
+  claimedUploads PrescriptionUpload[]  @relation("PharmacistClaims")
+  sentMessages   PrescriptionMessage[]
+}
+
+model Drug {
+  id          String   @id @default(cuid())
+  genericName String
+  brandNames  String[] // Postgres text[] — fine for a curated list; promote to a table if it grows
+  strength    String // e.g. "500 mg"
+  form        DrugForm
+  createdAt   DateTime @default(now())
+
+  inventory  PharmacyInventory[]
+  searchLogs SearchLog[]
+
+  @@unique([genericName, strength, form])
+}
+
+model Pharmacy {
+  id                 String             @id @default(cuid())
+  name               String
+  address            String
+  latitude           Float
+  longitude          Float
+  phone              String
+  pcnLicenseNumber   String             @unique
+  verificationStatus VerificationStatus @default(PENDING)
+  ownerUserId        String             @unique
+  createdAt          DateTime           @default(now())
+
+  owner     User                @relation(fields: [ownerUserId], references: [id])
+  inventory PharmacyInventory[]
+
+  @@index([verificationStatus])
+  @@index([latitude, longitude])
+}
+
+model PharmacyInventory {
+  id         String   @id @default(cuid())
+  pharmacyId String
+  drugId     String
+  inStock    Boolean  @default(true)
+  quantity   Int?
+  updatedAt  DateTime @updatedAt
+
+  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  drug     Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+
+  @@unique([pharmacyId, drugId])
+  @@index([drugId, inStock]) // drives the core "who has drug X in stock" query
+}
+
+model SearchLog {
+  id         String   @id @default(cuid())
+  drugId     String? // null when free-text query matched no drug
+  queryText  String
+  latitude   Float?
+  longitude  Float?
+  hadResults Boolean
+  createdAt  DateTime @default(now())
+
+  drug Drug? @relation(fields: [drugId], references: [id], onDelete: SetNull)
+
+  @@index([hadResults, createdAt]) // coverage-gap analytics
+}
+
+model PrescriptionUpload {
+  id               String             @id @default(cuid())
+  patientUserId    String
+  pharmacistUserId String? // set when a pharmacist claims the upload
+  imageKey         String // storage-adapter key, NOT a public URL
+  patientNote      String? // optional "what confuses me" note
+  status           PrescriptionStatus @default(PENDING)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  patient    User                  @relation("PatientUploads", fields: [patientUserId], references: [id])
+  pharmacist User?                 @relation("PharmacistClaims", fields: [pharmacistUserId], references: [id])
+  messages   PrescriptionMessage[]
+
+  @@index([status, createdAt]) // pharmacist claim queue
+  @@index([patientUserId])
+  @@index([pharmacistUserId])
+}
+
+model PrescriptionMessage {
+  id                   String    @id @default(cuid())
+  prescriptionUploadId String
+  senderUserId         String
+  messageText          String
+  createdAt            DateTime  @default(now())
+  readAt               DateTime? // null = unread; powers the in-app notification badge
+
+  upload PrescriptionUpload @relation(fields: [prescriptionUploadId], references: [id], onDelete: Cascade)
+  sender User               @relation(fields: [senderUserId], references: [id])
+
+  @@index([prescriptionUploadId, createdAt])
+}
