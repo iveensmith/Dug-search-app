@@ -28,6 +28,15 @@ type AdminDrug = {
   stockedByCount: number
 }
 
+type AdminPharmacist = {
+  id: string
+  email: string | null
+  phone: string | null
+  displayName: string | null
+  claimedCount: number
+  createdAt: string
+}
+
 type Analytics = {
   totalSearches: number
   noResultSearches: number
@@ -45,8 +54,9 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function AdminPage() {
   const router = useRouter()
-  const [tab, setTab] = useState<'pharmacies' | 'drugs' | 'gaps'>('pharmacies')
+  const [tab, setTab] = useState<'pharmacies' | 'pharmacists' | 'drugs' | 'gaps'>('pharmacies')
   const [pharmacies, setPharmacies] = useState<AdminPharmacy[] | null>(null)
+  const [pharmacists, setPharmacists] = useState<AdminPharmacist[] | null>(null)
   const [drugs, setDrugs] = useState<AdminDrug[] | null>(null)
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [denied, setDenied] = useState(false)
@@ -62,10 +72,12 @@ export default function AdminPage() {
       return
     }
     setPharmacies((await res.json()).pharmacies)
-    const [drugsRes, analyticsRes] = await Promise.all([
+    const [pharmacistsRes, drugsRes, analyticsRes] = await Promise.all([
+      fetch('/api/admin/pharmacists'),
       fetch('/api/admin/drugs'),
       fetch('/api/admin/analytics'),
     ])
+    if (pharmacistsRes.ok) setPharmacists((await pharmacistsRes.json()).pharmacists)
     if (drugsRes.ok) setDrugs((await drugsRes.json()).drugs)
     if (analyticsRes.ok) setAnalytics(await analyticsRes.json())
   }, [router])
@@ -118,6 +130,7 @@ export default function AdminPage() {
         {(
           [
             ['pharmacies', `Pharmacies (${pharmacies.length})`],
+            ['pharmacists', `Pharmacists (${pharmacists?.length ?? '…'})`],
             ['drugs', `Drugs (${drugs?.length ?? '…'})`],
             ['gaps', 'Search gaps'],
           ] as const
@@ -136,6 +149,9 @@ export default function AdminPage() {
 
       {tab === 'pharmacies' && (
         <PharmaciesTab pharmacies={pharmacies} onSetStatus={setStatus} />
+      )}
+      {tab === 'pharmacists' && pharmacists && (
+        <PharmacistsTab pharmacists={pharmacists} onChanged={load} />
       )}
       {tab === 'drugs' && drugs && <DrugsTab drugs={drugs} onChanged={load} />}
       {tab === 'gaps' && <GapsTab analytics={analytics} />}
@@ -200,6 +216,125 @@ function PharmaciesTab({
         </li>
       ))}
     </ul>
+  )
+}
+
+function PharmacistsTab({
+  pharmacists,
+  onChanged,
+}: {
+  pharmacists: AdminPharmacist[]
+  onChanged: () => void
+}) {
+  const [form, setForm] = useState({ displayName: '', email: '' })
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [created, setCreated] = useState<{ email: string; tempPassword: string } | null>(null)
+
+  async function create(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    setCreated(null)
+    try {
+      const res = await fetch('/api/admin/pharmacists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Could not create account')
+        return
+      }
+      setCreated({ email: data.pharmacist.email, tempPassword: data.temporaryPassword })
+      setForm({ displayName: '', email: '' })
+      onChanged()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function revoke(id: string, label: string) {
+    if (!confirm(`Revoke access for ${label}? They won't be able to log in anymore.`)) return
+    const res = await fetch(`/api/admin/pharmacists/${id}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error ?? 'Could not revoke — they may have open conversations')
+      return
+    }
+    onChanged()
+  }
+
+  const inputCls =
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500'
+
+  return (
+    <div>
+      <form onSubmit={create} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <p className="mb-1 font-semibold text-gray-900">Create a pharmacist account</p>
+        <p className="mb-3 text-xs text-gray-500">
+          Pharmacists are a vetted role — there is no public sign-up. Verify their license yourself,
+          then create their login here.
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <input
+            placeholder="Full name"
+            value={form.displayName}
+            onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+            required
+            className={inputCls}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            required
+            className={inputCls}
+          />
+        </div>
+        {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
+        {created && (
+          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+            <p className="font-medium">
+              Account created for {created.email}. Share this temporary password with them — it
+              won&apos;t be shown again:
+            </p>
+            <p className="mt-1 font-mono text-base font-bold">{created.tempPassword}</p>
+          </div>
+        )}
+        <button
+          type="submit"
+          disabled={busy}
+          className="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          {busy ? 'Creating…' : 'Create pharmacist account'}
+        </button>
+      </form>
+
+      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+        {pharmacists.length === 0 && (
+          <li className="px-4 py-6 text-center text-sm text-gray-500">No pharmacist accounts yet.</li>
+        )}
+        {pharmacists.map((p) => (
+          <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
+            <div className="min-w-0">
+              <p className="truncate font-medium text-gray-900">{p.displayName ?? 'Unnamed'}</p>
+              <p className="truncate text-xs text-gray-500">
+                {p.email ?? p.phone} · claimed {p.claimedCount} conversation{p.claimedCount === 1 ? '' : 's'}
+              </p>
+            </div>
+            <button
+              onClick={() => revoke(p.id, p.displayName ?? p.email ?? 'this pharmacist')}
+              className="shrink-0 text-sm font-medium text-red-600 underline"
+            >
+              Revoke
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
