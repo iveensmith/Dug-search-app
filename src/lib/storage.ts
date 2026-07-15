@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import { createClient } from '@supabase/supabase-js'
 
 /**
  * File storage behind an interface so local disk can be swapped for
@@ -69,6 +70,58 @@ class LocalDiskStorage implements StorageAdapter {
   }
 }
 
-export const storage: StorageAdapter = new LocalDiskStorage(
-  process.env.UPLOADS_DIR ?? './storage/uploads',
-)
+/**
+ * Supabase Storage (S3-compatible under the hood). Used in production
+ * where the filesystem is serverless/ephemeral (e.g. Vercel) and local
+ * disk can't survive between requests. The bucket must be PRIVATE —
+ * access control is enforced entirely by our API route, not by Storage.
+ */
+class SupabaseStorage implements StorageAdapter {
+  private client: ReturnType<typeof createClient>
+
+  constructor(
+    url: string,
+    serviceRoleKey: string,
+    private bucket: string,
+  ) {
+    this.client = createClient(url, serviceRoleKey, {
+      auth: { persistSession: false },
+    })
+  }
+
+  async put(data: Buffer, contentType: string): Promise<string> {
+    const ext = EXT_BY_TYPE[contentType]
+    if (!ext) throw new Error(`Unsupported content type: ${contentType}`)
+    const key = `prescriptions/${crypto.randomUUID()}.${ext}`
+    const { error } = await this.client.storage
+      .from(this.bucket)
+      .upload(key, data, { contentType, upsert: false })
+    if (error) throw new Error(`Storage upload failed: ${error.message}`)
+    return key
+  }
+
+  async get(key: string) {
+    const ext = key.split('.').pop() ?? ''
+    const contentType = TYPE_BY_EXT[ext]
+    if (!contentType) return null
+    const { data, error } = await this.client.storage.from(this.bucket).download(key)
+    if (error || !data) return null
+    return { data: Buffer.from(await data.arrayBuffer()), contentType }
+  }
+
+  async delete(key: string) {
+    await this.client.storage.from(this.bucket).remove([key])
+  }
+}
+
+function buildStorage(): StorageAdapter {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET
+  if (supabaseUrl && serviceRoleKey && bucket) {
+    return new SupabaseStorage(supabaseUrl, serviceRoleKey, bucket)
+  }
+  return new LocalDiskStorage(process.env.UPLOADS_DIR ?? './storage/uploads')
+}
+
+export const storage: StorageAdapter = buildStorage()

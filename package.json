@@ -12,11 +12,14 @@
     "db:stop": "pgsql\\bin\\pg_ctl -D pgdata stop",
     "db:status": "pgsql\\bin\\pg_ctl -D pgdata status",
     "db:seed": "tsx prisma/seed.ts",
-    "verify:phase1": "tsx scripts/verify-phase1.ts"
+    "verify:phase1": "tsx scripts/verify-phase1.ts",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma migrate deploy && next build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@supabase/supabase-js": "^2.110.6",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "jose": "^6.2.3",
