@@ -46,7 +46,7 @@ function LoginForm() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4">
       <h1 className="text-center text-2xl font-bold text-emerald-700">
-        <Link href="/">DrugFinder Uyo</Link>
+        <Link href="/">PharmaFinder</Link>
       </h1>
       <p className="mt-1 text-center text-sm text-gray-600">Log in to your account</p>
 

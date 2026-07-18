@@ -3,11 +3,13 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { NIGERIAN_STATES, type NigerianStateValue } from '@/lib/states'
 
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [form, setForm] = useState({ displayName: '', contact: '', password: '' })
+  const [homeState, setHomeState] = useState<NigerianStateValue | ''>('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -25,6 +27,7 @@ function RegisterForm() {
           email: isEmail ? form.contact : undefined,
           phone: isEmail ? undefined : form.contact,
           password: form.password,
+          state: homeState || undefined,
         }),
       })
       const data = await res.json()
@@ -46,7 +49,7 @@ function RegisterForm() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4">
       <h1 className="text-center text-2xl font-bold text-emerald-700">
-        <Link href="/">DrugFinder Uyo</Link>
+        <Link href="/">PharmaFinder</Link>
       </h1>
       <p className="mt-1 text-center text-sm text-gray-600">Create a patient account</p>
 
@@ -68,6 +71,23 @@ function RegisterForm() {
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Password (min 8 characters)</label>
           <input type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} autoComplete="new-password" className={inputCls} />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Your state <span className="font-normal text-gray-500">(optional — speeds up search)</span>
+          </label>
+          <select
+            value={homeState}
+            onChange={(e) => setHomeState(e.target.value as NigerianStateValue)}
+            className={inputCls}
+          >
+            <option value="">Prefer not to say</option>
+            {NIGERIAN_STATES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {error && <p className="text-sm font-medium text-red-600">{error}</p>}

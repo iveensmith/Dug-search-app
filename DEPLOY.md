@@ -1,4 +1,4 @@
-# Deploying DrugFinder Uyo (free tier: Vercel + Supabase)
+# Deploying PharmaFinder (free tier: Vercel + Supabase)
 
 The app runs on Next.js API routes with no persistent local state, except
 the database and prescription-image storage — both of which need to move

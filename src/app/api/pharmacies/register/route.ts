@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { hashPassword, normalizePhone, setSessionCookie, signSession } from '@/lib/auth'
+import { isValidState } from '@/lib/states'
 import { Prisma } from '@/generated/prisma/client'
 
 const bodySchema = z.object({
   pharmacyName: z.string().min(2).max(120),
   address: z.string().min(5).max(300),
+  state: z.string().refine(isValidState, { message: 'Select a valid state' }),
   phone: z.string().min(7).max(20),
   pcnLicenseNumber: z.string().min(3).max(60),
   latitude: z.number().min(-90).max(90),
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
         data: {
           name: data.pharmacyName,
           address: data.address,
+          state: data.state,
           phone: normalizePhone(data.phone),
           pcnLicenseNumber: data.pcnLicenseNumber.trim().toUpperCase(),
           latitude: data.latitude,

@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
       id: p.id,
       name: p.name,
       address: p.address,
+      state: p.state,
       phone: p.phone,
       latitude: p.latitude,
       longitude: p.longitude,

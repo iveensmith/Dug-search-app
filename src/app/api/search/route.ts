@@ -2,32 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { findPharmaciesWithDrug } from '@/lib/geo'
-import { UYO_CENTER } from '@/lib/types'
+import { isValidState, stateCenter } from '@/lib/states'
 
 const paramsSchema = z.object({
   drugId: z.string().min(1).optional(),
   q: z.string().max(200).default(''),
+  state: z.string().refine(isValidState, { message: 'Unknown state' }),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
-  radiusKm: z.coerce.number().min(1).max(50).default(10),
 })
 
-// Pharmacy-results search. Called with a drugId picked from autocomplete, or
-// with only free text (q) when nothing matched — either way the search is
-// logged so coverage gaps show up in admin analytics.
+// Pharmacy-results search, scoped to the patient's chosen state. Called with
+// a drugId picked from autocomplete, or with only free text (q) when nothing
+// matched — either way the search is logged so coverage gaps show up in
+// admin analytics.
 export async function GET(req: NextRequest) {
   const raw = Object.fromEntries(req.nextUrl.searchParams.entries())
   const parsed = paramsSchema.safeParse(raw)
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid search parameters' }, { status: 400 })
   }
-  const { drugId, q, lat, lng, radiusKm } = parsed.data
+  const { drugId, q, state, lat, lng } = parsed.data
 
-  const searchLat = lat ?? UYO_CENTER.lat
-  const searchLng = lng ?? UYO_CENTER.lng
+  const fallback = stateCenter(state)!
+  const searchLat = lat ?? fallback.lat
+  const searchLng = lng ?? fallback.lng
 
   const results = drugId
-    ? await findPharmaciesWithDrug({ drugId, lat: searchLat, lng: searchLng, radiusKm })
+    ? await findPharmaciesWithDrug({ drugId, state, lat: searchLat, lng: searchLng })
     : []
 
   await prisma.searchLog.create({

@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     let res: Response | null = null
     for (let attempt = 0; attempt < 2 && !res?.ok; attempt++) {
       res = await fetch(url, {
-        headers: { 'User-Agent': 'DrugFinderUyo/0.1 (MVP; drug availability app)' },
+        headers: { 'User-Agent': 'PharmaFinder/0.1 (MVP; drug availability app)' },
         signal: AbortSignal.timeout(8000),
       }).catch(() => null)
     }

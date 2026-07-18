@@ -37,6 +37,3 @@ export type ActiveRoute = {
   durationMin: number
   coords: [number, number][] // [lat, lng] polyline
 }
-
-// Uyo city centre (Ibom Plaza) — fallback when geolocation is unavailable
-export const UYO_CENTER = { lat: 5.0407, lng: 7.9204 }

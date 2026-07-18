@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DrugFinder Uyo",
+  title: "PharmaFinder",
   description:
-    "Find which pharmacies in Uyo have your medicine in stock, with directions and phone numbers.",
+    "Find which pharmacies near you in Nigeria have your medicine in stock, with directions and phone numbers.",
 };
 
 export const viewport: Viewport = {

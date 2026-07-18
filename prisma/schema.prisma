@@ -1,7 +1,7 @@
-// DrugFinder Uyo — MVP schema
-// Geospatial note: plain lat/lng Float columns + Haversine in raw SQL for the MVP
-// (city-scale data). To move to PostGIS later: add a generated geography column
-// + GiST index in a migration; app code only swaps the distance SQL.
+// PharmaFinder — nationwide (Nigeria) MVP schema
+// Geospatial note: plain lat/lng Float columns + Haversine in raw SQL. Search
+// is scoped by state (see NigerianState) rather than a fixed-radius bounding
+// box, so this stays accurate at country scale without needing PostGIS.
 
 generator client {
   provider = "prisma-client"
@@ -47,6 +47,46 @@ enum PrescriptionStatus {
   CLOSED
 }
 
+enum NigerianState {
+  ABIA
+  ADAMAWA
+  AKWA_IBOM
+  ANAMBRA
+  BAUCHI
+  BAYELSA
+  BENUE
+  BORNO
+  CROSS_RIVER
+  DELTA
+  EBONYI
+  EDO
+  EKITI
+  ENUGU
+  FCT_ABUJA
+  GOMBE
+  IMO
+  JIGAWA
+  KADUNA
+  KANO
+  KATSINA
+  KEBBI
+  KOGI
+  KWARA
+  LAGOS
+  NASARAWA
+  NIGER
+  OGUN
+  ONDO
+  OSUN
+  OYO
+  PLATEAU
+  RIVERS
+  SOKOTO
+  TARABA
+  YOBE
+  ZAMFARA
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String?  @unique
@@ -54,6 +94,7 @@ model User {
   passwordHash String
   displayName  String?
   role         Role     @default(PATIENT)
+  state        NigerianState? // patient's home state — pre-fills the search state picker
   createdAt    DateTime @default(now())
 
   pharmacy       Pharmacy? // set when role = PHARMACY_OWNER
@@ -80,6 +121,7 @@ model Pharmacy {
   id                 String             @id @default(cuid())
   name               String
   address            String
+  state              NigerianState      @default(AKWA_IBOM) // default backfills pre-existing Uyo-only rows; every registration sets it explicitly
   latitude           Float
   longitude          Float
   phone              String
@@ -92,6 +134,7 @@ model Pharmacy {
   inventory PharmacyInventory[]
 
   @@index([verificationStatus])
+  @@index([state])
   @@index([latitude, longitude])
 }
 

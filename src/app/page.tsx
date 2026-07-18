@@ -4,14 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
-import {
-  type ActiveRoute,
-  type DrugSuggestion,
-  type PharmacyResult,
-  drugLabel,
-  directionsUrl,
-  UYO_CENTER,
-} from '@/lib/types'
+import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, drugLabel, directionsUrl } from '@/lib/types'
+import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 
 // Leaflet touches `window` — client-only
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
@@ -20,6 +14,8 @@ const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
     <div className="flex h-full items-center justify-center text-gray-400">Loading map…</div>
   ),
 })
+
+const STATE_STORAGE_KEY = 'pharmafinder_state'
 
 type Pos = { lat: number; lng: number }
 
@@ -40,8 +36,25 @@ function getPosition(timeoutMs: number): Promise<Pos | null> {
   })
 }
 
+// Nominatim reverse geocode → best-guess Nigerian state, purely to pre-fill
+// the picker. Never blocks search — the user can always override it.
+async function detectStateFromPosition(pos: Pos): Promise<NigerianStateValue | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`,
+    )
+    const data = await res.json()
+    const stateName: string | undefined = data?.address?.state
+    return stateName ? matchStateName(stateName) : null
+  } catch {
+    return null
+  }
+}
+
 export default function Home() {
   const [state, setState] = useState<SearchState>({ kind: 'idle' })
+  const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
+  const [detectingState, setDetectingState] = useState(true)
   const [userPos, setUserPos] = useState<Pos | null>(null)
   const [locationDenied, setLocationDenied] = useState(false)
   const [locationHint, setLocationHint] = useState('')
@@ -68,18 +81,54 @@ export default function Home() {
     return pos
   }
 
+  function chooseState(value: NigerianStateValue) {
+    setSelectedState(value)
+    localStorage.setItem(STATE_STORAGE_KEY, value)
+  }
+
   /** Current position if known, otherwise ask the browser (may show the permission prompt). */
   async function ensureLocation(timeoutMs = 6000): Promise<Pos | null> {
     if (userPosRef.current) return userPosRef.current
     return applyPosition(await getPosition(timeoutMs))
   }
 
-  // Quiet attempt on load so the first search can already be location-aware
+  // Work out which state to start with: saved account preference, then a
+  // remembered browser choice, then a best-effort guess from geolocation.
+  // Also kicks off the quiet location fetch so the first search is
+  // location-aware from the start.
   useEffect(() => {
     let cancelled = false
     const timer = setTimeout(async () => {
+      const stored = localStorage.getItem(STATE_STORAGE_KEY)
+      if (stored && isValidState(stored)) {
+        if (!cancelled) {
+          setSelectedState(stored)
+          setDetectingState(false)
+        }
+      }
+
+      let accountState: NigerianStateValue | null = null
+      try {
+        const res = await fetch('/api/auth/me')
+        const data = await res.json()
+        if (data.user?.state && isValidState(data.user.state)) accountState = data.user.state
+      } catch {
+        /* not logged in / offline — fine */
+      }
+      if (accountState && !cancelled) {
+        setSelectedState(accountState)
+        localStorage.setItem(STATE_STORAGE_KEY, accountState)
+      }
+
       const pos = await getPosition(8000)
-      if (!cancelled) applyPosition(pos)
+      if (cancelled) return
+      applyPosition(pos)
+
+      if (!stored && !accountState && pos) {
+        const detected = await detectStateFromPosition(pos)
+        if (detected && !cancelled) chooseState(detected)
+      }
+      if (!cancelled) setDetectingState(false)
     }, 0)
     return () => {
       cancelled = true
@@ -87,7 +136,7 @@ export default function Home() {
     }
   }, [])
 
-  async function searchDrug(drug: DrugSuggestion) {
+  async function runSearch(drug: DrugSuggestion, forState: NigerianStateValue) {
     const label = drugLabel(drug)
     lastDrugRef.current = drug
     setState({ kind: 'loading', label })
@@ -96,7 +145,7 @@ export default function Home() {
 
     // Wait briefly for the location prompt so results sort from the user, not the fallback
     const pos = await ensureLocation()
-    const params = new URLSearchParams({ drugId: drug.id, q: label })
+    const params = new URLSearchParams({ drugId: drug.id, q: label, state: forState })
     if (pos) {
       params.set('lat', String(pos.lat))
       params.set('lng', String(pos.lng))
@@ -110,11 +159,17 @@ export default function Home() {
     }
   }
 
+  function searchDrug(drug: DrugSuggestion) {
+    if (!selectedState) return
+    return runSearch(drug, selectedState)
+  }
+
   async function logNoMatch(query: string) {
+    if (!selectedState) return
     lastDrugRef.current = null // nothing to re-sort if location arrives later
     setState({ kind: 'no-match', query })
     // fire-and-forget: records the coverage gap
-    const params = new URLSearchParams({ q: query })
+    const params = new URLSearchParams({ q: query, state: selectedState })
     const pos = userPosRef.current
     if (pos) {
       params.set('lat', String(pos.lat))
@@ -135,8 +190,8 @@ export default function Home() {
         )
         return
       }
-      if (lastDrugRef.current) {
-        await searchDrug(lastDrugRef.current)
+      if (lastDrugRef.current && selectedState) {
+        await runSearch(lastDrugRef.current, selectedState)
       }
     } finally {
       setLocating(false)
@@ -148,7 +203,8 @@ export default function Home() {
     setRouteError('')
     try {
       // Directions are the moment location matters most — ask again if needed
-      const from = (await ensureLocation()) ?? UYO_CENTER
+      const from = (await ensureLocation()) ?? (selectedState && stateCenter(selectedState))
+      if (!from) return
       const params = new URLSearchParams({
         fromLat: String(from.lat),
         fromLng: String(from.lng),
@@ -181,14 +237,14 @@ export default function Home() {
   // If permission is granted late (after a search already ran from the
   // fallback), re-run that search once so distances sort from the real spot.
   useEffect(() => {
-    if (!userPos || resortedRef.current) return
+    if (!userPos || resortedRef.current || !selectedState) return
     resortedRef.current = true
     const timer = setTimeout(() => {
-      if (lastDrugRef.current) searchDrug(lastDrugRef.current)
+      if (lastDrugRef.current) runSearch(lastDrugRef.current, selectedState)
     }, 0)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userPos])
+  }, [userPos, selectedState])
 
   // tel: links only work where a dialer exists (phones). On desktops the
   // click would be silently swallowed — copy the number instead and say so.
@@ -202,27 +258,56 @@ export default function Home() {
   }
 
   const results = state.kind === 'results' ? state.results : []
-  const mapCenter = userPos ?? UYO_CENTER
+  const fallbackCenter = selectedState ? stateCenter(selectedState) : null
+  const mapCenter = userPos ?? fallbackCenter ?? { lat: 9.082, lng: 8.6753 } // Nigeria's geographic centre — only used before a state is picked
+  const selectedLabel = selectedState ? stateLabel(selectedState) : null
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-8">
       <header className="py-6 text-center">
-        <h1 className="text-2xl font-bold text-emerald-700">DrugFinder Uyo</h1>
+        <h1 className="text-2xl font-bold text-emerald-700">PharmaFinder</h1>
         <p className="mt-1 text-sm text-gray-600">
           Find which pharmacies near you have your medicine in stock
         </p>
       </header>
 
-      <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} />
+      <div className="mb-2">
+        <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="state-picker">
+          Searching in
+        </label>
+        <select
+          id="state-picker"
+          value={selectedState ?? ''}
+          onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
+          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+        >
+          <option value="" disabled>
+            {detectingState ? 'Detecting your state…' : 'Select your state'}
+          </option>
+          {NIGERIAN_STATES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {userPos ? (
+      <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState} />
+
+      {!selectedState && !detectingState && (
+        <p className="mt-2 text-center text-xs text-gray-500">
+          Pick your state above to search pharmacies there
+        </p>
+      )}
+
+      {selectedState && userPos ? (
         <p className="mt-2 text-center text-xs text-emerald-700">
           📍 Using your location — distances and directions start from where you are
         </p>
-      ) : locationDenied ? (
+      ) : selectedState && locationDenied ? (
         <div className="mt-2 text-center text-xs text-gray-500">
           <p>
-            Location is off — measuring from Uyo city centre.{' '}
+            Location is off — measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
             <button
               onClick={enableLocation}
               disabled={locating}
@@ -236,7 +321,7 @@ export default function Home() {
       ) : null}
 
       <main className="mt-4 flex-1">
-        {state.kind === 'idle' && (
+        {state.kind === 'idle' && selectedState && (
           <p className="mt-12 text-center text-gray-500">
             Search by generic name (e.g. <span className="font-medium">Paracetamol</span>) or brand
             (e.g. <span className="font-medium">Panadol</span>)
@@ -261,7 +346,7 @@ export default function Home() {
         {state.kind === 'results' && results.length === 0 && (
           <div className="mt-12 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
             <p className="font-medium text-amber-800">
-              No pharmacy nearby currently has {state.label} in stock.
+              No pharmacy in {selectedLabel} currently has {state.label} in stock.
             </p>
             <p className="mt-1 text-sm text-amber-700">Stock changes daily — check back soon.</p>
           </div>
@@ -272,7 +357,8 @@ export default function Home() {
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm text-gray-600">
                 <span className="font-semibold text-gray-900">{results.length}</span>{' '}
-                {results.length === 1 ? 'pharmacy has' : 'pharmacies have'} {state.label}
+                {results.length === 1 ? 'pharmacy has' : 'pharmacies have'} {state.label} in{' '}
+                {selectedLabel}
               </p>
               <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden">
                 <button
@@ -304,7 +390,7 @@ export default function Home() {
                   </p>
                   <p className="text-xs text-emerald-800">
                     {route.distanceKm.toFixed(1)} km · ~{route.durationMin} min drive
-                    {!userPos ? ' from Uyo city centre' : ' from your location'}
+                    {!userPos ? ` from ${selectedLabel}'s capital` : ' from your location'}
                   </p>
                   <a
                     href={directionsUrl(route.toLat, route.toLng)}

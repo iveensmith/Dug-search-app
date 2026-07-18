@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import bcrypt from 'bcryptjs'
 import { PrismaClient } from '../src/generated/prisma/client'
-import type { DrugForm, VerificationStatus } from '../src/generated/prisma/enums'
+import type { DrugForm, NigerianState, VerificationStatus } from '../src/generated/prisma/enums'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 const prisma = new PrismaClient({
@@ -58,25 +58,30 @@ type PharmacySeed = {
   name: string
   slug: string
   address: string
+  state: NigerianState
+  stateAbbr: string // for the fake PCN license number only
   latitude: number
   longitude: number
   phone: string
   verificationStatus: VerificationStatus
 }
 
-// Fake pharmacies spread across real Uyo neighborhoods/roads.
-// Coordinates are approximate points within Uyo (center ~5.038N, 7.914E).
+// Fake pharmacies spread across real neighborhoods/roads in two states —
+// Akwa Ibom (the original Uyo-only pilot) and Lagos, added specifically to
+// prove state-scoped search actually excludes out-of-state results.
 const PHARMACIES: PharmacySeed[] = [
-  { name: 'Mercyland Pharmacy', slug: 'mercyland', address: '12 Ibom Plaza Road, Uyo', latitude: 5.0407, longitude: 7.9204, phone: '+234 803 111 0001', verificationStatus: 'APPROVED' },
-  { name: 'GraceCare Pharmacy', slug: 'gracecare', address: '45 Ikot Ekpene Road, Itam, Uyo', latitude: 5.0585, longitude: 7.8892, phone: '+234 803 111 0002', verificationStatus: 'APPROVED' },
-  { name: 'Uduak Pharmacy & Stores', slug: 'uduak', address: '23 Abak Road, Uyo', latitude: 5.0281, longitude: 7.8973, phone: '+234 803 111 0003', verificationStatus: 'APPROVED' },
-  { name: 'LifeSpring Pharmacy', slug: 'lifespring', address: '87 Oron Road, Uyo', latitude: 5.0173, longitude: 7.9256, phone: '+234 803 111 0004', verificationStatus: 'APPROVED' },
-  { name: 'First Choice Pharmacy', slug: 'firstchoice', address: '15 Aka Road, Uyo', latitude: 5.0224, longitude: 7.9089, phone: '+234 803 111 0005', verificationStatus: 'APPROVED' },
-  { name: 'Vine Branch Pharmacy', slug: 'vinebranch', address: '3 Ewet Housing Estate Road, Uyo', latitude: 5.0182, longitude: 7.9418, phone: '+234 803 111 0006', verificationStatus: 'APPROVED' },
-  { name: 'Rehoboth Pharmacy', slug: 'rehoboth', address: '118 Nwaniba Road, Uyo', latitude: 5.0246, longitude: 7.9553, phone: '+234 803 111 0007', verificationStatus: 'APPROVED' },
-  { name: 'CityMed Pharmacy', slug: 'citymed', address: '9 Udo Udoma Avenue, Uyo', latitude: 5.0348, longitude: 7.9302, phone: '+234 803 111 0008', verificationStatus: 'APPROVED' },
-  { name: 'Goodness Pharmacy', slug: 'goodness', address: '52 Ikpa Road, Uyo', latitude: 5.0479, longitude: 7.9058, phone: '+234 803 111 0009', verificationStatus: 'PENDING' },
-  { name: 'Emem Pharmacy', slug: 'emem', address: '31 Wellington Bassey Way, Uyo', latitude: 5.0396, longitude: 7.9147, phone: '+234 803 111 0010', verificationStatus: 'REJECTED' },
+  { name: 'Mercyland Pharmacy', slug: 'mercyland', address: '12 Ibom Plaza Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0407, longitude: 7.9204, phone: '+234 803 111 0001', verificationStatus: 'APPROVED' },
+  { name: 'GraceCare Pharmacy', slug: 'gracecare', address: '45 Ikot Ekpene Road, Itam, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0585, longitude: 7.8892, phone: '+234 803 111 0002', verificationStatus: 'APPROVED' },
+  { name: 'Uduak Pharmacy & Stores', slug: 'uduak', address: '23 Abak Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0281, longitude: 7.8973, phone: '+234 803 111 0003', verificationStatus: 'APPROVED' },
+  { name: 'LifeSpring Pharmacy', slug: 'lifespring', address: '87 Oron Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0173, longitude: 7.9256, phone: '+234 803 111 0004', verificationStatus: 'APPROVED' },
+  { name: 'First Choice Pharmacy', slug: 'firstchoice', address: '15 Aka Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0224, longitude: 7.9089, phone: '+234 803 111 0005', verificationStatus: 'APPROVED' },
+  { name: 'Vine Branch Pharmacy', slug: 'vinebranch', address: '3 Ewet Housing Estate Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0182, longitude: 7.9418, phone: '+234 803 111 0006', verificationStatus: 'APPROVED' },
+  { name: 'Rehoboth Pharmacy', slug: 'rehoboth', address: '118 Nwaniba Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0246, longitude: 7.9553, phone: '+234 803 111 0007', verificationStatus: 'APPROVED' },
+  { name: 'CityMed Pharmacy', slug: 'citymed', address: '9 Udo Udoma Avenue, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0348, longitude: 7.9302, phone: '+234 803 111 0008', verificationStatus: 'APPROVED' },
+  { name: 'Goodness Pharmacy', slug: 'goodness', address: '52 Ikpa Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0479, longitude: 7.9058, phone: '+234 803 111 0009', verificationStatus: 'PENDING' },
+  { name: 'Emem Pharmacy', slug: 'emem', address: '31 Wellington Bassey Way, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0396, longitude: 7.9147, phone: '+234 803 111 0010', verificationStatus: 'REJECTED' },
+  { name: 'LagosMeds Pharmacy', slug: 'lagosmeds', address: '18 Awolowo Way, Ikeja, Lagos', state: 'LAGOS', stateAbbr: 'LAG', latitude: 6.6059, longitude: 3.3491, phone: '+234 803 111 0011', verificationStatus: 'APPROVED' },
+  { name: 'Ikeja Central Pharmacy', slug: 'ikeja', address: '7 Allen Avenue, Ikeja, Lagos', state: 'LAGOS', stateAbbr: 'LAG', latitude: 6.5952, longitude: 3.3421, phone: '+234 803 111 0012', verificationStatus: 'APPROVED' },
 ]
 
 // Deterministic pseudo-random inventory so seeding is reproducible:
@@ -135,10 +140,11 @@ async function main() {
       data: {
         name: ph.name,
         address: ph.address,
+        state: ph.state,
         latitude: ph.latitude,
         longitude: ph.longitude,
         phone: ph.phone,
-        pcnLicenseNumber: `PCN/AKS/UYO/2026/${String(p + 1).padStart(3, '0')}`,
+        pcnLicenseNumber: `PCN/${ph.stateAbbr}/2026/${String(p + 1).padStart(3, '0')}`,
         verificationStatus: ph.verificationStatus,
         ownerUserId: owner.id,
       },

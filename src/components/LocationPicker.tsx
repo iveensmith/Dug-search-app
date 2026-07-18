@@ -40,7 +40,7 @@ type Props = {
 }
 
 /** Draggable/clickable pin so pharmacies confirm their exact location —
- *  geocoding is only a starting point (OSM address coverage in Uyo is patchy). */
+ *  geocoding is only a starting point (OSM address coverage across Nigeria is patchy). */
 export default function LocationPicker({ position, onChange }: Props) {
   return (
     <MapContainer

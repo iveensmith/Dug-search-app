@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { stateLabel } from '@/lib/states'
 
 type AdminPharmacy = {
   id: string
   name: string
   address: string
+  state: string
   phone: string
   latitude: number
   longitude: number
@@ -118,7 +120,7 @@ export default function AdminPage() {
     <div className="mx-auto w-full max-w-4xl px-4 pb-16">
       <header className="flex items-center justify-between py-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Admin — DrugFinder Uyo</h1>
+          <h1 className="text-xl font-bold text-gray-900">Admin — PharmaFinder</h1>
           <p className="text-sm text-gray-600">
             {pending.length} pending registration{pending.length === 1 ? '' : 's'}
           </p>
@@ -179,7 +181,8 @@ function PharmaciesTab({
               <p className="font-semibold text-gray-900">{p.name}</p>
               <p className="text-sm text-gray-600">{p.address}</p>
               <p className="mt-1 text-xs text-gray-500">
-                PCN: {p.pcnLicenseNumber} · {p.phone} · owner: {p.ownerEmail ?? p.ownerPhone} ·{' '}
+                {stateLabel(p.state)} · PCN: {p.pcnLicenseNumber} · {p.phone} · owner:{' '}
+                {p.ownerEmail ?? p.ownerPhone} ·{' '}
                 {p.inventoryCount} drugs listed
               </p>
             </div>

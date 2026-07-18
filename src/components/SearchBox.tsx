@@ -6,9 +6,10 @@ import { type DrugSuggestion, drugLabel } from '@/lib/types'
 type Props = {
   onSelect: (drug: DrugSuggestion) => void
   onNoMatch: (query: string) => void
+  disabled?: boolean
 }
 
-export default function SearchBox({ onSelect, onNoMatch }: Props) {
+export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
   const [open, setOpen] = useState(false)
@@ -101,13 +102,15 @@ export default function SearchBox({ onSelect, onNoMatch }: Props) {
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           onFocus={() => suggestions.length > 0 && setOpen(true)}
           placeholder="Search a drug, e.g. Paracetamol or Panadol"
-          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-gray-100 disabled:text-gray-400"
           aria-label="Search for a drug"
           autoComplete="off"
+          disabled={disabled}
         />
         <button
           onClick={submit}
-          className="shrink-0 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow-sm active:bg-emerald-700"
+          disabled={disabled}
+          className="shrink-0 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow-sm active:bg-emerald-700 disabled:opacity-50"
         >
           Search
         </button>

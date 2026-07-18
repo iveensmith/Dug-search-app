@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { UYO_CENTER } from '@/lib/types'
+import { NIGERIAN_STATES, type NigerianStateValue, stateCenter, stateLabel } from '@/lib/states'
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
@@ -12,6 +12,9 @@ const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
     <div className="flex h-full items-center justify-center text-gray-400">Loading map…</div>
   ),
 })
+
+// Shown until a state is picked — Nigeria's approximate geographic centre
+const NIGERIA_CENTER = { lat: 9.082, lng: 8.6753 }
 
 export default function PharmacyRegisterPage() {
   const router = useRouter()
@@ -23,7 +26,8 @@ export default function PharmacyRegisterPage() {
     ownerEmail: '',
     password: '',
   })
-  const [position, setPosition] = useState(UYO_CENTER)
+  const [selectedState, setSelectedState] = useState<NigerianStateValue | ''>('')
+  const [position, setPosition] = useState(NIGERIA_CENTER)
   const [pinConfirmed, setPinConfirmed] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
   const [geocodeNote, setGeocodeNote] = useState('')
@@ -34,7 +38,20 @@ export default function PharmacyRegisterPage() {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
+  function pickState(value: NigerianStateValue) {
+    setSelectedState(value)
+    const center = stateCenter(value)
+    if (center) {
+      setPosition(center)
+      setPinConfirmed(false) // moved to a fresh area — make them re-confirm the pin
+    }
+  }
+
   async function geocodeAddress() {
+    if (!selectedState) {
+      setGeocodeNote('Select your state first, then the address search will be accurate')
+      return
+    }
     if (form.address.trim().length < 5) {
       setGeocodeNote('Type the street address first')
       return
@@ -42,9 +59,7 @@ export default function PharmacyRegisterPage() {
     setGeocoding(true)
     setGeocodeNote('')
     try {
-      const q = form.address.toLowerCase().includes('uyo')
-        ? form.address
-        : `${form.address}, Uyo, Nigeria`
+      const q = `${form.address}, ${stateLabel(selectedState)}, Nigeria`
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
       )
@@ -64,6 +79,10 @@ export default function PharmacyRegisterPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
+    if (!selectedState) {
+      setError('Please select which state your pharmacy is in')
+      return
+    }
     if (!pinConfirmed) {
       setError('Please confirm the map pin is on your pharmacy before submitting')
       return
@@ -76,6 +95,7 @@ export default function PharmacyRegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          state: selectedState,
           latitude: position.lat,
           longitude: position.lng,
         }),
@@ -100,7 +120,7 @@ export default function PharmacyRegisterPage() {
     <div className="mx-auto w-full max-w-2xl px-4 pb-16">
       <header className="py-6 text-center">
         <h1 className="text-2xl font-bold text-emerald-700">
-          <Link href="/">DrugFinder Uyo</Link>
+          <Link href="/">PharmaFinder</Link>
         </h1>
         <p className="mt-1 text-sm text-gray-600">Register your pharmacy</p>
       </header>
@@ -117,12 +137,31 @@ export default function PharmacyRegisterPage() {
         </div>
 
         <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">State</label>
+          <select
+            value={selectedState}
+            onChange={(e) => pickState(e.target.value as NigerianStateValue)}
+            required
+            className={inputCls}
+          >
+            <option value="" disabled>
+              Select the state your pharmacy is in
+            </option>
+            {NIGERIAN_STATES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Street address</label>
           <input
             value={form.address}
             onChange={(e) => set('address', e.target.value)}
             required
-            placeholder="e.g. 25 Aka Road, Uyo"
+            placeholder="e.g. 25 Aka Road"
             className={inputCls}
           />
           <button
