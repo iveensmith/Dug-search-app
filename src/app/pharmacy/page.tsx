@@ -4,6 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
+import AppHeader from '@/components/ui/AppHeader'
+import Card from '@/components/ui/Card'
+import { Field, Input } from '@/components/ui/Field'
+import Button from '@/components/ui/Button'
+import { IconAlertCircle, IconTrash } from '@/components/ui/icons'
 
 type InventoryItem = {
   id: string
@@ -117,8 +122,8 @@ export default function PharmacyDashboard() {
   if (loadError) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-gray-700">{loadError}</p>
-        <Link href="/" className="mt-4 inline-block text-emerald-700 underline">
+        <p className="text-gray-700 dark:text-gray-300">{loadError}</p>
+        <Link href="/" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
           Back to search
         </Link>
       </div>
@@ -126,7 +131,7 @@ export default function PharmacyDashboard() {
   }
 
   if (!data) {
-    return <p className="py-16 text-center text-gray-500">Loading dashboard…</p>
+    return <p className="py-16 text-center text-gray-500 dark:text-gray-400">Loading dashboard…</p>
   }
 
   const { pharmacy, items } = data
@@ -134,128 +139,119 @@ export default function PharmacyDashboard() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <header className="flex items-start justify-between py-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">{pharmacy.name}</h1>
-          <p className="text-sm text-gray-600">{pharmacy.address}</p>
-        </div>
-        <button onClick={logout} className="text-sm text-gray-500 underline">
-          Log out
-        </button>
-      </header>
+      <AppHeader title={pharmacy.name} subtitle={pharmacy.address} onLogout={logout} />
 
       {pharmacy.verificationStatus === 'PENDING' && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          <p className="font-semibold">Awaiting approval</p>
-          <p className="mt-1">
-            We&apos;re verifying your PCN license. Your pharmacy will appear in patient searches once
-            approved — check back soon.
-          </p>
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+          <IconAlertCircle width={18} height={18} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold">Awaiting approval</p>
+            <p className="mt-1">
+              We&apos;re verifying your PCN license. Your pharmacy will appear in patient searches once
+              approved — check back soon.
+            </p>
+          </div>
         </div>
       )}
 
       {pharmacy.verificationStatus === 'REJECTED' && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          <p className="font-semibold">Registration rejected</p>
-          <p className="mt-1">
-            Your registration could not be verified. Contact us if you believe this is a mistake.
-          </p>
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+          <IconAlertCircle width={18} height={18} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold">Registration rejected</p>
+            <p className="mt-1">
+              Your registration could not be verified. Contact us if you believe this is a mistake.
+            </p>
+          </div>
         </div>
       )}
 
       {pharmacy.verificationStatus === 'APPROVED' && (
         <>
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Add a drug to your inventory
-            </label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search the drug list, e.g. Amoxicillin"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-              disabled={adding}
-            />
+          <Card>
+            <Field label="Add a drug to your inventory" htmlFor="drug-query">
+              <Input
+                id="drug-query"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search the drug list, e.g. Amoxicillin"
+                disabled={adding}
+              />
+            </Field>
             {suggestions.length > 0 && (
-              <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200">
+              <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
                 {suggestions.map((d) => {
                   const already = items.some((i) => i.drug.id === d.id)
                   return (
-                    <li key={d.id} className="flex items-center justify-between gap-2 bg-white px-4 py-2.5">
-                      <div>
-                        <p className="font-medium text-gray-900">{drugLabel(d)}</p>
+                    <li key={d.id} className="flex items-center justify-between gap-2 bg-white px-4 py-2.5 dark:bg-gray-900">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{drugLabel(d)}</p>
                         {d.brandNames.length > 0 && (
-                          <p className="text-xs text-gray-500">Brands: {d.brandNames.join(', ')}</p>
+                          <p className="truncate text-xs text-gray-500 dark:text-gray-400">Brands: {d.brandNames.join(', ')}</p>
                         )}
                       </div>
                       {already ? (
-                        <span className="text-xs text-gray-400">Already listed</span>
+                        <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">Already listed</span>
                       ) : (
-                        <button
-                          onClick={() => addDrug(d)}
-                          className="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white"
-                        >
+                        <Button size="sm" onClick={() => addDrug(d)} className="shrink-0">
                           Add
-                        </button>
+                        </Button>
                       )}
                     </li>
                   )
                 })}
               </ul>
             )}
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
               Missing a drug? Only drugs on the master list can be added — contact us to request an
               addition.
             </p>
-          </div>
+          </Card>
 
           <div className="mt-6">
             <div className="mb-2 flex items-baseline justify-between">
-              <h2 className="font-semibold text-gray-900">Your drugs ({items.length})</h2>
-              <p className="text-sm text-gray-500">{inStockCount} in stock</p>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100">Your drugs ({items.length})</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{inStockCount} in stock</p>
             </div>
 
             {items.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
+              <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
                 No drugs listed yet — search above to add your first one.
               </p>
             ) : (
               <ul className="space-y-2">
                 {items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-900">{drugLabel(item.drug)}</p>
-                      {item.drug.brandNames.length > 0 && (
-                        <p className="truncate text-xs text-gray-500">
-                          {item.drug.brandNames.join(', ')}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <button
-                        onClick={() => toggle(item)}
-                        aria-pressed={item.inStock}
-                        className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                          item.inStock
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-gray-200 text-gray-600'
-                        }`}
-                      >
-                        {item.inStock ? 'In stock' : 'Out of stock'}
-                      </button>
-                      <button
-                        onClick={() => remove(item)}
-                        aria-label={`Remove ${drugLabel(item.drug)}`}
-                        className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M3 3l10 10M13 3L3 13" />
-                        </svg>
-                      </button>
-                    </div>
+                  <li key={item.id}>
+                    <Card padded={false} className="flex items-center justify-between gap-3 p-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-gray-900 dark:text-gray-100">{drugLabel(item.drug)}</p>
+                        {item.drug.brandNames.length > 0 && (
+                          <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                            {item.drug.brandNames.join(', ')}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          onClick={() => toggle(item)}
+                          aria-pressed={item.inStock}
+                          className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                            item.inStock
+                              ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950'
+                              : 'bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                          }`}
+                        >
+                          {item.inStock ? 'In stock' : 'Out of stock'}
+                        </button>
+                        <button
+                          onClick={() => remove(item)}
+                          aria-label={`Remove ${drugLabel(item.drug)}`}
+                          className="cursor-pointer rounded-full p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                        >
+                          <IconTrash width={16} height={16} />
+                        </button>
+                      </div>
+                    </Card>
                   </li>
                 ))}
               </ul>

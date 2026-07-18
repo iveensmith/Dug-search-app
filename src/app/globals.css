@@ -1,13 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Every screen in this app is built with hardcoded light-theme classes
-     (bg-white, text-gray-900, ...) — none of it adapts to dark mode. This
-     tells browsers not to auto-invert/auto-dark it, which otherwise
-     produces broken color combinations on form fields. */
+  --background: #f8faf9;
+  --foreground: #0f172a;
+
+  /* Brand: emerald (pharmacy/health) + a restrained blue accent (trust/info) */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+
+  /* Browser chrome (scrollbars, form controls) should follow the theme */
   color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0f0d;
+    --foreground: #e7f3ee;
+    color-scheme: dark;
+  }
 }
 
 @theme inline {
@@ -17,8 +30,73 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-brand-700);
+}
+@media (prefers-color-scheme: dark) {
+  ::selection {
+    background: var(--color-brand-700);
+    color: white;
+  }
+}
+
+/* Slim, theme-aware scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--foreground) 18%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--foreground) 30%, transparent);
+  background-clip: content-box;
+}
+
+/* Cheap, provider-free dark map: invert only the raster tiles so markers/
+   popups (styled separately below) keep their real colors on top. Applied
+   via the `map-tiles` class on the Leaflet container. */
+@media (prefers-color-scheme: dark) {
+  .map-tiles .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.9);
+  }
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--background);
+  color: var(--foreground);
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: color-mix(in srgb, var(--foreground) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

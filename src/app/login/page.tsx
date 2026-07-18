@@ -3,6 +3,10 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/ui/Logo'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Field, Input } from '@/components/ui/Field'
 
 const HOME_BY_ROLE: Record<string, string> = {
   PHARMACY_OWNER: '/pharmacy',
@@ -44,55 +48,51 @@ function LoginForm() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4">
-      <h1 className="text-center text-2xl font-bold text-emerald-700">
-        <Link href="/">PharmaFinder</Link>
-      </h1>
-      <p className="mt-1 text-center text-sm text-gray-600">Log in to your account</p>
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-10">
+      <div className="mb-8 flex flex-col items-center gap-2 text-center">
+        <Logo size="lg" />
+        <p className="text-sm text-gray-600 dark:text-gray-400">Log in to your account</p>
+      </div>
 
-      <form onSubmit={submit} className="mt-8 space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email or phone</label>
-          <input
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            required
-            autoComplete="username"
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-          />
-        </div>
+      <Card>
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Email or phone" htmlFor="identifier">
+            <Input
+              id="identifier"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+              autoComplete="username"
+            />
+          </Field>
+          <Field label="Password" htmlFor="password">
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </Field>
 
-        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+          {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
-        >
-          {busy ? 'Logging in…' : 'Log in'}
-        </button>
-      </form>
+          <Button type="submit" loading={busy} className="w-full" size="lg">
+            {busy ? 'Logging in…' : 'Log in'}
+          </Button>
+        </form>
+      </Card>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
         New here?{' '}
-        <Link href="/register" className="font-medium text-emerald-700 underline">
+        <Link href="/register" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
           Create a patient account
         </Link>
       </p>
-      <p className="mt-2 text-center text-sm text-gray-600">
+      <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
         Own a pharmacy?{' '}
-        <Link href="/pharmacy/register" className="font-medium text-emerald-700 underline">
+        <Link href="/pharmacy/register" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
           Register it here
         </Link>
       </p>

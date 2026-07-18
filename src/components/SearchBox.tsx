@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
+import Button from '@/components/ui/Button'
+import { IconSearch } from '@/components/ui/icons'
 
 type Props = {
   onSelect: (drug: DrugSuggestion) => void
@@ -80,44 +82,47 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
   return (
     <div className="relative">
       <div className="flex gap-2">
-        <input
-          type="search"
-          inputMode="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              submit()
-            } else if (e.key === 'ArrowDown') {
-              e.preventDefault()
-              setHighlighted((h) => Math.min(h + 1, suggestions.length - 1))
-            } else if (e.key === 'ArrowUp') {
-              e.preventDefault()
-              setHighlighted((h) => Math.max(h - 1, 0))
-            } else if (e.key === 'Escape') {
-              setOpen(false)
-            }
-          }}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
-          onFocus={() => suggestions.length > 0 && setOpen(true)}
-          placeholder="Search a drug, e.g. Paracetamol or Panadol"
-          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-gray-100 disabled:text-gray-400"
-          aria-label="Search for a drug"
-          autoComplete="off"
-          disabled={disabled}
-        />
-        <button
-          onClick={submit}
-          disabled={disabled}
-          className="shrink-0 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow-sm active:bg-emerald-700 disabled:opacity-50"
-        >
+        <div className="relative min-w-0 flex-1">
+          <IconSearch
+            width={18}
+            height={18}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+          />
+          <input
+            type="search"
+            inputMode="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                submit()
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                setHighlighted((h) => Math.min(h + 1, suggestions.length - 1))
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault()
+                setHighlighted((h) => Math.max(h - 1, 0))
+              } else if (e.key === 'Escape') {
+                setOpen(false)
+              }
+            }}
+            onBlur={() => setTimeout(() => setOpen(false), 150)}
+            onFocus={() => suggestions.length > 0 && setOpen(true)}
+            placeholder="Search a drug, e.g. Paracetamol or Panadol"
+            className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-4 text-base text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900 dark:disabled:bg-gray-800"
+            aria-label="Search for a drug"
+            autoComplete="off"
+            disabled={disabled}
+          />
+        </div>
+        <Button onClick={submit} disabled={disabled} size="lg" className="shrink-0">
           Search
-        </button>
+        </Button>
       </div>
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-[1000] mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+        <ul className="absolute z-[1000] mt-1.5 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
           {suggestions.map((d, i) => (
             <li key={d.id}>
               <button
@@ -126,13 +131,13 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
                   pick(d)
                 }}
                 onMouseEnter={() => setHighlighted(i)}
-                className={`block w-full px-4 py-3 text-left ${
-                  i === highlighted ? 'bg-emerald-50' : 'bg-white'
+                className={`block w-full cursor-pointer px-4 py-3 text-left transition-colors ${
+                  i === highlighted ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-white dark:bg-gray-900'
                 }`}
               >
-                <span className="font-medium text-gray-900">{drugLabel(d)}</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">{drugLabel(d)}</span>
                 {d.brandNames.length > 0 && (
-                  <span className="block text-sm text-gray-500">
+                  <span className="block text-sm text-gray-500 dark:text-gray-400">
                     Brands: {d.brandNames.join(', ')}
                   </span>
                 )}

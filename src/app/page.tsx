@@ -6,12 +6,19 @@ import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
 import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, drugLabel, directionsUrl } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
+import Logo from '@/components/ui/Logo'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Field, Select } from '@/components/ui/Field'
+import { IconAlertCircle, IconMapPin, IconPhone, IconRoute, IconX } from '@/components/ui/icons'
 
 // Leaflet touches `window` — client-only
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-gray-400">Loading map…</div>
+    <div className="flex h-full items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+      Loading map…
+    </div>
   ),
 })
 
@@ -263,113 +270,129 @@ export default function Home() {
   const selectedLabel = selectedState ? stateLabel(selectedState) : null
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-8">
-      <header className="py-6 text-center">
-        <h1 className="text-2xl font-bold text-emerald-700">PharmaFinder</h1>
-        <p className="mt-1 text-sm text-gray-600">
+    <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-10">
+      <header className="flex flex-col items-center gap-2 py-8 text-center">
+        <Logo size="lg" href={null} tagline="Nigeria" />
+        <p className="max-w-sm text-sm text-gray-600 dark:text-gray-400">
           Find which pharmacies near you have your medicine in stock
         </p>
       </header>
 
-      <div className="mb-2">
-        <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="state-picker">
-          Searching in
-        </label>
-        <select
-          id="state-picker"
-          value={selectedState ?? ''}
-          onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
-          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-        >
-          <option value="" disabled>
-            {detectingState ? 'Detecting your state…' : 'Select your state'}
-          </option>
-          {NIGERIAN_STATES.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <Card className="mb-3" padded={false}>
+        <div className="space-y-3 p-4">
+          <Field label="Searching in" htmlFor="state-picker">
+            <Select
+              id="state-picker"
+              value={selectedState ?? ''}
+              onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
+            >
+              <option value="" disabled>
+                {detectingState ? 'Detecting your state…' : 'Select your state'}
+              </option>
+              {NIGERIAN_STATES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
 
-      <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState} />
+          <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState} />
+        </div>
+      </Card>
 
       {!selectedState && !detectingState && (
-        <p className="mt-2 text-center text-xs text-gray-500">
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
           Pick your state above to search pharmacies there
         </p>
       )}
 
       {selectedState && userPos ? (
-        <p className="mt-2 text-center text-xs text-emerald-700">
-          📍 Using your location — distances and directions start from where you are
+        <p className="flex items-center justify-center gap-1.5 text-center text-xs font-medium text-emerald-700 dark:text-emerald-400">
+          <IconMapPin width={14} height={14} />
+          Using your location — distances and directions start from where you are
         </p>
       ) : selectedState && locationDenied ? (
-        <div className="mt-2 text-center text-xs text-gray-500">
+        <div className="text-center text-xs text-gray-500 dark:text-gray-400">
           <p>
             Location is off — measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
             <button
               onClick={enableLocation}
               disabled={locating}
-              className="font-medium text-emerald-700 underline disabled:opacity-50"
+              className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 disabled:opacity-50 dark:text-emerald-400"
             >
               {locating ? 'Getting your location…' : 'Use my location'}
             </button>
           </p>
-          {locationHint && <p className="mt-1 text-amber-700">{locationHint}</p>}
+          {locationHint && <p className="mt-1 text-amber-700 dark:text-amber-400">{locationHint}</p>}
         </div>
       ) : null}
 
-      <main className="mt-4 flex-1">
+      <main className="mt-5 flex-1">
         {state.kind === 'idle' && selectedState && (
-          <p className="mt-12 text-center text-gray-500">
-            Search by generic name (e.g. <span className="font-medium">Paracetamol</span>) or brand
-            (e.g. <span className="font-medium">Panadol</span>)
-          </p>
+          <div className="mt-10 flex flex-col items-center text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <IconMapPin width={26} height={26} />
+            </div>
+            <p className="mt-4 max-w-xs text-gray-500 dark:text-gray-400">
+              Search by generic name (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Paracetamol</span>) or brand
+              (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Panadol</span>)
+            </p>
+          </div>
         )}
 
         {state.kind === 'loading' && (
-          <p className="mt-12 text-center text-gray-500">Searching pharmacies…</p>
+          <ul className="space-y-3" aria-label="Searching pharmacies" aria-live="polite">
+            {[0, 1, 2].map((i) => (
+              <li key={i} className="animate-pulse rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+                <div className="h-4 w-2/5 rounded bg-gray-200 dark:bg-gray-800" />
+                <div className="mt-2 h-3 w-3/5 rounded bg-gray-100 dark:bg-gray-800/70" />
+                <div className="mt-4 h-9 rounded-lg bg-gray-100 dark:bg-gray-800/70" />
+              </li>
+            ))}
+          </ul>
         )}
 
         {state.kind === 'no-match' && (
-          <div className="mt-12 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
-            <p className="font-medium text-amber-800">
+          <div className="mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+            <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
+            <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
               No drug matching “{state.query}” is in our list yet.
             </p>
-            <p className="mt-1 text-sm text-amber-700">
+            <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">
               Try the generic name, or check the spelling. We add new drugs regularly.
             </p>
           </div>
         )}
 
         {state.kind === 'results' && results.length === 0 && (
-          <div className="mt-12 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
-            <p className="font-medium text-amber-800">
+          <div className="mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+            <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
+            <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
               No pharmacy in {selectedLabel} currently has {state.label} in stock.
             </p>
-            <p className="mt-1 text-sm text-amber-700">Stock changes daily — check back soon.</p>
+            <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">Stock changes daily — check back soon.</p>
           </div>
         )}
 
         {state.kind === 'results' && results.length > 0 && (
           <>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                <span className="font-semibold text-gray-900">{results.length}</span>{' '}
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="min-w-0 text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{results.length}</span>{' '}
                 {results.length === 1 ? 'pharmacy has' : 'pharmacies have'} {state.label} in{' '}
                 {selectedLabel}
               </p>
-              <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden">
+              <div className="flex shrink-0 overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
                 <button
                   onClick={() => setView('list')}
-                  className={`px-4 py-1.5 font-medium ${view === 'list' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700'}`}
+                  className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
                 >
                   List
                 </button>
                 <button
                   onClick={() => setView('map')}
-                  className={`px-4 py-1.5 font-medium ${view === 'map' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700'}`}
+                  className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
                 >
                   Map
                 </button>
@@ -377,18 +400,18 @@ export default function Home() {
             </div>
 
             {routeError && (
-              <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
                 {routeError}
               </p>
             )}
 
             {route && (
-              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-emerald-900">
+                  <p className="truncate text-sm font-semibold text-emerald-900 dark:text-emerald-300">
                     {route.pharmacyName}
                   </p>
-                  <p className="text-xs text-emerald-800">
+                  <p className="text-xs text-emerald-800 dark:text-emerald-400">
                     {route.distanceKm.toFixed(1)} km · ~{route.durationMin} min drive
                     {!userPos ? ` from ${selectedLabel}'s capital` : ' from your location'}
                   </p>
@@ -396,7 +419,7 @@ export default function Home() {
                     href={directionsUrl(route.toLat, route.toLng)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-medium text-emerald-700 underline"
+                    className="text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
                   >
                     Voice navigation (opens Google Maps)
                   </a>
@@ -404,11 +427,9 @@ export default function Home() {
                 <button
                   onClick={() => setRoute(null)}
                   aria-label="Clear route"
-                  className="shrink-0 rounded-full p-2 text-emerald-700 hover:bg-emerald-100"
+                  className="shrink-0 cursor-pointer rounded-full p-2 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
                 >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M3 3l10 10M13 3L3 13" />
-                  </svg>
+                  <IconX width={14} height={14} />
                 </button>
               </div>
             )}
@@ -416,31 +437,37 @@ export default function Home() {
             <div className="md:grid md:grid-cols-2 md:gap-4">
               <ul className={`space-y-3 ${view === 'map' ? 'hidden md:block' : ''}`}>
                 {results.map((r) => (
-                  <li key={r.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <li key={r.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-gray-900">{r.name}</p>
-                        <p className="text-sm text-gray-600">{r.address}</p>
-                        <p className="mt-0.5 text-xs text-gray-500">☎ {r.phone}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{r.address}</p>
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
+                          <IconPhone width={12} height={12} /> {r.phone}
+                        </p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                      <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
                         {r.distanceKm.toFixed(1)} km
                       </span>
                     </div>
                     <div className="mt-3 flex gap-2">
-                      <button
+                      <Button
+                        variant="primary"
+                        size="md"
                         onClick={() => showRoute(r)}
-                        disabled={routeBusyId === r.id}
-                        className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white active:bg-emerald-700 disabled:opacity-60"
+                        loading={routeBusyId === r.id}
+                        className="flex-1"
                       >
+                        <IconRoute width={16} height={16} />
                         {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
-                      </button>
+                      </Button>
                       <a
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
                         onClick={(e) => handleCall(e, r.phone)}
-                        className="flex-1 rounded-lg border border-emerald-600 px-3 py-2 text-center text-sm font-semibold text-emerald-700 active:bg-emerald-50"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-600/60 px-3 py-2.5 text-center text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 active:bg-emerald-100 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
                       >
-                        {copiedPhone === r.phone ? 'Number copied ✓' : 'Call'}
+                        <IconPhone width={16} height={16} />
+                        {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
                     </div>
                   </li>
@@ -448,7 +475,7 @@ export default function Home() {
               </ul>
 
               <div
-                className={`h-[60dvh] overflow-hidden rounded-xl border border-gray-200 md:sticky md:top-4 md:h-[70dvh] ${view === 'list' ? 'hidden md:block' : ''}`}
+                className={`map-tiles h-[60dvh] overflow-hidden rounded-2xl border border-gray-200 md:sticky md:top-4 md:h-[70dvh] dark:border-gray-800 ${view === 'list' ? 'hidden md:block' : ''}`}
               >
                 <ResultsMap
                   results={results}
@@ -463,14 +490,14 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="mt-8 space-y-2 text-center text-xs text-gray-400">
+      <footer className="mt-10 space-y-2 border-t border-gray-100 pt-6 text-center text-xs text-gray-400 dark:border-gray-800 dark:text-gray-500">
         <p>
-          <Link href="/prescriptions" className="font-medium text-emerald-700 underline">
+          <Link href="/prescriptions" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
             Confused by a prescription? Ask a licensed pharmacist
           </Link>
         </p>
         <p>
-          <Link href="/pharmacy" className="underline">
+          <Link href="/pharmacy" className="underline underline-offset-2 hover:text-gray-600 dark:hover:text-gray-300">
             Own a pharmacy? Register here
           </Link>
         </p>

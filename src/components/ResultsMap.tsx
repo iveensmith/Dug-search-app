@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { type PharmacyResult, type ActiveRoute, directionsUrl } from '@/lib/types'
+import { IconPhone } from '@/components/ui/icons'
 
 // Inline SVG pins — avoids Leaflet's default marker image-path issues under bundlers
 const pharmacyIcon = L.divIcon({
@@ -103,12 +104,17 @@ export default function ResultsMap({ results, userPos, center, route, onRoute }:
             <div className="min-w-[180px]">
               <p className="font-semibold">{r.name}</p>
               <p className="text-sm">{r.address}</p>
-              <p className="text-sm">{r.distanceKm.toFixed(1)} km away · ☎ {r.phone}</p>
-              <div className="mt-1 flex gap-3 text-sm">
+              <p className="mt-0.5 flex items-center gap-1 text-sm">
+                {r.distanceKm.toFixed(1)} km away
+                <span className="inline-flex items-center gap-1">
+                  · <IconPhone width={12} height={12} className="inline" /> {r.phone}
+                </span>
+              </p>
+              <div className="mt-1.5 flex gap-3 text-sm">
                 {onRoute && (
                   <button
                     onClick={() => onRoute(r)}
-                    className="font-medium text-emerald-700 underline"
+                    className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2"
                   >
                     Route
                   </button>

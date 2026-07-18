@@ -4,6 +4,10 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue } from '@/lib/states'
+import Logo from '@/components/ui/Logo'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Field, Input, Select } from '@/components/ui/Field'
 
 function RegisterForm() {
   const router = useRouter()
@@ -43,63 +47,70 @@ function RegisterForm() {
     }
   }
 
-  const inputCls =
-    'w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
-
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4">
-      <h1 className="text-center text-2xl font-bold text-emerald-700">
-        <Link href="/">PharmaFinder</Link>
-      </h1>
-      <p className="mt-1 text-center text-sm text-gray-600">Create a patient account</p>
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-10">
+      <div className="mb-8 flex flex-col items-center gap-2 text-center">
+        <Logo size="lg" />
+        <p className="text-sm text-gray-600 dark:text-gray-400">Create a patient account</p>
+      </div>
 
-      <form onSubmit={submit} className="mt-8 space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Your name</label>
-          <input value={form.displayName} onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))} className={inputCls} />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email or phone number</label>
-          <input
-            value={form.contact}
-            onChange={(e) => setForm((f) => ({ ...f, contact: e.target.value }))}
-            required
-            placeholder="e.g. 0803 123 4567 or you@example.com"
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Password (min 8 characters)</label>
-          <input type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} autoComplete="new-password" className={inputCls} />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Your state <span className="font-normal text-gray-500">(optional — speeds up search)</span>
-          </label>
-          <select
-            value={homeState}
-            onChange={(e) => setHomeState(e.target.value as NigerianStateValue)}
-            className={inputCls}
-          >
-            <option value="">Prefer not to say</option>
-            {NIGERIAN_STATES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
+      <Card>
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Your name" htmlFor="displayName">
+            <Input
+              id="displayName"
+              value={form.displayName}
+              onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+            />
+          </Field>
+          <Field label="Email or phone number" htmlFor="contact">
+            <Input
+              id="contact"
+              value={form.contact}
+              onChange={(e) => setForm((f) => ({ ...f, contact: e.target.value }))}
+              required
+              placeholder="e.g. 0803 123 4567 or you@example.com"
+            />
+          </Field>
+          <Field label="Password" hint="(min 8 characters)" htmlFor="password">
+            <Input
+              id="password"
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+          </Field>
+          <Field label="Your state" hint="(optional — speeds up search)" htmlFor="homeState">
+            <Select
+              id="homeState"
+              value={homeState}
+              onChange={(e) => setHomeState(e.target.value as NigerianStateValue)}
+            >
+              <option value="">Prefer not to say</option>
+              {NIGERIAN_STATES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
 
-        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+          {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 
-        <button type="submit" disabled={busy} className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white disabled:opacity-50">
-          {busy ? 'Creating account…' : 'Sign up'}
-        </button>
-      </form>
+          <Button type="submit" loading={busy} className="w-full" size="lg">
+            {busy ? 'Creating account…' : 'Sign up'}
+          </Button>
+        </form>
+      </Card>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
         Already have an account?{' '}
-        <Link href="/login" className="font-medium text-emerald-700 underline">Log in</Link>
+        <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+          Log in
+        </Link>
       </p>
     </div>
   )

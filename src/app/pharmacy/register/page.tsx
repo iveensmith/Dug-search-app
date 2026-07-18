@@ -5,11 +5,18 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue, stateCenter, stateLabel } from '@/lib/states'
+import Logo from '@/components/ui/Logo'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Field, Input, Select } from '@/components/ui/Field'
+import { IconShieldCheck } from '@/components/ui/icons'
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-gray-400">Loading map…</div>
+    <div className="flex h-full items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+      Loading map…
+    </div>
   ),
 })
 
@@ -113,132 +120,124 @@ export default function PharmacyRegisterPage() {
     }
   }
 
-  const inputCls =
-    'w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
-
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <header className="py-6 text-center">
-        <h1 className="text-2xl font-bold text-emerald-700">
-          <Link href="/">PharmaFinder</Link>
-        </h1>
-        <p className="mt-1 text-sm text-gray-600">Register your pharmacy</p>
+      <header className="flex flex-col items-center gap-2 py-8 text-center">
+        <Logo size="lg" />
+        <p className="text-sm text-gray-600 dark:text-gray-400">Register your pharmacy</p>
       </header>
 
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-        After you register, our team verifies your PCN license before your pharmacy appears in
-        search results. You&apos;ll see your approval status on your dashboard.
+      <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
+        <IconShieldCheck width={18} height={18} className="mt-0.5 shrink-0" />
+        <p>
+          After you register, our team verifies your PCN license before your pharmacy appears in
+          search results. You&apos;ll see your approval status on your dashboard.
+        </p>
       </div>
 
-      <form onSubmit={submit} className="mt-6 space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Pharmacy name</label>
-          <input value={form.pharmacyName} onChange={(e) => set('pharmacyName', e.target.value)} required className={inputCls} />
-        </div>
+      <Card className="mt-6">
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Pharmacy name" htmlFor="pharmacyName">
+            <Input id="pharmacyName" value={form.pharmacyName} onChange={(e) => set('pharmacyName', e.target.value)} required />
+          </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">State</label>
-          <select
-            value={selectedState}
-            onChange={(e) => pickState(e.target.value as NigerianStateValue)}
-            required
-            className={inputCls}
-          >
-            <option value="" disabled>
-              Select the state your pharmacy is in
-            </option>
-            {NIGERIAN_STATES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
+          <Field label="State" htmlFor="state">
+            <Select
+              id="state"
+              value={selectedState}
+              onChange={(e) => pickState(e.target.value as NigerianStateValue)}
+              required
+            >
+              <option value="" disabled>
+                Select the state your pharmacy is in
               </option>
-            ))}
-          </select>
-        </div>
+              {NIGERIAN_STATES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Street address</label>
-          <input
-            value={form.address}
-            onChange={(e) => set('address', e.target.value)}
-            required
-            placeholder="e.g. 25 Aka Road"
-            className={inputCls}
-          />
-          <button
-            type="button"
-            onClick={geocodeAddress}
-            disabled={geocoding}
-            className="mt-2 rounded-lg border border-emerald-600 px-3 py-1.5 text-sm font-medium text-emerald-700 disabled:opacity-50"
-          >
-            {geocoding ? 'Searching…' : 'Find address on map'}
-          </button>
-          {geocodeNote && <p className="mt-1 text-sm text-gray-600">{geocodeNote}</p>}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Pin your exact location <span className="font-normal text-gray-500">(drag the pin or tap the map)</span>
-          </label>
-          <div className="h-72 overflow-hidden rounded-xl border border-gray-300">
-            <LocationPicker position={position} onChange={(p) => { setPosition(p); setPinConfirmed(true) }} />
-          </div>
-          <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={pinConfirmed}
-              onChange={(e) => setPinConfirmed(e.target.checked)}
-              className="h-4 w-4 accent-emerald-600"
+          <Field label="Street address" htmlFor="address">
+            <Input
+              id="address"
+              value={form.address}
+              onChange={(e) => set('address', e.target.value)}
+              required
+              placeholder="e.g. 25 Aka Road"
             />
-            The pin is on my pharmacy
-          </label>
-        </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={geocodeAddress}
+              loading={geocoding}
+              className="mt-2"
+            >
+              {geocoding ? 'Searching…' : 'Find address on map'}
+            </Button>
+            {geocodeNote && <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{geocodeNote}</p>}
+          </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Pharmacy phone</label>
-          <input
-            value={form.phone}
-            onChange={(e) => set('phone', e.target.value)}
-            required
-            placeholder="e.g. 0803 123 4567"
-            inputMode="tel"
-            className={inputCls}
-          />
-        </div>
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Pin your exact location{' '}
+              <span className="font-normal text-gray-500 dark:text-gray-400">(drag the pin or tap the map)</span>
+            </p>
+            <div className="map-tiles h-72 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700">
+              <LocationPicker position={position} onChange={(p) => { setPosition(p); setPinConfirmed(true) }} />
+            </div>
+            <label className="mt-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={pinConfirmed}
+                onChange={(e) => setPinConfirmed(e.target.checked)}
+                className="h-4 w-4 accent-emerald-600"
+              />
+              The pin is on my pharmacy
+            </label>
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">PCN license number</label>
-          <input value={form.pcnLicenseNumber} onChange={(e) => set('pcnLicenseNumber', e.target.value)} required className={inputCls} />
-        </div>
+          <Field label="Pharmacy phone" htmlFor="phone">
+            <Input
+              id="phone"
+              value={form.phone}
+              onChange={(e) => set('phone', e.target.value)}
+              required
+              placeholder="e.g. 0803 123 4567"
+              inputMode="tel"
+            />
+          </Field>
 
-        <hr className="border-gray-200" />
-        <p className="text-sm font-medium text-gray-900">Owner account (for logging in)</p>
+          <Field label="PCN license number" htmlFor="pcnLicenseNumber">
+            <Input id="pcnLicenseNumber" value={form.pcnLicenseNumber} onChange={(e) => set('pcnLicenseNumber', e.target.value)} required />
+          </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" value={form.ownerEmail} onChange={(e) => set('ownerEmail', e.target.value)} required autoComplete="email" className={inputCls} />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Password (min 8 characters)</label>
-          <input type="password" value={form.password} onChange={(e) => set('password', e.target.value)} required minLength={8} autoComplete="new-password" className={inputCls} />
-        </div>
+          <hr className="border-gray-200 dark:border-gray-800" />
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Owner account (for logging in)</p>
 
-        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+          <Field label="Email" htmlFor="ownerEmail">
+            <Input id="ownerEmail" type="email" value={form.ownerEmail} onChange={(e) => set('ownerEmail', e.target.value)} required autoComplete="email" />
+          </Field>
+          <Field label="Password" hint="(min 8 characters)" htmlFor="ownerPassword">
+            <Input id="ownerPassword" type="password" value={form.password} onChange={(e) => set('password', e.target.value)} required minLength={8} autoComplete="new-password" />
+          </Field>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
-        >
-          {busy ? 'Submitting…' : 'Register pharmacy'}
-        </button>
+          {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 
-        <p className="text-center text-sm text-gray-600">
-          Already registered?{' '}
-          <Link href="/login" className="font-medium text-emerald-700 underline">
-            Log in
-          </Link>
-        </p>
-      </form>
+          <Button type="submit" loading={busy} className="w-full" size="lg">
+            {busy ? 'Submitting…' : 'Register pharmacy'}
+          </Button>
+
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            Already registered?{' '}
+            <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+              Log in
+            </Link>
+          </p>
+        </form>
+      </Card>
     </div>
   )
 }

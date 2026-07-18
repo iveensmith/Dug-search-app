@@ -4,6 +4,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { stateLabel } from '@/lib/states'
+import AppHeader from '@/components/ui/AppHeader'
+import Card from '@/components/ui/Card'
+import Badge, { type BadgeTone } from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import { Field, Input, Select } from '@/components/ui/Field'
 
 type AdminPharmacy = {
   id: string
@@ -48,10 +53,10 @@ type Analytics = {
 
 const FORMS = ['TABLET', 'CAPSULE', 'SYRUP', 'SUSPENSION', 'INJECTION', 'CREAM', 'OINTMENT', 'GEL', 'DROPS', 'INHALER', 'SUPPOSITORY', 'OTHER']
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING: 'bg-amber-100 text-amber-800',
-  APPROVED: 'bg-emerald-100 text-emerald-800',
-  REJECTED: 'bg-red-100 text-red-700',
+const STATUS_TONE: Record<string, BadgeTone> = {
+  PENDING: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'danger',
 }
 
 export default function AdminPage() {
@@ -106,29 +111,25 @@ export default function AdminPage() {
   if (denied) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-gray-700">This page is for administrators only.</p>
-        <Link href="/" className="mt-4 inline-block text-emerald-700 underline">Back to search</Link>
+        <p className="text-gray-700 dark:text-gray-300">This page is for administrators only.</p>
+        <Link href="/" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">Back to search</Link>
       </div>
     )
   }
 
-  if (!pharmacies) return <p className="py-16 text-center text-gray-500">Loading admin panel…</p>
+  if (!pharmacies) return <p className="py-16 text-center text-gray-500 dark:text-gray-400">Loading admin panel…</p>
 
   const pending = pharmacies.filter((p) => p.verificationStatus === 'PENDING')
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 pb-16">
-      <header className="flex items-center justify-between py-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Admin — PharmaFinder</h1>
-          <p className="text-sm text-gray-600">
-            {pending.length} pending registration{pending.length === 1 ? '' : 's'}
-          </p>
-        </div>
-        <button onClick={logout} className="text-sm text-gray-500 underline">Log out</button>
-      </header>
+      <AppHeader
+        title="Admin — PharmaFinder"
+        subtitle={`${pending.length} pending registration${pending.length === 1 ? '' : 's'}`}
+        onLogout={logout}
+      />
 
-      <nav className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1">
+      <nav className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
         {(
           [
             ['pharmacies', `Pharmacies (${pharmacies.length})`],
@@ -140,8 +141,10 @@ export default function AdminPage() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ${
-              tab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+            className={`flex-1 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              tab === key
+                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-50'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >
             {label}
@@ -175,47 +178,41 @@ function PharmaciesTab({
   return (
     <ul className="space-y-3">
       {ordered.map((p) => (
-        <li key={p.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <p className="font-semibold text-gray-900">{p.name}</p>
-              <p className="text-sm text-gray-600">{p.address}</p>
-              <p className="mt-1 text-xs text-gray-500">
-                {stateLabel(p.state)} · PCN: {p.pcnLicenseNumber} · {p.phone} · owner:{' '}
-                {p.ownerEmail ?? p.ownerPhone} ·{' '}
-                {p.inventoryCount} drugs listed
-              </p>
+        <li key={p.id}>
+          <Card>
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold text-gray-900 dark:text-gray-100">{p.name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{p.address}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                  {stateLabel(p.state)} · PCN: {p.pcnLicenseNumber} · {p.phone} · owner:{' '}
+                  {p.ownerEmail ?? p.ownerPhone} ·{' '}
+                  {p.inventoryCount} drugs listed
+                </p>
+              </div>
+              <Badge tone={STATUS_TONE[p.verificationStatus]}>{p.verificationStatus}</Badge>
             </div>
-            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[p.verificationStatus]}`}>
-              {p.verificationStatus}
-            </span>
-          </div>
-          <div className="mt-3 flex gap-2">
-            {p.verificationStatus !== 'APPROVED' && (
-              <button
-                onClick={() => onSetStatus(p.id, 'APPROVED')}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white"
+            <div className="mt-3 flex items-center gap-2">
+              {p.verificationStatus !== 'APPROVED' && (
+                <Button size="sm" onClick={() => onSetStatus(p.id, 'APPROVED')}>
+                  Approve
+                </Button>
+              )}
+              {p.verificationStatus !== 'REJECTED' && (
+                <Button size="sm" variant="destructive" onClick={() => onSetStatus(p.id, 'REJECTED')}>
+                  Reject
+                </Button>
+              )}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${p.latitude ?? ''},${p.longitude ?? ''}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto text-sm text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
               >
-                Approve
-              </button>
-            )}
-            {p.verificationStatus !== 'REJECTED' && (
-              <button
-                onClick={() => onSetStatus(p.id, 'REJECTED')}
-                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700"
-              >
-                Reject
-              </button>
-            )}
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${p.latitude ?? ''},${p.longitude ?? ''}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-auto self-center text-sm text-emerald-700 underline"
-            >
-              View pin
-            </a>
-          </div>
+                View pin
+              </a>
+            </div>
+          </Card>
         </li>
       ))}
     </ul>
@@ -269,68 +266,65 @@ function PharmacistsTab({
     onChanged()
   }
 
-  const inputCls =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500'
-
   return (
     <div>
-      <form onSubmit={create} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="mb-1 font-semibold text-gray-900">Create a pharmacist account</p>
-        <p className="mb-3 text-xs text-gray-500">
-          Pharmacists are a vetted role — there is no public sign-up. Verify their license yourself,
-          then create their login here.
-        </p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <input
-            placeholder="Full name"
-            value={form.displayName}
-            onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
-            required
-            className={inputCls}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            required
-            className={inputCls}
-          />
-        </div>
-        {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
-        {created && (
-          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-            <p className="font-medium">
-              Account created for {created.email}. Share this temporary password with them — it
-              won&apos;t be shown again:
-            </p>
-            <p className="mt-1 font-mono text-base font-bold">{created.tempPassword}</p>
+      <Card>
+        <form onSubmit={create}>
+          <p className="mb-1 font-semibold text-gray-900 dark:text-gray-100">Create a pharmacist account</p>
+          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+            Pharmacists are a vetted role — there is no public sign-up. Verify their license yourself,
+            then create their login here.
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Full name" htmlFor="pharmacist-name">
+              <Input
+                id="pharmacist-name"
+                value={form.displayName}
+                onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+                required
+              />
+            </Field>
+            <Field label="Email" htmlFor="pharmacist-email">
+              <Input
+                id="pharmacist-email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                required
+              />
+            </Field>
           </div>
-        )}
-        <button
-          type="submit"
-          disabled={busy}
-          className="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {busy ? 'Creating…' : 'Create pharmacist account'}
-        </button>
-      </form>
+          {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          {created && (
+            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <p className="font-medium">
+                Account created for {created.email}. Share this temporary password with them — it
+                won&apos;t be shown again:
+              </p>
+              <p className="mt-1 font-mono text-base font-bold">{created.tempPassword}</p>
+            </div>
+          )}
+          <Button type="submit" loading={busy} className="mt-3">
+            {busy ? 'Creating…' : 'Create pharmacist account'}
+          </Button>
+        </form>
+      </Card>
 
-      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
         {pharmacists.length === 0 && (
-          <li className="px-4 py-6 text-center text-sm text-gray-500">No pharmacist accounts yet.</li>
+          <li className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No pharmacist accounts yet.</li>
         )}
         {pharmacists.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-              <p className="truncate font-medium text-gray-900">{p.displayName ?? 'Unnamed'}</p>
-              <p className="truncate text-xs text-gray-500">
+              <p className="truncate font-medium text-gray-900 dark:text-gray-100">{p.displayName ?? 'Unnamed'}</p>
+              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                 {p.email ?? p.phone} · claimed {p.claimedCount} conversation{p.claimedCount === 1 ? '' : 's'}
               </p>
             </div>
             <button
               onClick={() => revoke(p.id, p.displayName ?? p.email ?? 'this pharmacist')}
-              className="shrink-0 text-sm font-medium text-red-600 underline"
+              className="shrink-0 cursor-pointer text-sm font-medium text-red-600 underline underline-offset-2 dark:text-red-400"
             >
               Revoke
             </button>
@@ -387,55 +381,62 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
     }
   }
 
-  const inputCls =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-emerald-500'
-
   return (
     <div>
-      <form onSubmit={save} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="mb-3 font-semibold text-gray-900">
-          {editingId ? 'Edit drug' : 'Add a drug to the master list'}
-        </p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <input placeholder="Generic name" value={form.genericName} onChange={(e) => setForm((f) => ({ ...f, genericName: e.target.value }))} required className={inputCls} />
-          <input placeholder="Strength, e.g. 500 mg" value={form.strength} onChange={(e) => setForm((f) => ({ ...f, strength: e.target.value }))} required className={inputCls} />
-          <input placeholder="Brand names (comma-separated)" value={form.brandNames} onChange={(e) => setForm((f) => ({ ...f, brandNames: e.target.value }))} className={inputCls} />
-          <select value={form.form} onChange={(e) => setForm((f) => ({ ...f, form: e.target.value }))} className={inputCls}>
-            {FORMS.map((f) => (
-              <option key={f} value={f}>{f.charAt(0) + f.slice(1).toLowerCase()}</option>
-            ))}
-          </select>
-        </div>
-        {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
-        <div className="mt-3 flex gap-2">
-          <button type="submit" disabled={busy} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-            {editingId ? 'Save changes' : 'Add drug'}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={() => { setEditingId(null); setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET' }) }}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+      <Card>
+        <form onSubmit={save}>
+          <p className="mb-3 font-semibold text-gray-900 dark:text-gray-100">
+            {editingId ? 'Edit drug' : 'Add a drug to the master list'}
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Generic name" htmlFor="drug-generic">
+              <Input id="drug-generic" value={form.genericName} onChange={(e) => setForm((f) => ({ ...f, genericName: e.target.value }))} required />
+            </Field>
+            <Field label="Strength" htmlFor="drug-strength">
+              <Input id="drug-strength" placeholder="e.g. 500 mg" value={form.strength} onChange={(e) => setForm((f) => ({ ...f, strength: e.target.value }))} required />
+            </Field>
+            <Field label="Brand names" hint="(comma-separated)" htmlFor="drug-brands">
+              <Input id="drug-brands" value={form.brandNames} onChange={(e) => setForm((f) => ({ ...f, brandNames: e.target.value }))} />
+            </Field>
+            <Field label="Form" htmlFor="drug-form">
+              <Select id="drug-form" value={form.form} onChange={(e) => setForm((f) => ({ ...f, form: e.target.value }))}>
+                {FORMS.map((f) => (
+                  <option key={f} value={f}>{f.charAt(0) + f.slice(1).toLowerCase()}</option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+          {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          <div className="mt-3 flex gap-2">
+            <Button type="submit" loading={busy}>
+              {editingId ? 'Save changes' : 'Add drug'}
+            </Button>
+            {editingId && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => { setEditingId(null); setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET' }) }}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>
+      </Card>
 
-      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
         {drugs.map((d) => (
           <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-              <p className="truncate font-medium text-gray-900">
+              <p className="truncate font-medium text-gray-900 dark:text-gray-100">
                 {d.genericName} {d.strength}{' '}
-                <span className="text-xs font-normal text-gray-500">{d.form.toLowerCase()}</span>
+                <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{d.form.toLowerCase()}</span>
               </p>
-              <p className="truncate text-xs text-gray-500">
+              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                 {d.brandNames.length > 0 ? d.brandNames.join(', ') : 'no brands listed'} · stocked by {d.stockedByCount}
               </p>
             </div>
-            <button onClick={() => startEdit(d)} className="shrink-0 text-sm font-medium text-emerald-700 underline">
+            <button onClick={() => startEdit(d)} className="shrink-0 cursor-pointer text-sm font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
               Edit
             </button>
           </li>
@@ -446,37 +447,37 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
 }
 
 function GapsTab({ analytics }: { analytics: Analytics | null }) {
-  if (!analytics) return <p className="py-8 text-center text-gray-500">Loading analytics…</p>
+  if (!analytics) return <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading analytics…</p>
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
-          <p className="text-3xl font-bold text-gray-900">{analytics.totalSearches}</p>
-          <p className="text-sm text-gray-600">total searches</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm">
-          <p className="text-3xl font-bold text-amber-600">{analytics.noResultSearches}</p>
-          <p className="text-sm text-gray-600">found nothing</p>
-        </div>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.totalSearches}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">total searches</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{analytics.noResultSearches}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">found nothing</p>
+        </Card>
       </div>
 
       <section>
-        <h2 className="mb-2 font-semibold text-gray-900">Drugs searched but out of stock everywhere</h2>
-        <p className="mb-3 text-sm text-gray-600">
+        <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Drugs searched but out of stock everywhere</h2>
+        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
           These drugs are in the list, but no approved pharmacy had them — stock gaps worth chasing.
         </p>
         {analytics.stockGaps.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500">Nothing yet.</p>
+          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">Nothing yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
             {analytics.stockGaps.map((g) => (
               <li key={g.drugId} className="flex items-center justify-between px-4 py-3">
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-gray-900 dark:text-gray-100">
                   {g.genericName} {g.strength}{' '}
-                  <span className="text-xs font-normal text-gray-500">{g.form.toLowerCase()}</span>
+                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{g.form.toLowerCase()}</span>
                 </span>
-                <span className="text-sm text-gray-600">{g.searches}×</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{g.searches}×</span>
               </li>
             ))}
           </ul>
@@ -484,18 +485,18 @@ function GapsTab({ analytics }: { analytics: Analytics | null }) {
       </section>
 
       <section>
-        <h2 className="mb-2 font-semibold text-gray-900">Searches that matched no drug</h2>
-        <p className="mb-3 text-sm text-gray-600">
+        <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Searches that matched no drug</h2>
+        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
           What people typed that isn&apos;t in the master list — candidates to add.
         </p>
         {analytics.unmatchedQueries.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500">Nothing yet.</p>
+          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">Nothing yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
             {analytics.unmatchedQueries.map((q) => (
               <li key={q.queryText} className="flex items-center justify-between px-4 py-3">
-                <span className="font-medium text-gray-900">“{q.queryText}”</span>
-                <span className="text-sm text-gray-600">{q.searches}×</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">“{q.queryText}”</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{q.searches}×</span>
               </li>
             ))}
           </ul>
