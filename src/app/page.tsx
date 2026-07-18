@@ -6,11 +6,43 @@ import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
 import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, drugLabel, directionsUrl } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
-import Logo from '@/components/ui/Logo'
+import SiteHeader from '@/components/ui/SiteHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
+import HeroGraphic from '@/components/ui/HeroGraphic'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Select } from '@/components/ui/Field'
-import { IconAlertCircle, IconMapPin, IconPhone, IconRoute, IconX } from '@/components/ui/icons'
+import {
+  IconAlertCircle,
+  IconMapPin,
+  IconMessageCircle,
+  IconPhone,
+  IconRoute,
+  IconSearch,
+  IconStore,
+  IconX,
+} from '@/components/ui/icons'
+
+const FEATURE_CARDS = [
+  {
+    icon: IconSearch,
+    title: 'Find Your Medicine',
+    cta: 'Search now',
+    href: '#search',
+  },
+  {
+    icon: IconMessageCircle,
+    title: 'Ask a Pharmacist',
+    cta: 'Chat now',
+    href: '/prescriptions',
+  },
+  {
+    icon: IconStore,
+    title: 'Register Your Pharmacy',
+    cta: 'Register now',
+    href: '/pharmacy/register',
+  },
+] as const
 
 // Leaflet touches `window` — client-only
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
@@ -270,15 +302,58 @@ export default function Home() {
   const selectedLabel = selectedState ? stateLabel(selectedState) : null
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-10">
-      <header className="flex flex-col items-center gap-2 py-8 text-center">
-        <Logo size="lg" href={null} tagline="Nigeria" />
-        <p className="max-w-sm text-sm text-gray-600 dark:text-gray-400">
-          Find which pharmacies near you have your medicine in stock
-        </p>
-      </header>
+    <div className="flex min-h-dvh w-full flex-col">
+      <SiteHeader />
 
-      <Card className="mb-3" padded={false}>
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
+      {state.kind === 'idle' && (
+        <>
+          <section className="grid items-center gap-8 py-10 md:grid-cols-2 md:gap-10 md:py-16">
+            <div>
+              <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
+                Nationwide Pharmacy Network
+              </p>
+              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50">
+                Find Medicine In Stock Near You
+              </h1>
+              <p className="mt-4 max-w-md text-gray-600 dark:text-gray-400">
+                Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in
+                stock nearby, and get directions or call — free, across Nigeria.
+              </p>
+            </div>
+            <HeroGraphic />
+          </section>
+
+          <section className="grid gap-4 pb-10 sm:grid-cols-3">
+            {FEATURE_CARDS.map(({ icon: Icon, title, cta, href }) => {
+              const cardClass =
+                'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-colors hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
+              const inner = (
+                <>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950">
+                    <Icon width={22} height={22} />
+                  </div>
+                  <p className="font-bold text-gray-900 dark:text-gray-50">{title}</p>
+                  <span className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors group-hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950">
+                    {cta}
+                  </span>
+                </>
+              )
+              return href.startsWith('#') ? (
+                <a key={title} href={href} className={cardClass}>
+                  {inner}
+                </a>
+              ) : (
+                <Link key={title} href={href} className={cardClass}>
+                  {inner}
+                </Link>
+              )
+            })}
+          </section>
+        </>
+      )}
+
+      <Card id="search" className="mb-3 scroll-mt-20" padded={false}>
         <div className="space-y-3 p-4">
           <Field label="Searching in" htmlFor="state-picker">
             <Select
@@ -330,15 +405,10 @@ export default function Home() {
 
       <main className="mt-5 flex-1">
         {state.kind === 'idle' && selectedState && (
-          <div className="mt-10 flex flex-col items-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <IconMapPin width={26} height={26} />
-            </div>
-            <p className="mt-4 max-w-xs text-gray-500 dark:text-gray-400">
-              Search by generic name (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Paracetamol</span>) or brand
-              (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Panadol</span>)
-            </p>
-          </div>
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Search by generic name (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Paracetamol</span>) or brand
+            (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Panadol</span>)
+          </p>
         )}
 
         {state.kind === 'loading' && (
@@ -435,32 +505,35 @@ export default function Home() {
             )}
 
             <div className="md:grid md:grid-cols-2 md:gap-4">
-              <ul className={`space-y-3 ${view === 'map' ? 'hidden md:block' : ''}`}>
+              <ul className={`space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
                 {results.map((r) => (
-                  <li key={r.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{r.address}</p>
-                        <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
-                          <IconPhone width={12} height={12} /> {r.phone}
-                        </p>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
-                        {r.distanceKm.toFixed(1)} km
+                  <li key={r.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                    <div className="relative flex h-24 items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-700 dark:from-emerald-600 dark:to-emerald-900">
+                      <IconMapPin width={36} height={36} className="text-white/90" />
+                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-emerald-700 shadow-sm dark:bg-gray-950/90 dark:text-emerald-400">
+                        {r.distanceKm.toFixed(1)} km away
                       </span>
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <Button
-                        variant="primary"
-                        size="md"
-                        onClick={() => showRoute(r)}
-                        loading={routeBusyId === r.id}
-                        className="flex-1"
-                      >
-                        <IconRoute width={16} height={16} />
-                        {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
-                      </Button>
+                    <div className="p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                        Pharmacy
+                      </p>
+                      <p className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{r.address}</p>
+                      <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
+                        <IconPhone width={12} height={12} /> {r.phone}
+                      </p>
+                      <div className="mt-3 flex gap-2">
+                        <Button
+                          variant="primary"
+                          size="md"
+                          onClick={() => showRoute(r)}
+                          loading={routeBusyId === r.id}
+                          className="flex-1"
+                        >
+                          <IconRoute width={16} height={16} />
+                          {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
+                        </Button>
                       <a
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
                         onClick={(e) => handleCall(e, r.phone)}
@@ -469,6 +542,7 @@ export default function Home() {
                         <IconPhone width={16} height={16} />
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -489,19 +563,9 @@ export default function Home() {
           </>
         )}
       </main>
+      </div>
 
-      <footer className="mt-10 space-y-2 border-t border-gray-100 pt-6 text-center text-xs text-gray-400 dark:border-gray-800 dark:text-gray-500">
-        <p>
-          <Link href="/prescriptions" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
-            Confused by a prescription? Ask a licensed pharmacist
-          </Link>
-        </p>
-        <p>
-          <Link href="/pharmacy" className="underline underline-offset-2 hover:text-gray-600 dark:hover:text-gray-300">
-            Own a pharmacy? Register here
-          </Link>
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

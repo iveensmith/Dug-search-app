@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import PrescriptionDisclaimer from '@/components/PrescriptionDisclaimer'
+import SiteHeader from '@/components/ui/SiteHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -82,17 +84,14 @@ export default function PrescriptionsPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <header className="flex items-center justify-between gap-3 py-6">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">Ask a pharmacist</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Upload a prescription you don&apos;t understand — a licensed pharmacist will explain it
-          </p>
-        </div>
-        <Link href="/" className="shrink-0 text-sm text-gray-500 underline underline-offset-2 dark:text-gray-400">
-          Search
-        </Link>
+    <div className="flex min-h-dvh w-full flex-col">
+      <SiteHeader />
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <header className="py-6">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">Ask a pharmacist</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Upload a prescription you don&apos;t understand — a licensed pharmacist will explain it
+        </p>
       </header>
 
       <PrescriptionDisclaimer />
@@ -171,6 +170,8 @@ export default function PrescriptionsPage() {
           })}
         </ul>
       )}
+      </div>
+      <SiteFooter />
     </div>
   )
 }

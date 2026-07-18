@@ -4,7 +4,8 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue } from '@/lib/states'
-import Logo from '@/components/ui/Logo'
+import SiteHeader from '@/components/ui/SiteHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -48,11 +49,13 @@ function RegisterForm() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-10">
-      <div className="mb-8 flex flex-col items-center gap-2 text-center">
-        <Logo size="lg" />
-        <p className="text-sm text-gray-600 dark:text-gray-400">Create a patient account</p>
-      </div>
+    <div className="flex min-h-dvh w-full flex-col">
+      <SiteHeader />
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Create your account</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">For patients — free, takes a minute</p>
+        </div>
 
       <Card>
         <form onSubmit={submit} className="space-y-4">
@@ -106,12 +109,14 @@ function RegisterForm() {
         </form>
       </Card>
 
-      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-        Already have an account?{' '}
-        <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
-          Log in
-        </Link>
-      </p>
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          Already have an account?{' '}
+          <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+            Log in
+          </Link>
+        </p>
+      </div>
+      <SiteFooter />
     </div>
   )
 }

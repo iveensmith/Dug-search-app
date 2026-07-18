@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue, stateCenter, stateLabel } from '@/lib/states'
-import Logo from '@/components/ui/Logo'
+import SiteHeader from '@/components/ui/SiteHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -121,10 +122,12 @@ export default function PharmacyRegisterPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <header className="flex flex-col items-center gap-2 py-8 text-center">
-        <Logo size="lg" />
-        <p className="text-sm text-gray-600 dark:text-gray-400">Register your pharmacy</p>
+    <div className="flex min-h-dvh w-full flex-col">
+      <SiteHeader />
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <header className="py-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Register your pharmacy</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
       </header>
 
       <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
@@ -238,6 +241,8 @@ export default function PharmacyRegisterPage() {
           </p>
         </form>
       </Card>
+      </div>
+      <SiteFooter />
     </div>
   )
 }
