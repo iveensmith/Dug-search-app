@@ -71,7 +71,7 @@ export const PHARMACIES: PharmacySeed[] = [
   { name: 'Rehoboth Pharmacy', slug: 'rehoboth', address: '118 Nwaniba Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0246, longitude: 7.9553, phone: '+234 803 111 0007', verificationStatus: 'APPROVED' },
   { name: 'CityMed Pharmacy', slug: 'citymed', address: '9 Udo Udoma Avenue, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0348, longitude: 7.9302, phone: '+234 803 111 0008', verificationStatus: 'APPROVED' },
   { name: 'Goodness Pharmacy', slug: 'goodness', address: '52 Ikpa Road, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0479, longitude: 7.9058, phone: '+234 803 111 0009', verificationStatus: 'PENDING' },
-  { name: 'Emem Pharmacy', slug: 'emem', address: '31 Wellington Bassey Way, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0396, longitude: 7.9147, phone: '+234 803 111 0010', verificationStatus: 'REJECTED' },
+  { name: 'Emem Pharmacy', slug: 'emem', address: '31 Wellington Bassey Way, Uyo', state: 'AKWA_IBOM', stateAbbr: 'AKS', latitude: 5.0371, longitude: 7.9314, phone: '+234 803 111 0010', verificationStatus: 'REJECTED' },
   { name: 'LagosMeds Pharmacy', slug: 'lagosmeds', address: '18 Awolowo Way, Ikeja, Lagos', state: 'LAGOS', stateAbbr: 'LAG', latitude: 6.6059, longitude: 3.3491, phone: '+234 803 111 0011', verificationStatus: 'APPROVED' },
   { name: 'Ikeja Central Pharmacy', slug: 'ikeja', address: '7 Allen Avenue, Ikeja, Lagos', state: 'LAGOS', stateAbbr: 'LAG', latitude: 6.5952, longitude: 3.3421, phone: '+234 803 111 0012', verificationStatus: 'APPROVED' },
 ]
