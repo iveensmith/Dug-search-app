@@ -135,7 +135,7 @@ function LoginForm() {
             <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
               New pharmacy?{' '}
               <Link href="/pharmacy/register" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
-                Register it here
+                Add it here
               </Link>
             </p>
             <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">

@@ -38,7 +38,7 @@ const FEATURE_CARDS = [
   },
   {
     icon: IconStore,
-    title: 'Register Your Pharmacy',
+    title: 'Add Your Pharmacy Outlet',
     cta: 'Register now',
     href: '/pharmacy/register',
   },

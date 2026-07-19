@@ -28,7 +28,7 @@ export default function SiteFooter() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-200">For pharmacies</p>
           <ul className="mt-3 space-y-2 text-sm">
-            <li><Link href="/pharmacy/register" className="text-emerald-100/90 hover:text-white">Register your pharmacy</Link></li>
+            <li><Link href="/pharmacy/register" className="text-emerald-100/90 hover:text-white">Add your pharmacy outlet</Link></li>
             <li><Link href="/login" className="text-emerald-100/90 hover:text-white">Pharmacy / staff login</Link></li>
           </ul>
         </div>

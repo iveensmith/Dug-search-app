@@ -126,7 +126,7 @@ export default function PharmacyRegisterPage() {
       <SiteHeader />
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
       <header className="py-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Register your pharmacy</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Add your pharmacy outlet</h1>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
       </header>
 
@@ -230,7 +230,7 @@ export default function PharmacyRegisterPage() {
           {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 
           <Button type="submit" loading={busy} className="w-full" size="lg">
-            {busy ? 'Submitting…' : 'Register pharmacy'}
+            {busy ? 'Submitting…' : 'Add pharmacy outlet'}
           </Button>
 
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">

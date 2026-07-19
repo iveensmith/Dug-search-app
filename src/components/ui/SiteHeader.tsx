@@ -10,7 +10,7 @@ import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
 const NAV_LINKS = [
   { href: '/', label: 'Find medicine' },
   { href: '/prescriptions', label: 'Ask a pharmacist' },
-  { href: '/pharmacy/register', label: 'Register your pharmacy' },
+  { href: '/pharmacy/register', label: 'Add your pharmacy outlet' },
 ]
 
 type Role = 'PATIENT' | 'PHARMACY_OWNER' | 'PHARMACIST' | 'ADMIN'
