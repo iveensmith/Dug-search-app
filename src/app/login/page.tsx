@@ -8,6 +8,7 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
+import { setWelcomeName } from '@/components/ui/WelcomeToast'
 import { HOME_BY_ROLE } from '@/lib/roles'
 
 type Portal = 'patient' | 'pharmacy'
@@ -37,6 +38,7 @@ function LoginForm() {
         setError(data.error ?? 'Login failed')
         return
       }
+      setWelcomeName(data.user.displayName)
       router.push(next ?? HOME_BY_ROLE[data.user.role] ?? '/')
     } catch {
       setError('Network problem — try again')
@@ -75,7 +77,7 @@ function LoginForm() {
 
         <Card>
           <form onSubmit={submit} className="space-y-4">
-            <Field label={portal === 'patient' ? 'Email or phone' : 'Owner email'} htmlFor="identifier">
+            <Field label={portal === 'patient' ? 'Email' : 'Owner email'} htmlFor="identifier">
               <Input
                 id="identifier"
                 value={identifier}

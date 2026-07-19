@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import WelcomeToast from '@/components/ui/WelcomeToast'
+import { DASHBOARD_HREF, DASHBOARD_LABEL } from '@/lib/roles'
 import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
 
 const NAV_LINKS: { href: string; label: string }[] = [
@@ -15,19 +17,6 @@ const NAV_LINKS: { href: string; label: string }[] = [
 
 type Role = 'PATIENT' | 'PHARMACY_OWNER' | 'PHARMACIST' | 'ADMIN'
 type Me = { displayName: string | null; role: Role } | null
-
-const DASHBOARD_HREF: Record<Role, string> = {
-  PATIENT: '/search-history',
-  PHARMACY_OWNER: '/pharmacy',
-  PHARMACIST: '/pharmacist',
-  ADMIN: '/admin',
-}
-const DASHBOARD_LABEL: Record<Role, string> = {
-  PATIENT: 'Search history',
-  PHARMACY_OWNER: 'Pharmacy dashboard',
-  PHARMACIST: 'Pharmacist desk',
-  ADMIN: 'Admin panel',
-}
 
 export default function SiteHeader() {
   const pathname = usePathname()
@@ -62,6 +51,7 @@ export default function SiteHeader() {
 
   return (
     <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
+      <WelcomeToast />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
           <LogoMark size="sm" />
@@ -94,7 +84,7 @@ export default function SiteHeader() {
           ) : me ? (
             <>
               <Link
-                href={DASHBOARD_HREF[me.role]}
+                href="/account"
                 className="text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
               >
                 {me.displayName ? `Hi, ${me.displayName.split(' ')[0]}` : DASHBOARD_LABEL[me.role]}
@@ -151,6 +141,16 @@ export default function SiteHeader() {
             ))}
             {me ? (
               <>
+                <li>
+                  <Link
+                    href="/account"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
+                  >
+                    <IconUser width={16} height={16} />
+                    {me.displayName ? `Hi, ${me.displayName.split(' ')[0]}` : 'My account'}
+                  </Link>
+                </li>
                 <li>
                   <Link
                     href={DASHBOARD_HREF[me.role]}

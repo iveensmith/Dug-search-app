@@ -2,6 +2,7 @@ import { type ReactNode } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import WelcomeToast from '@/components/ui/WelcomeToast'
 import { IconLogOut } from '@/components/ui/icons'
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
 export default function AppHeader({ title, subtitle, onLogout, backHref = '/' }: Props) {
   return (
     <header className="flex items-center justify-between gap-3 py-6">
+      <WelcomeToast />
       <div className="flex min-w-0 items-center gap-3">
         <Link href={backHref} className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
           <LogoMark size="sm" />

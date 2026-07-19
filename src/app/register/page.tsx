@@ -13,7 +13,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [form, setForm] = useState({ displayName: '', contact: '', password: '' })
+  const [form, setForm] = useState({ displayName: '', email: '', password: '' })
   const [homeState, setHomeState] = useState<NigerianStateValue | ''>('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -22,15 +22,13 @@ function RegisterForm() {
     e.preventDefault()
     setBusy(true)
     setError('')
-    const isEmail = form.contact.includes('@')
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           displayName: form.displayName || undefined,
-          email: isEmail ? form.contact : undefined,
-          phone: isEmail ? undefined : form.contact,
+          email: form.email,
           password: form.password,
           state: homeState || undefined,
         }),
@@ -66,13 +64,15 @@ function RegisterForm() {
               onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
             />
           </Field>
-          <Field label="Email or phone number" htmlFor="contact">
+          <Field label="Email" htmlFor="email">
             <Input
-              id="contact"
-              value={form.contact}
-              onChange={(e) => setForm((f) => ({ ...f, contact: e.target.value }))}
+              id="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               required
-              placeholder="e.g. 0803 123 4567 or you@example.com"
+              autoComplete="username"
+              placeholder="you@example.com"
             />
           </Field>
           <Field label="Password" hint="(min 8 characters)" htmlFor="password">
