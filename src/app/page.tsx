@@ -14,8 +14,6 @@ import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import NotifyMeForm from '@/components/NotifyMeForm'
-import { useLocale } from '@/lib/i18n/LocaleProvider'
-import type { DictKey } from '@/lib/i18n/dictionary'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -31,23 +29,23 @@ import {
 const FEATURE_CARDS = [
   {
     icon: IconSearch,
-    titleKey: 'feature.findMedicine.title',
-    ctaKey: 'feature.findMedicine.cta',
+    title: 'Find Your Medicine',
+    cta: 'Search now',
     href: '#search',
   },
   {
     icon: IconMessageCircle,
-    titleKey: 'feature.askPharmacist.title',
-    ctaKey: 'feature.askPharmacist.cta',
+    title: 'Ask a Pharmacist',
+    cta: 'Chat now',
     href: '/prescriptions',
   },
   {
     icon: IconStore,
-    titleKey: 'feature.addPharmacy.title',
-    ctaKey: 'feature.addPharmacy.cta',
+    title: 'Add Your Pharmacy Outlet',
+    cta: 'Register now',
     href: '/pharmacy/register',
   },
-] as const satisfies { icon: typeof IconSearch; titleKey: DictKey; ctaKey: DictKey; href: string }[]
+] as const satisfies { icon: typeof IconSearch; title: string; cta: string; href: string }[]
 
 // Leaflet touches `window` — client-only
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
@@ -96,7 +94,6 @@ async function detectStateFromPosition(pos: Pos): Promise<NigerianStateValue | n
 }
 
 export default function Home() {
-  const { t } = useLocale()
   const [state, setState] = useState<SearchState>({ kind: 'idle' })
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
   const [detectingState, setDetectingState] = useState(true)
@@ -324,18 +321,21 @@ export default function Home() {
           <section className="grid items-center gap-8 py-10 md:grid-cols-2 md:gap-10 md:py-16">
             <div>
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
-                {t('hero.eyebrow')}
+                Nationwide Pharmacy Network
               </p>
               <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50">
-                {t('hero.title')}
+                Find Medicine In Stock Near You
               </h1>
-              <p className="mt-4 max-w-md text-gray-600 dark:text-gray-400">{t('hero.description')}</p>
+              <p className="mt-4 max-w-md text-gray-600 dark:text-gray-400">
+                Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
+                nearby, and get directions or call — free, across Nigeria.
+              </p>
             </div>
             <HeroGraphic />
           </section>
 
           <section className="grid gap-4 pb-10 sm:grid-cols-3">
-            {FEATURE_CARDS.map(({ icon: Icon, titleKey, ctaKey, href }) => {
+            {FEATURE_CARDS.map(({ icon: Icon, title, cta, href }) => {
               const cardClass =
                 'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-colors hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
               const inner = (
@@ -343,18 +343,18 @@ export default function Home() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950">
                     <Icon width={22} height={22} />
                   </div>
-                  <p className="font-bold text-gray-900 dark:text-gray-50">{t(titleKey)}</p>
+                  <p className="font-bold text-gray-900 dark:text-gray-50">{title}</p>
                   <span className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors group-hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950">
-                    {t(ctaKey)}
+                    {cta}
                   </span>
                 </>
               )
               return href.startsWith('#') ? (
-                <a key={titleKey} href={href} className={cardClass}>
+                <a key={title} href={href} className={cardClass}>
                   {inner}
                 </a>
               ) : (
-                <Link key={titleKey} href={href} className={cardClass}>
+                <Link key={title} href={href} className={cardClass}>
                   {inner}
                 </Link>
               )
@@ -365,7 +365,7 @@ export default function Home() {
 
       <Card id="search" className="mb-3 scroll-mt-20" padded={false}>
         <div className="space-y-3 p-4">
-          <Field label={t('search.stateLabel')} htmlFor="state-picker">
+          <Field label="Searching in" htmlFor="state-picker">
             <Select
               id="state-picker"
               value={selectedState ?? ''}
@@ -387,7 +387,7 @@ export default function Home() {
       </Card>
 
       {!selectedState && !detectingState && (
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400">{t('search.pickStateHint')}</p>
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">Pick your state above to search pharmacies there</p>
       )}
 
       {selectedState && userPos ? (
@@ -590,7 +590,7 @@ export default function Home() {
                           className="flex-1"
                         >
                           <IconRoute width={16} height={16} />
-                          {routeBusyId === r.id ? 'Loading route…' : t('results.directions')}
+                          {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
                         </Button>
                       <a
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
@@ -598,7 +598,7 @@ export default function Home() {
                         className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-600/60 px-3 py-2.5 text-center text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 active:bg-emerald-100 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
                       >
                         <IconPhone width={16} height={16} />
-                        {copiedPhone === r.phone ? 'Copied ✓' : t('results.call')}
+                        {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
                       </div>
                     </div>

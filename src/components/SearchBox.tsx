@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import Button from '@/components/ui/Button'
-import { useLocale } from '@/lib/i18n/LocaleProvider'
 import { IconSearch } from '@/components/ui/icons'
 
 type Props = {
@@ -13,7 +12,6 @@ type Props = {
 }
 
 export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
-  const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
   const [open, setOpen] = useState(false)
@@ -111,7 +109,7 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
             }}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
-            placeholder={t('search.placeholder')}
+            placeholder="Search a drug, e.g. Paracetamol or Panadol"
             className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-4 text-base text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900 dark:disabled:bg-gray-800"
             aria-label="Search for a drug"
             autoComplete="off"
@@ -119,7 +117,7 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
           />
         </div>
         <Button onClick={submit} disabled={disabled} size="lg" className="shrink-0">
-          {t('search.button')}
+          Search
         </Button>
       </div>
 

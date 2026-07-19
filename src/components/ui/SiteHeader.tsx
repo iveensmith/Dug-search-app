@@ -5,15 +5,12 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
-import LanguageToggle from '@/components/ui/LanguageToggle'
-import { useLocale } from '@/lib/i18n/LocaleProvider'
-import type { DictKey } from '@/lib/i18n/dictionary'
 import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
 
-const NAV_LINKS: { href: string; key: DictKey }[] = [
-  { href: '/', key: 'nav.findMedicine' },
-  { href: '/prescriptions', key: 'nav.askPharmacist' },
-  { href: '/pharmacy/register', key: 'nav.addPharmacy' },
+const NAV_LINKS: { href: string; label: string }[] = [
+  { href: '/', label: 'Find medicine' },
+  { href: '/prescriptions', label: 'Ask a pharmacist' },
+  { href: '/pharmacy/register', label: 'Add your pharmacy outlet' },
 ]
 
 type Role = 'PATIENT' | 'PHARMACY_OWNER' | 'PHARMACIST' | 'ADMIN'
@@ -35,7 +32,6 @@ const DASHBOARD_LABEL: Record<Role, string> = {
 export default function SiteHeader() {
   const pathname = usePathname()
   const router = useRouter()
-  const { t } = useLocale()
   const [open, setOpen] = useState(false)
   const [me, setMe] = useState<Me>(null)
   const [checked, setChecked] = useState(false)
@@ -85,14 +81,13 @@ export default function SiteHeader() {
                     : 'text-gray-600 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400'
                 }`}
               >
-                {t(link.key)}
+                {link.label}
               </Link>
             )
           })}
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
-          <LanguageToggle />
           <ThemeToggle />
           {!checked ? (
             <div className="h-5 w-16 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
@@ -109,7 +104,7 @@ export default function SiteHeader() {
                 className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-gray-500 transition-colors hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
               >
                 <IconLogOut width={16} height={16} />
-                {t('nav.logout')}
+                Log out
               </button>
             </>
           ) : (
@@ -118,13 +113,12 @@ export default function SiteHeader() {
               className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
             >
               <IconUser width={17} height={17} />
-              {t('nav.login')}
+              Log in
             </Link>
           )}
         </div>
 
         <div className="flex items-center gap-1 md:hidden">
-          <LanguageToggle />
           <ThemeToggle />
           <button
             onClick={() => setOpen((v) => !v)}
@@ -151,7 +145,7 @@ export default function SiteHeader() {
                       : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  {t(link.key)}
+                  {link.label}
                 </Link>
               </li>
             ))}
@@ -173,7 +167,7 @@ export default function SiteHeader() {
                     className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 dark:text-red-400"
                   >
                     <IconLogOut width={16} height={16} />
-                    {t('nav.logout')}
+                    Log out
                   </button>
                 </li>
               </>
@@ -185,7 +179,7 @@ export default function SiteHeader() {
                   className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
                 >
                   <IconUser width={16} height={16} />
-                  {t('nav.login')}
+                  Log in
                 </Link>
               </li>
             )}
