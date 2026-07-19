@@ -6,6 +6,8 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { type PharmacyResult, type ActiveRoute, directionsUrl } from '@/lib/types'
 import { IconPhone } from '@/components/ui/icons'
+import VerifiedBadge from '@/components/ui/VerifiedBadge'
+import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 
 // Inline SVG pins — avoids Leaflet's default marker image-path issues under bundlers
 const pharmacyIcon = L.divIcon({
@@ -102,7 +104,13 @@ export default function ResultsMap({ results, userPos, center, route, onRoute }:
         <Marker key={r.id} position={[r.latitude, r.longitude]} icon={pharmacyIcon}>
           <Popup>
             <div className="min-w-[180px]">
-              <p className="font-semibold">{r.name}</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-semibold">{r.name}</p>
+                <div className="flex items-center gap-1.5">
+                  <OpenStatusBadge open24h={r.open24h} opensAt={r.opensAt} closesAt={r.closesAt} />
+                  <VerifiedBadge />
+                </div>
+              </div>
               <p className="text-sm">{r.address}</p>
               <p className="mt-0.5 flex items-center gap-1 text-sm">
                 {r.distanceKm.toFixed(1)} km away

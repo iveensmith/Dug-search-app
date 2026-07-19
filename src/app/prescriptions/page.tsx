@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import PrescriptionDisclaimer from '@/components/PrescriptionDisclaimer'
+import DataPrivacyNote from '@/components/DataPrivacyNote'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
@@ -101,6 +102,9 @@ export default function PrescriptionsPage() {
           <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Photo of the prescription
           </label>
+          <div className="mb-2">
+            <DataPrivacyNote />
+          </div>
           <div className="flex items-center gap-2 rounded-xl border border-dashed border-gray-300 p-3 dark:border-gray-700">
             <IconUpload width={18} height={18} className="shrink-0 text-gray-400 dark:text-gray-500" />
             <input

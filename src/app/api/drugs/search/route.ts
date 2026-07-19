@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
   const pattern = `%${q}%`
   const drugs = await prisma.$queryRaw<DrugSuggestion[]>`
-    SELECT "id", "genericName", "brandNames", "strength", "form"
+    SELECT "id", "genericName", "brandNames", "strength", "form", "packSize"
     FROM "Drug"
     WHERE "genericName" ILIKE ${pattern}
        OR EXISTS (SELECT 1 FROM unnest("brandNames") bn WHERE bn ILIKE ${pattern})

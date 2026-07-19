@@ -5,24 +5,36 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
+import { DRUG_FORMS, formUsesPackSize, type DrugFormValue } from '@/lib/drugForms'
 import AppHeader from '@/components/ui/AppHeader'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
-import { Field, Input } from '@/components/ui/Field'
+import VerifiedBadge from '@/components/ui/VerifiedBadge'
+import { Field, Input, Select } from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
-import { IconAlertCircle, IconPlus, IconTrash, IconX } from '@/components/ui/icons'
+import { IconAlertCircle, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
   id: string
   inStock: boolean
   brand: string | null
   expiryDate: string | null
+  quantity: number | null
   updatedAt: string
   drug: DrugSuggestion
 }
 
 type Dashboard = {
-  pharmacy: { id: string; name: string; address: string; state: string; verificationStatus: string }
+  pharmacy: {
+    id: string
+    name: string
+    address: string
+    state: string
+    verificationStatus: string
+    open24h: boolean
+    opensAt: string | null
+    closesAt: string | null
+  }
   items: InventoryItem[]
 }
 
@@ -39,21 +51,235 @@ function isExpired(iso: string | null): boolean {
   return !!iso && new Date(iso) < new Date()
 }
 
+// Shared brand/expiry/quantity fields for both the "pick existing drug" and
+// "add a new drug" add-to-inventory forms.
+function AddOnFields({
+  brand,
+  onBrandChange,
+  brandSuggestions,
+  expiryDate,
+  onExpiryChange,
+  quantity,
+  onQuantityChange,
+}: {
+  brand: string
+  onBrandChange: (v: string) => void
+  brandSuggestions?: string[]
+  expiryDate: string
+  onExpiryChange: (v: string) => void
+  quantity: string
+  onQuantityChange: (v: string) => void
+}) {
+  return (
+    <>
+      <Field label="Brand" hint="(optional)" htmlFor="brand">
+        <Input
+          id="brand"
+          list={brandSuggestions ? 'brand-suggestions' : undefined}
+          value={brand}
+          onChange={(e) => onBrandChange(e.target.value)}
+          placeholder={brandSuggestions?.[0] ?? 'e.g. Panadol'}
+          autoComplete="off"
+        />
+        {brandSuggestions && (
+          <datalist id="brand-suggestions">
+            {brandSuggestions.map((b) => (
+              <option key={b} value={b} />
+            ))}
+          </datalist>
+        )}
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Expiry date" hint="(optional)" htmlFor="expiryDate">
+          <Input id="expiryDate" type="date" value={expiryDate} onChange={(e) => onExpiryChange(e.target.value)} />
+        </Field>
+        <Field label="Quantity" hint="(optional)" htmlFor="quantity">
+          <Input
+            id="quantity"
+            type="number"
+            min={0}
+            value={quantity}
+            onChange={(e) => onQuantityChange(e.target.value)}
+            placeholder="e.g. 50"
+          />
+        </Field>
+      </div>
+    </>
+  )
+}
+
+// Self-reported hours — no verification (see src/lib/hours.ts). Same every
+// day, no per-day overrides.
+function HoursCard({
+  pharmacy,
+  onSaved,
+}: {
+  pharmacy: Dashboard['pharmacy']
+  onSaved: (hours: { open24h: boolean; opensAt: string | null; closesAt: string | null }) => void
+}) {
+  const [open24h, setOpen24h] = useState(pharmacy.open24h)
+  const [opensAt, setOpensAt] = useState(pharmacy.opensAt ?? '08:00')
+  const [closesAt, setClosesAt] = useState(pharmacy.closesAt ?? '21:00')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  async function save() {
+    setSaving(true)
+    setSaved(false)
+    try {
+      const res = await fetch('/api/pharmacy/hours', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ open24h, opensAt: open24h ? null : opensAt, closesAt: open24h ? null : closesAt }),
+      })
+      if (res.ok) {
+        onSaved(await res.json())
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Card className="mb-4">
+      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Hours</p>
+      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <input
+          type="checkbox"
+          checked={open24h}
+          onChange={(e) => setOpen24h(e.target.checked)}
+          className="h-4 w-4 accent-emerald-600"
+        />
+        Open 24 hours
+      </label>
+      {!open24h && (
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <Field label="Opens" htmlFor="opensAt">
+            <Input id="opensAt" type="time" value={opensAt} onChange={(e) => setOpensAt(e.target.value)} />
+          </Field>
+          <Field label="Closes" htmlFor="closesAt">
+            <Input id="closesAt" type="time" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} />
+          </Field>
+        </div>
+      )}
+      <Button size="sm" className="mt-3" onClick={save} loading={saving}>
+        {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save hours'}
+      </Button>
+    </Card>
+  )
+}
+
+type BulkResult = { created: number; updated: number; errors: { row: number; message: string }[] }
+
+// Columns match POST /api/inventory/bulk exactly — see that route for the
+// per-column parsing rules (only genericName/strength/form required).
+function BulkUploadPanel({ onImported }: { onImported: () => void }) {
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<BulkResult | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  function downloadTemplate() {
+    const csv =
+      'genericName,strength,form,packSize,brand,quantity,expiryDate,inStock\n' +
+      'Paracetamol,500 mg,TABLET,,Panadol,100,2027-06-30,true\n'
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'pharmafinder-inventory-template.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function upload() {
+    const file = fileRef.current?.files?.[0]
+    if (!file) return
+    setBusy(true)
+    setResult(null)
+    try {
+      const csv = await file.text()
+      const res = await fetch('/api/inventory/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csv }),
+      })
+      setResult(await res.json())
+      if (fileRef.current) fileRef.current.value = ''
+      onImported()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card>
+      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Bulk upload from CSV</p>
+      <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+        Columns: genericName, strength, form, packSize, brand, quantity, expiryDate, inStock — only
+        the first three are required.
+      </p>
+      <Button variant="outline" size="sm" type="button" onClick={downloadTemplate}>
+        Download template CSV
+      </Button>
+
+      <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-gray-300 p-3 dark:border-gray-700">
+        <IconUpload width={18} height={18} className="shrink-0 text-gray-400 dark:text-gray-500" />
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-700 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
+        />
+      </div>
+      <Button className="mt-3 w-full" loading={busy} onClick={upload}>
+        {busy ? 'Uploading…' : 'Upload'}
+      </Button>
+
+      {result && (
+        <div className="mt-4 rounded-xl border border-gray-200 p-3 text-sm dark:border-gray-800">
+          <p className="font-medium text-gray-900 dark:text-gray-100">
+            {result.created} added, {result.updated} updated
+            {result.errors.length > 0 ? `, ${result.errors.length} skipped` : ''}
+          </p>
+          {result.errors.length > 0 && (
+            <ul className="mt-2 space-y-1 text-xs text-red-600 dark:text-red-400">
+              {result.errors.slice(0, 20).map((e, i) => (
+                <li key={i}>
+                  Row {e.row}: {e.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+}
+
 export default function PharmacyDashboard() {
   const router = useRouter()
   const [data, setData] = useState<Dashboard | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [tab, setTab] = useState<'inventory' | 'searches'>('inventory')
+  const [tab, setTab] = useState<'inventory' | 'searches' | 'bulk'>('inventory')
 
   // add-drug panel
   const [formOpen, setFormOpen] = useState(false)
+  const [mode, setMode] = useState<'search' | 'new'>('search')
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
   const [selectedDrug, setSelectedDrug] = useState<DrugSuggestion | null>(null)
   const [brand, setBrand] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
+  const [quantity, setQuantity] = useState('')
   const [adding, setAdding] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+
+  // new-drug fields (mode === 'new')
+  const [newGenericName, setNewGenericName] = useState('')
+  const [newForm, setNewForm] = useState<DrugFormValue>('TABLET')
+  const [newStrength, setNewStrength] = useState('')
+  const [newPackSize, setNewPackSize] = useState('')
 
   // recent searches tab
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
@@ -119,32 +345,70 @@ export default function PharmacyDashboard() {
     const existing = data?.items.find((i) => i.drug.id === drug.id)
     setBrand(existing?.brand ?? '')
     setExpiryDate(existing?.expiryDate ? existing.expiryDate.slice(0, 10) : '')
+    setQuantity(existing?.quantity != null ? String(existing.quantity) : '')
   }
 
   function resetForm() {
     setFormOpen(false)
+    setMode('search')
     setSelectedDrug(null)
     setQuery('')
     setSuggestions([])
     setBrand('')
     setExpiryDate('')
+    setQuantity('')
+    setNewGenericName('')
+    setNewForm('TABLET')
+    setNewStrength('')
+    setNewPackSize('')
   }
 
   async function submitAdd(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedDrug) return
+    if (mode === 'search' && !selectedDrug) return
+    if (mode === 'new' && (!newGenericName.trim() || !newStrength.trim())) return
     setAdding(true)
     try {
       await fetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drugId: selectedDrug.id, brand, expiryDate }),
+        body: JSON.stringify({
+          ...(mode === 'search'
+            ? { drugId: selectedDrug!.id }
+            : {
+                newDrug: {
+                  genericName: newGenericName,
+                  strength: newStrength,
+                  form: newForm,
+                  packSize: newPackSize,
+                  brand,
+                },
+              }),
+          brand,
+          expiryDate,
+          quantity,
+        }),
       })
       resetForm()
       await load()
     } finally {
       setAdding(false)
     }
+  }
+
+  async function updateQuantity(item: InventoryItem, raw: string) {
+    const n = raw.trim() === '' ? null : Number(raw)
+    if (n !== null && (!Number.isFinite(n) || n < 0)) return
+    if (item.quantity === n) return
+    setData((d) =>
+      d ? { ...d, items: d.items.map((i) => (i.id === item.id ? { ...i, quantity: n } : i)) } : d,
+    )
+    const res = await fetch(`/api/inventory/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quantity: n }),
+    })
+    if (!res.ok) load()
   }
 
   async function toggle(item: InventoryItem) {
@@ -193,7 +457,20 @@ export default function PharmacyDashboard() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <AppHeader title={pharmacy.name} subtitle={pharmacy.address} onLogout={logout} />
+      <AppHeader
+        title={
+          pharmacy.verificationStatus === 'APPROVED' ? (
+            <span className="flex items-center gap-2">
+              {pharmacy.name}
+              <VerifiedBadge />
+            </span>
+          ) : (
+            pharmacy.name
+          )
+        }
+        subtitle={pharmacy.address}
+        onLogout={logout}
+      />
 
       {pharmacy.verificationStatus === 'PENDING' && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
@@ -222,11 +499,17 @@ export default function PharmacyDashboard() {
 
       {pharmacy.verificationStatus === 'APPROVED' && (
         <>
+          <HoursCard
+            pharmacy={pharmacy}
+            onSaved={(hours) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, ...hours } } : d))}
+          />
+
           <nav className="mb-4 flex gap-1 rounded-xl bg-gray-100 p-1 dark:bg-white/5">
             {(
               [
                 ['inventory', `Inventory (${items.length})`],
                 ['searches', 'Local searches'],
+                ['bulk', 'Bulk upload'],
               ] as const
             ).map(([key, label]) => (
               <button
@@ -263,7 +546,7 @@ export default function PharmacyDashboard() {
                     </button>
                   </div>
 
-                  {!selectedDrug ? (
+                  {mode === 'search' && !selectedDrug && (
                     <div className="relative">
                       <Field label="Search the drug list" htmlFor="drug-query">
                         <Input
@@ -301,11 +584,19 @@ export default function PharmacyDashboard() {
                         </ul>
                       )}
                       <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        Missing a drug? Only drugs on the master list can be added — contact us to
-                        request an addition.
+                        Can&apos;t find it?{' '}
+                        <button
+                          type="button"
+                          onClick={() => setMode('new')}
+                          className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                        >
+                          Add a new drug
+                        </button>
                       </p>
                     </div>
-                  ) : (
+                  )}
+
+                  {mode === 'search' && selectedDrug && (
                     <form onSubmit={submitAdd} className="space-y-4">
                       <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
                         <p className="text-sm font-medium text-emerald-900 dark:text-emerald-300">
@@ -320,30 +611,87 @@ export default function PharmacyDashboard() {
                         </button>
                       </div>
 
-                      <Field label="Brand" hint="(optional)" htmlFor="brand">
+                      <AddOnFields
+                        brand={brand}
+                        onBrandChange={setBrand}
+                        brandSuggestions={selectedDrug.brandNames}
+                        expiryDate={expiryDate}
+                        onExpiryChange={setExpiryDate}
+                        quantity={quantity}
+                        onQuantityChange={setQuantity}
+                      />
+
+                      <Button type="submit" loading={adding} className="w-full">
+                        {adding ? 'Adding…' : 'Add to inventory'}
+                      </Button>
+                    </form>
+                  )}
+
+                  {mode === 'new' && (
+                    <form onSubmit={submitAdd} className="space-y-4">
+                      <button
+                        type="button"
+                        onClick={() => setMode('search')}
+                        className="cursor-pointer text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                      >
+                        ← Back to search
+                      </button>
+
+                      <Field label="Generic name" htmlFor="newGenericName">
                         <Input
-                          id="brand"
-                          list="brand-suggestions"
-                          value={brand}
-                          onChange={(e) => setBrand(e.target.value)}
-                          placeholder={selectedDrug.brandNames[0] ?? 'e.g. Panadol'}
+                          id="newGenericName"
+                          value={newGenericName}
+                          onChange={(e) => setNewGenericName(e.target.value)}
+                          placeholder="e.g. Betamethasone"
+                          required
                           autoComplete="off"
                         />
-                        <datalist id="brand-suggestions">
-                          {selectedDrug.brandNames.map((b) => (
-                            <option key={b} value={b} />
-                          ))}
-                        </datalist>
                       </Field>
 
-                      <Field label="Expiry date" hint="(optional)" htmlFor="expiryDate">
+                      <div className="grid grid-cols-2 gap-3">
+                        <Field label="Dosage form" htmlFor="newForm">
+                          <Select id="newForm" value={newForm} onChange={(e) => setNewForm(e.target.value as DrugFormValue)}>
+                            {DRUG_FORMS.map((f) => (
+                              <option key={f} value={f}>
+                                {f.charAt(0) + f.slice(1).toLowerCase()}
+                              </option>
+                            ))}
+                          </Select>
+                        </Field>
+                        <Field label="Strength" htmlFor="newStrength">
+                          <Input
+                            id="newStrength"
+                            value={newStrength}
+                            onChange={(e) => setNewStrength(e.target.value)}
+                            placeholder="e.g. 500 mg"
+                            required
+                            autoComplete="off"
+                          />
+                        </Field>
+                      </div>
+
+                      <Field
+                        label="Size"
+                        hint={formUsesPackSize(newForm) ? '(e.g. 30 g tube, 100 ml bottle)' : '(optional)'}
+                        htmlFor="newPackSize"
+                      >
                         <Input
-                          id="expiryDate"
-                          type="date"
-                          value={expiryDate}
-                          onChange={(e) => setExpiryDate(e.target.value)}
+                          id="newPackSize"
+                          value={newPackSize}
+                          onChange={(e) => setNewPackSize(e.target.value)}
+                          placeholder="e.g. 30 g tube"
+                          autoComplete="off"
                         />
                       </Field>
+
+                      <AddOnFields
+                        brand={brand}
+                        onBrandChange={setBrand}
+                        expiryDate={expiryDate}
+                        onExpiryChange={setExpiryDate}
+                        quantity={quantity}
+                        onQuantityChange={setQuantity}
+                      />
 
                       <Button type="submit" loading={adding} className="w-full">
                         {adding ? 'Adding…' : 'Add to inventory'}
@@ -379,6 +727,18 @@ export default function PharmacyDashboard() {
                                 {new Date(item.expiryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             )}
+                            <label className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                              Qty:
+                              <input
+                                key={item.quantity}
+                                type="number"
+                                min={0}
+                                defaultValue={item.quantity ?? ''}
+                                placeholder="—"
+                                onBlur={(e) => updateQuantity(item, e.target.value)}
+                                className="w-16 rounded-md border border-gray-300 bg-white px-1.5 py-0.5 text-xs text-gray-900 outline-none focus:border-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                              />
+                            </label>
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
                             <button
@@ -445,6 +805,8 @@ export default function PharmacyDashboard() {
               )}
             </div>
           )}
+
+          {tab === 'bulk' && <BulkUploadPanel onImported={load} />}
         </>
       )}
     </div>

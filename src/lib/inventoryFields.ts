@@ -13,3 +13,14 @@ export const optionalBrand = z
   .max(120)
   .optional()
   .transform((v) => (v?.trim() ? v.trim() : null))
+
+// Accepts a number, a numeric string (from a form input), or empty/undefined
+export const optionalQuantity = z
+  .union([z.number(), z.string()])
+  .optional()
+  .transform((v) => {
+    if (v === undefined || v === '') return null
+    const n = typeof v === 'number' ? v : Number(v)
+    return Number.isFinite(n) ? Math.trunc(n) : null
+  })
+  .refine((n) => n === null || n >= 0, { message: 'Quantity must be zero or more' })

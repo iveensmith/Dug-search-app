@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { findPharmaciesWithDrug } from '@/lib/geo'
+import { findPharmaciesWithDrug, findGenericSubstitutes } from '@/lib/geo'
 import { isValidState, stateCenter } from '@/lib/states'
 
 const paramsSchema = z.object({
@@ -33,6 +33,23 @@ export async function GET(req: NextRequest) {
     ? await findPharmaciesWithDrug({ drugId, state, lat: searchLat, lng: searchLng })
     : []
 
+  // Zero results for a real drug (not free-text) — check whether nearby
+  // pharmacies stock a different strength/form of the same generic before
+  // giving up entirely.
+  let substitutes: Awaited<ReturnType<typeof findGenericSubstitutes>> = []
+  if (drugId && results.length === 0) {
+    const drug = await prisma.drug.findUnique({ where: { id: drugId }, select: { genericName: true } })
+    if (drug) {
+      substitutes = await findGenericSubstitutes({
+        genericName: drug.genericName,
+        excludeDrugId: drugId,
+        state,
+        lat: searchLat,
+        lng: searchLng,
+      })
+    }
+  }
+
   const session = await getSession(req)
 
   await prisma.searchLog.create({
@@ -47,5 +64,5 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  return NextResponse.json({ results })
+  return NextResponse.json({ results, substitutes })
 }

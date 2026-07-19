@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import {
-  findUserByIdentifier,
+  findUsersByIdentifier,
   setSessionCookie,
   signSession,
   verifyPassword,
@@ -18,8 +18,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Enter your email/phone and password' }, { status: 400 })
   }
 
-  const user = await findUserByIdentifier(parsed.data.identifier)
-  if (!user || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
+  // Email/phone are unique per-role, not globally, so the same identifier
+  // can match more than one account (e.g. a patient and a pharmacy-owner
+  // account sharing an email) — try the password against each candidate
+  // rather than requiring the login form's portal tab to guess right.
+  const candidates = await findUsersByIdentifier(parsed.data.identifier)
+  let user = null
+  for (const candidate of candidates) {
+    if (await verifyPassword(parsed.data.password, candidate.passwordHash)) {
+      user = candidate
+      break
+    }
+  }
+  if (!user) {
     return NextResponse.json({ error: 'Wrong email/phone or password' }, { status: 401 })
   }
 

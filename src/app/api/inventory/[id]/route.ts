@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
-import { optionalBrand, optionalDate } from '@/lib/inventoryFields'
+import { optionalBrand, optionalDate, optionalQuantity } from '@/lib/inventoryFields'
+import { notifyStockAvailable } from '@/lib/notify'
 import { Prisma } from '@/generated/prisma/client'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -20,6 +21,7 @@ const patchSchema = z.object({
   inStock: z.boolean().optional(),
   brand: optionalBrand,
   expiryDate: optionalDate,
+  quantity: optionalQuantity,
 })
 
 // Partial update — only fields actually present in the request body are
@@ -42,17 +44,26 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   if ('inStock' in raw) data.inStock = parsed.data.inStock
   if ('brand' in raw) data.brand = parsed.data.brand
   if ('expiryDate' in raw) data.expiryDate = parsed.data.expiryDate
+  if ('quantity' in raw) data.quantity = parsed.data.quantity
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
   const updated = await prisma.pharmacyInventory.update({ where: { id }, data })
+
+  if (data.inStock === true) {
+    // Awaited — a detached promise can be killed once the response is sent
+    // on Vercel, so this must finish before we return.
+    await notifyStockAvailable(item.drugId, item.pharmacyId).catch((e) => console.error('[notify] failed:', e))
+  }
+
   return NextResponse.json({
     item: {
       id: updated.id,
       inStock: updated.inStock,
       brand: updated.brand,
       expiryDate: updated.expiryDate,
+      quantity: updated.quantity,
       updatedAt: updated.updatedAt,
     },
   })

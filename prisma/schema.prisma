@@ -89,8 +89,12 @@ enum NigerianState {
 
 model User {
   id                      String    @id @default(cuid())
-  email                   String?   @unique
-  phone                   String?   @unique // at least one of email/phone required — enforced in app code
+  // Not globally unique — the same email/phone can have one account per
+  // role (e.g. a patient account and a separate pharmacy-owner account),
+  // enforced instead by @@unique([email, role]) / @@unique([phone, role])
+  // below. Login disambiguates by role (the Patient/Pharmacy portal tab).
+  email                   String?
+  phone                   String?
   passwordHash            String
   displayName             String?
   role                    Role      @default(PATIENT)
@@ -104,6 +108,9 @@ model User {
   claimedUploads PrescriptionUpload[]  @relation("PharmacistClaims")
   sentMessages   PrescriptionMessage[]
   searchLogs     SearchLog[]
+
+  @@unique([email, role])
+  @@unique([phone, role])
 }
 
 model Drug {
@@ -112,10 +119,12 @@ model Drug {
   brandNames  String[] // Postgres text[] — fine for a curated list; promote to a table if it grows
   strength    String // e.g. "500 mg"
   form        DrugForm
+  packSize    String? // pack/container size for non-tablet forms, e.g. "30 g tube", "100 ml bottle"
   createdAt   DateTime @default(now())
 
-  inventory  PharmacyInventory[]
-  searchLogs SearchLog[]
+  inventory      PharmacyInventory[]
+  searchLogs     SearchLog[]
+  notifyRequests StockNotifyRequest[]
 
   @@unique([genericName, strength, form])
 }
@@ -131,6 +140,12 @@ model Pharmacy {
   pcnLicenseNumber   String             @unique
   verificationStatus VerificationStatus @default(PENDING)
   ownerUserId        String             @unique
+  // Self-reported hours — same every day, no per-day overrides, no
+  // verification. "HH:mm" 24h strings, compared against Africa/Lagos time
+  // (Nigeria is UTC+1 year-round, no DST — see src/lib/hours.ts).
+  open24h            Boolean            @default(false)
+  opensAt            String?
+  closesAt           String?
   createdAt          DateTime           @default(now())
 
   owner     User                @relation(fields: [ownerUserId], references: [id])
@@ -175,6 +190,24 @@ model SearchLog {
   @@index([hadResults, createdAt]) // coverage-gap analytics
   @@index([userId, createdAt]) // per-user search history
   @@index([state, createdAt]) // pharmacy-scoped local search demand
+}
+
+// A patient's "email me when this is in stock" request against a
+// zero-result search. Anonymous (no login required) — just drug + state +
+// email. Triggered from src/app/api/inventory/route.ts and [id]/route.ts
+// whenever a matching pharmacy in that state marks the drug in stock.
+model StockNotifyRequest {
+  id         String    @id @default(cuid())
+  drugId     String
+  state      NigerianState
+  email      String
+  createdAt  DateTime  @default(now())
+  notifiedAt DateTime? // null = still waiting; set once we've emailed them
+
+  drug Drug @relation(fields: [drugId], references: [id], onDelete: Cascade)
+
+  @@unique([drugId, state, email])
+  @@index([drugId, state, notifiedAt])
 }
 
 model PrescriptionUpload {

@@ -82,11 +82,18 @@ export function normalizePhone(raw: string): string {
   return cleaned
 }
 
-/** Looks up a user by email (case-insensitive) or phone. */
-export async function findUserByIdentifier(identifier: string) {
+/**
+ * Looks up every account matching an email (case-insensitive) or phone.
+ * Email/phone are only unique per-role (see schema) — the same identifier
+ * can have one PATIENT account and a separate PHARMACY_OWNER account, so
+ * this can return more than one row. Login tries the password against each
+ * candidate rather than trusting a role hint, so it keeps working
+ * regardless of which portal tab a returning user happens to have open.
+ */
+export async function findUsersByIdentifier(identifier: string) {
   const id = identifier.trim()
   if (id.includes('@')) {
-    return prisma.user.findUnique({ where: { email: id.toLowerCase() } })
+    return prisma.user.findMany({ where: { email: id.toLowerCase() } })
   }
-  return prisma.user.findUnique({ where: { phone: normalizePhone(id) } })
+  return prisma.user.findMany({ where: { phone: normalizePhone(id) } })
 }

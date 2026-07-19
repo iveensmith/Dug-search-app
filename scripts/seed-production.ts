@@ -18,17 +18,17 @@ async function main() {
 
   console.log('Upserting admin, pharmacist, and demo patient accounts...')
   await prisma.user.upsert({
-    where: { email: 'admin@drugfinder.test' },
+    where: { email_role: { email: 'admin@drugfinder.test', role: 'ADMIN' } },
     update: {},
     create: { email: 'admin@drugfinder.test', passwordHash, displayName: 'Admin', role: 'ADMIN' },
   })
   await prisma.user.upsert({
-    where: { email: 'pharmacist@drugfinder.test' },
+    where: { email_role: { email: 'pharmacist@drugfinder.test', role: 'PHARMACIST' } },
     update: {},
     create: { email: 'pharmacist@drugfinder.test', passwordHash, displayName: 'Pharm. Idara Essien', role: 'PHARMACIST' },
   })
   await prisma.user.upsert({
-    where: { email: 'patient@drugfinder.test' },
+    where: { email_role: { email: 'patient@drugfinder.test', role: 'PATIENT' } },
     update: {},
     create: { email: 'patient@drugfinder.test', phone: '+2348021110000', passwordHash, displayName: 'Test Patient', role: 'PATIENT' },
   })
@@ -50,7 +50,7 @@ async function main() {
     const ph = PHARMACIES[p]
     const ownerEmail = `${ph.slug}@drugfinder.test`
     const owner = await prisma.user.upsert({
-      where: { email: ownerEmail },
+      where: { email_role: { email: ownerEmail, role: 'PHARMACY_OWNER' } },
       update: {},
       create: { email: ownerEmail, passwordHash, displayName: `${ph.name} Owner`, role: 'PHARMACY_OWNER' },
     })

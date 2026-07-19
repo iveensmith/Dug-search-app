@@ -1,16 +1,21 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
-import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, drugLabel, directionsUrl } from '@/lib/types'
+import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, type SubstituteGroup, drugLabel, directionsUrl } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import VerifiedBadge from '@/components/ui/VerifiedBadge'
+import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
+import NotifyMeForm from '@/components/NotifyMeForm'
+import { useLocale } from '@/lib/i18n/LocaleProvider'
+import type { DictKey } from '@/lib/i18n/dictionary'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -26,23 +31,23 @@ import {
 const FEATURE_CARDS = [
   {
     icon: IconSearch,
-    title: 'Find Your Medicine',
-    cta: 'Search now',
+    titleKey: 'feature.findMedicine.title',
+    ctaKey: 'feature.findMedicine.cta',
     href: '#search',
   },
   {
     icon: IconMessageCircle,
-    title: 'Ask a Pharmacist',
-    cta: 'Chat now',
+    titleKey: 'feature.askPharmacist.title',
+    ctaKey: 'feature.askPharmacist.cta',
     href: '/prescriptions',
   },
   {
     icon: IconStore,
-    title: 'Add Your Pharmacy Outlet',
-    cta: 'Register now',
+    titleKey: 'feature.addPharmacy.title',
+    ctaKey: 'feature.addPharmacy.cta',
     href: '/pharmacy/register',
   },
-] as const
+] as const satisfies { icon: typeof IconSearch; titleKey: DictKey; ctaKey: DictKey; href: string }[]
 
 // Leaflet touches `window` — client-only
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
@@ -61,7 +66,7 @@ type Pos = { lat: number; lng: number }
 type SearchState =
   | { kind: 'idle' }
   | { kind: 'loading'; label: string }
-  | { kind: 'results'; label: string; results: PharmacyResult[] }
+  | { kind: 'results'; label: string; drugId: string; results: PharmacyResult[]; substitutes: SubstituteGroup[] }
   | { kind: 'no-match'; query: string }
 
 function getPosition(timeoutMs: number): Promise<Pos | null> {
@@ -91,6 +96,7 @@ async function detectStateFromPosition(pos: Pos): Promise<NigerianStateValue | n
 }
 
 export default function Home() {
+  const { t } = useLocale()
   const [state, setState] = useState<SearchState>({ kind: 'idle' })
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
   const [detectingState, setDetectingState] = useState(true)
@@ -99,6 +105,7 @@ export default function Home() {
   const [locationHint, setLocationHint] = useState('')
   const [locating, setLocating] = useState(false)
   const [view, setView] = useState<'list' | 'map'>('list')
+  const [sortBy, setSortBy] = useState<'distance' | 'name'>('distance')
   const [route, setRoute] = useState<ActiveRoute | null>(null)
   const [routeBusyId, setRouteBusyId] = useState<string | null>(null)
   const [routeError, setRouteError] = useState('')
@@ -192,9 +199,9 @@ export default function Home() {
     try {
       const res = await fetch(`/api/search?${params}`)
       const data = await res.json()
-      setState({ kind: 'results', label, results: data.results ?? [] })
+      setState({ kind: 'results', label, drugId: drug.id, results: data.results ?? [], substitutes: data.substitutes ?? [] })
     } catch {
-      setState({ kind: 'results', label, results: [] })
+      setState({ kind: 'results', label, drugId: drug.id, results: [], substitutes: [] })
     }
   }
 
@@ -296,7 +303,13 @@ export default function Home() {
     setTimeout(() => setCopiedPhone(null), 2500)
   }
 
-  const results = state.kind === 'results' ? state.results : []
+  const results = useMemo(() => (state.kind === 'results' ? state.results : []), [state])
+  const sortedResults = useMemo(() => {
+    const sorted = [...results]
+    if (sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name))
+    else sorted.sort((a, b) => a.distanceKm - b.distanceKm)
+    return sorted
+  }, [results, sortBy])
   const fallbackCenter = selectedState ? stateCenter(selectedState) : null
   const mapCenter = userPos ?? fallbackCenter ?? { lat: 9.082, lng: 8.6753 } // Nigeria's geographic centre — only used before a state is picked
   const selectedLabel = selectedState ? stateLabel(selectedState) : null
@@ -311,21 +324,18 @@ export default function Home() {
           <section className="grid items-center gap-8 py-10 md:grid-cols-2 md:gap-10 md:py-16">
             <div>
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
-                Nationwide Pharmacy Network
+                {t('hero.eyebrow')}
               </p>
               <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50">
-                Find Medicine In Stock Near You
+                {t('hero.title')}
               </h1>
-              <p className="mt-4 max-w-md text-gray-600 dark:text-gray-400">
-                Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in
-                stock nearby, and get directions or call — free, across Nigeria.
-              </p>
+              <p className="mt-4 max-w-md text-gray-600 dark:text-gray-400">{t('hero.description')}</p>
             </div>
             <HeroGraphic />
           </section>
 
           <section className="grid gap-4 pb-10 sm:grid-cols-3">
-            {FEATURE_CARDS.map(({ icon: Icon, title, cta, href }) => {
+            {FEATURE_CARDS.map(({ icon: Icon, titleKey, ctaKey, href }) => {
               const cardClass =
                 'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-colors hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
               const inner = (
@@ -333,18 +343,18 @@ export default function Home() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950">
                     <Icon width={22} height={22} />
                   </div>
-                  <p className="font-bold text-gray-900 dark:text-gray-50">{title}</p>
+                  <p className="font-bold text-gray-900 dark:text-gray-50">{t(titleKey)}</p>
                   <span className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors group-hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950">
-                    {cta}
+                    {t(ctaKey)}
                   </span>
                 </>
               )
               return href.startsWith('#') ? (
-                <a key={title} href={href} className={cardClass}>
+                <a key={titleKey} href={href} className={cardClass}>
                   {inner}
                 </a>
               ) : (
-                <Link key={title} href={href} className={cardClass}>
+                <Link key={titleKey} href={href} className={cardClass}>
                   {inner}
                 </Link>
               )
@@ -355,7 +365,7 @@ export default function Home() {
 
       <Card id="search" className="mb-3 scroll-mt-20" padded={false}>
         <div className="space-y-3 p-4">
-          <Field label="Searching in" htmlFor="state-picker">
+          <Field label={t('search.stateLabel')} htmlFor="state-picker">
             <Select
               id="state-picker"
               value={selectedState ?? ''}
@@ -377,9 +387,7 @@ export default function Home() {
       </Card>
 
       {!selectedState && !detectingState && (
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-          Pick your state above to search pharmacies there
-        </p>
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">{t('search.pickStateHint')}</p>
       )}
 
       {selectedState && userPos ? (
@@ -436,13 +444,46 @@ export default function Home() {
         )}
 
         {state.kind === 'results' && results.length === 0 && (
-          <div className="mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
-            <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
-            <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
-              No pharmacy in {selectedLabel} currently has {state.label} in stock.
-            </p>
-            <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">Stock changes daily — check back soon.</p>
-          </div>
+          <>
+            <div className="mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+              <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
+              <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
+                No pharmacy in {selectedLabel} currently has {state.label} in stock.
+              </p>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">Stock changes daily — check back soon.</p>
+            </div>
+
+            {state.substitutes.length > 0 && (
+              <div className="mt-4">
+                <h2 className="mb-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Try this instead — same generic, different strength/form
+                </h2>
+                <ul className="space-y-2">
+                  {state.substitutes.map((sub) => (
+                    <li key={sub.drug.id}>
+                      <Card className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {drugLabel(sub.drug)}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {sub.results.length} {sub.results.length === 1 ? 'pharmacy' : 'pharmacies'} nearby
+                            {' · nearest '}
+                            {sub.results[0].distanceKm.toFixed(1)} km
+                          </p>
+                        </div>
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => searchDrug(sub.drug)}>
+                          Search this
+                        </Button>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <NotifyMeForm drugId={state.drugId} state={selectedState} />
+          </>
         )}
 
         {state.kind === 'results' && results.length > 0 && (
@@ -453,19 +494,30 @@ export default function Home() {
                 {results.length === 1 ? 'pharmacy has' : 'pharmacies have'} {state.label} in{' '}
                 {selectedLabel}
               </p>
-              <div className="flex shrink-0 overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
-                <button
-                  onClick={() => setView('list')}
-                  className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+              <div className="flex shrink-0 items-center gap-2">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'distance' | 'name')}
+                  aria-label="Sort results by"
+                  className="cursor-pointer rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
-                  List
-                </button>
-                <button
-                  onClick={() => setView('map')}
-                  className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
-                >
-                  Map
-                </button>
+                  <option value="distance">Nearest first</option>
+                  <option value="name">Name (A–Z)</option>
+                </select>
+                <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
+                  <button
+                    onClick={() => setView('list')}
+                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+                  >
+                    List
+                  </button>
+                  <button
+                    onClick={() => setView('map')}
+                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+                  >
+                    Map
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -506,7 +558,7 @@ export default function Home() {
 
             <div className="md:grid md:grid-cols-2 md:gap-4">
               <ul className={`space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
-                {results.map((r) => (
+                {sortedResults.map((r) => (
                   <li key={r.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
                     <div className="relative flex h-24 items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-700 dark:from-emerald-600 dark:to-emerald-900">
                       <IconMapPin width={36} height={36} className="text-white/90" />
@@ -515,9 +567,15 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                        Pharmacy
-                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                          Pharmacy
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <OpenStatusBadge open24h={r.open24h} opensAt={r.opensAt} closesAt={r.closesAt} />
+                          <VerifiedBadge />
+                        </div>
+                      </div>
                       <p className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{r.address}</p>
                       <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
@@ -532,7 +590,7 @@ export default function Home() {
                           className="flex-1"
                         >
                           <IconRoute width={16} height={16} />
-                          {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
+                          {routeBusyId === r.id ? 'Loading route…' : t('results.directions')}
                         </Button>
                       <a
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
@@ -540,7 +598,7 @@ export default function Home() {
                         className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-600/60 px-3 py-2.5 text-center text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 active:bg-emerald-100 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
                       >
                         <IconPhone width={16} height={16} />
-                        {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
+                        {copiedPhone === r.phone ? 'Copied ✓' : t('results.call')}
                       </a>
                       </div>
                     </div>
@@ -552,7 +610,7 @@ export default function Home() {
                 className={`map-tiles h-[60dvh] overflow-hidden rounded-2xl border border-gray-200 md:sticky md:top-4 md:h-[70dvh] dark:border-gray-800 ${view === 'list' ? 'hidden md:block' : ''}`}
               >
                 <ResultsMap
-                  results={results}
+                  results={sortedResults}
                   userPos={userPos}
                   center={mapCenter}
                   route={route}
