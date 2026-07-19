@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/ui/Logo'
-import { IconMenu, IconUser, IconX } from '@/components/ui/icons'
+import ThemeToggle from '@/components/ui/ThemeToggle'
+import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
 
 const NAV_LINKS = [
   { href: '/', label: 'Find medicine' },
@@ -12,9 +13,52 @@ const NAV_LINKS = [
   { href: '/pharmacy/register', label: 'Register your pharmacy' },
 ]
 
+type Role = 'PATIENT' | 'PHARMACY_OWNER' | 'PHARMACIST' | 'ADMIN'
+type Me = { displayName: string | null; role: Role } | null
+
+const DASHBOARD_HREF: Record<Role, string> = {
+  PATIENT: '/search-history',
+  PHARMACY_OWNER: '/pharmacy',
+  PHARMACIST: '/pharmacist',
+  ADMIN: '/admin',
+}
+const DASHBOARD_LABEL: Record<Role, string> = {
+  PATIENT: 'Search history',
+  PHARMACY_OWNER: 'Pharmacy dashboard',
+  PHARMACIST: 'Pharmacist desk',
+  ADMIN: 'Admin panel',
+}
+
 export default function SiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [me, setMe] = useState<Me>(null)
+  const [checked, setChecked] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setMe(data.user ?? null)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setChecked(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [pathname])
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    setMe(null)
+    setOpen(false)
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
@@ -44,23 +88,47 @@ export default function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
-          >
-            <IconUser width={17} height={17} />
-            Log in
-          </Link>
+          <ThemeToggle />
+          {!checked ? (
+            <div className="h-5 w-16 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+          ) : me ? (
+            <>
+              <Link
+                href={DASHBOARD_HREF[me.role]}
+                className="text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
+              >
+                {me.displayName ? `Hi, ${me.displayName.split(' ')[0]}` : DASHBOARD_LABEL[me.role]}
+              </Link>
+              <button
+                onClick={logout}
+                className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-gray-500 transition-colors hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+              >
+                <IconLogOut width={16} height={16} />
+                Log out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
+            >
+              <IconUser width={17} height={17} />
+              Log in
+            </Link>
+          )}
         </div>
 
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="cursor-pointer rounded-lg p-2 text-gray-600 hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-white/10"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-        >
-          {open ? <IconX width={22} height={22} /> : <IconMenu width={22} height={22} />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="cursor-pointer rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+          >
+            {open ? <IconX width={22} height={22} /> : <IconMenu width={22} height={22} />}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -81,16 +149,40 @@ export default function SiteHeader() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
-              >
-                <IconUser width={16} height={16} />
-                Log in
-              </Link>
-            </li>
+            {me ? (
+              <>
+                <li>
+                  <Link
+                    href={DASHBOARD_HREF[me.role]}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
+                  >
+                    <IconUser width={16} height={16} />
+                    {DASHBOARD_LABEL[me.role]}
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={logout}
+                    className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 dark:text-red-400"
+                  >
+                    <IconLogOut width={16} height={16} />
+                    Log out
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
+                >
+                  <IconUser width={16} height={16} />
+                  Log in
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
       )}

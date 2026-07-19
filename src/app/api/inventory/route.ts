@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
+import { optionalBrand, optionalDate } from '@/lib/inventoryFields'
 
 async function ownPharmacy(userId: string) {
   return prisma.pharmacy.findUnique({ where: { ownerUserId: userId } })
@@ -26,11 +27,14 @@ export async function GET(req: NextRequest) {
       id: pharmacy.id,
       name: pharmacy.name,
       address: pharmacy.address,
+      state: pharmacy.state,
       verificationStatus: pharmacy.verificationStatus,
     },
     items: items.map((i) => ({
       id: i.id,
       inStock: i.inStock,
+      brand: i.brand,
+      expiryDate: i.expiryDate,
       updatedAt: i.updatedAt,
       drug: {
         id: i.drug.id,
@@ -43,9 +47,14 @@ export async function GET(req: NextRequest) {
   })
 }
 
-const addSchema = z.object({ drugId: z.string().min(1) })
+const addSchema = z.object({
+  drugId: z.string().min(1),
+  brand: optionalBrand,
+  expiryDate: optionalDate,
+})
 
-// Add a drug from the master list to the pharmacy's inventory (in stock)
+// Add a drug from the master list to the pharmacy's inventory (in stock),
+// with the pharmacy's own brand + optional expiry noted on top
 export async function POST(req: NextRequest) {
   const session = await requireSession(req, ['PHARMACY_OWNER'])
   if (session instanceof NextResponse) return session
@@ -58,14 +67,15 @@ export async function POST(req: NextRequest) {
 
   const parsed = addSchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return NextResponse.json({ error: 'drugId required' }, { status: 400 })
+  const { drugId, brand, expiryDate } = parsed.data
 
-  const drug = await prisma.drug.findUnique({ where: { id: parsed.data.drugId } })
+  const drug = await prisma.drug.findUnique({ where: { id: drugId } })
   if (!drug) return NextResponse.json({ error: 'Unknown drug' }, { status: 404 })
 
   const item = await prisma.pharmacyInventory.upsert({
     where: { pharmacyId_drugId: { pharmacyId: pharmacy.id, drugId: drug.id } },
-    create: { pharmacyId: pharmacy.id, drugId: drug.id, inStock: true },
-    update: { inStock: true },
+    create: { pharmacyId: pharmacy.id, drugId: drug.id, inStock: true, brand, expiryDate },
+    update: { inStock: true, brand, expiryDate },
     include: { drug: true },
   })
 

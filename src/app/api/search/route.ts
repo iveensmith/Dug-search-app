@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { getSession } from '@/lib/auth'
 import { findPharmaciesWithDrug } from '@/lib/geo'
 import { isValidState, stateCenter } from '@/lib/states'
 
@@ -32,10 +33,14 @@ export async function GET(req: NextRequest) {
     ? await findPharmaciesWithDrug({ drugId, state, lat: searchLat, lng: searchLng })
     : []
 
+  const session = await getSession(req)
+
   await prisma.searchLog.create({
     data: {
       drugId: drugId ?? null,
+      userId: session?.userId ?? null,
       queryText: q,
+      state,
       latitude: lat ?? null, // log only real user locations, not the fallback
       longitude: lng ?? null,
       hadResults: results.length > 0,

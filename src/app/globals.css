@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Repoints Tailwind's `dark:` variant at an explicit [data-theme] attribute
+   (set by the blocking script in layout.tsx + ThemeToggle) instead of only
+   `prefers-color-scheme` — lets every existing `dark:` utility class keep
+   working unchanged while adding a manual light/dark toggle on top. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #f8faf9;
   --foreground: #0f172a;
@@ -15,12 +21,25 @@
   color-scheme: light;
 }
 
+/* System-preference default, only when the user hasn't explicitly chosen */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #0a0f0d;
     --foreground: #e7f3ee;
     color-scheme: dark;
   }
+}
+
+/* Explicit choice (ThemeToggle) always wins over system preference */
+:root[data-theme="dark"] {
+  --background: #0a0f0d;
+  --foreground: #e7f3ee;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --background: #f8faf9;
+  --foreground: #0f172a;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -47,10 +66,14 @@ body {
   color: var(--color-brand-700);
 }
 @media (prefers-color-scheme: dark) {
-  ::selection {
+  :root:not([data-theme]) ::selection {
     background: var(--color-brand-700);
     color: white;
   }
+}
+:root[data-theme="dark"] ::selection {
+  background: var(--color-brand-700);
+  color: white;
 }
 
 /* Slim, theme-aware scrollbar */
@@ -76,9 +99,12 @@ body {
    popups (styled separately below) keep their real colors on top. Applied
    via the `map-tiles` class on the Leaflet container. */
 @media (prefers-color-scheme: dark) {
-  .map-tiles .leaflet-tile-pane {
+  :root:not([data-theme]) .map-tiles .leaflet-tile-pane {
     filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.9);
   }
+}
+:root[data-theme="dark"] .map-tiles .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.9);
 }
 
 .leaflet-popup-content-wrapper,

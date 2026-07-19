@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/components/ui/Logo'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 import { IconLogOut } from '@/components/ui/icons'
 
 type Props = {
@@ -23,15 +24,18 @@ export default function AppHeader({ title, subtitle, onLogout, backHref = '/' }:
           {subtitle && <p className="truncate text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>}
         </div>
       </div>
-      {onLogout && (
-        <button
-          onClick={onLogout}
-          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
-        >
-          <IconLogOut width={15} height={15} />
-          Log out
-        </button>
-      )}
+      <div className="flex shrink-0 items-center gap-1">
+        <ThemeToggle />
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
+          >
+            <IconLogOut width={15} height={15} />
+            Log out
+          </button>
+        )}
+      </div>
     </header>
   )
 }

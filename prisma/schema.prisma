@@ -88,19 +88,22 @@ enum NigerianState {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String?  @unique
-  phone        String?  @unique // at least one of email/phone required — enforced in app code
-  passwordHash String
-  displayName  String?
-  role         Role     @default(PATIENT)
-  state        NigerianState? // patient's home state — pre-fills the search state picker
-  createdAt    DateTime @default(now())
+  id                      String    @id @default(cuid())
+  email                   String?   @unique
+  phone                   String?   @unique // at least one of email/phone required — enforced in app code
+  passwordHash            String
+  displayName             String?
+  role                    Role      @default(PATIENT)
+  state                   NigerianState? // patient's home state — pre-fills the search state picker
+  passwordResetTokenHash  String?   @unique // SHA-256 of the emailed token — raw token never stored
+  passwordResetExpiresAt  DateTime?
+  createdAt               DateTime  @default(now())
 
   pharmacy       Pharmacy? // set when role = PHARMACY_OWNER
   uploads        PrescriptionUpload[]  @relation("PatientUploads")
   claimedUploads PrescriptionUpload[]  @relation("PharmacistClaims")
   sentMessages   PrescriptionMessage[]
+  searchLogs     SearchLog[]
 }
 
 model Drug {
@@ -139,12 +142,14 @@ model Pharmacy {
 }
 
 model PharmacyInventory {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   pharmacyId String
   drugId     String
-  inStock    Boolean  @default(true)
+  inStock    Boolean   @default(true)
   quantity   Int?
-  updatedAt  DateTime @updatedAt
+  brand      String? // which brand this pharmacy actually stocks, if they know
+  expiryDate DateTime? // optional — pharmacy's own stock-rotation note
+  updatedAt  DateTime  @updatedAt
 
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
   drug     Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
@@ -154,17 +159,22 @@ model PharmacyInventory {
 }
 
 model SearchLog {
-  id         String   @id @default(cuid())
+  id         String         @id @default(cuid())
   drugId     String? // null when free-text query matched no drug
+  userId     String? // set when the searcher was logged in — powers per-user search history
   queryText  String
+  state      NigerianState? // nullable: not recorded before this field existed
   latitude   Float?
   longitude  Float?
   hadResults Boolean
-  createdAt  DateTime @default(now())
+  createdAt  DateTime       @default(now())
 
   drug Drug? @relation(fields: [drugId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([hadResults, createdAt]) // coverage-gap analytics
+  @@index([userId, createdAt]) // per-user search history
+  @@index([state, createdAt]) // pharmacy-scoped local search demand
 }
 
 model PrescriptionUpload {
