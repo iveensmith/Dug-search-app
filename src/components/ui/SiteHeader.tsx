@@ -121,6 +121,17 @@ export default function SiteHeader() {
         </div>
       </div>
 
+      {me?.displayName && (
+        <div className="px-4 pb-2.5 md:hidden">
+          <Link
+            href="/account"
+            className="text-sm font-semibold text-emerald-700 dark:text-emerald-400"
+          >
+            Hi, {me.displayName.split(' ')[0]} 👋
+          </Link>
+        </div>
+      )}
+
       {open && (
         <nav className="border-t border-gray-200 px-4 pb-4 pt-2 md:hidden dark:border-gray-800">
           <ul className="space-y-1">
