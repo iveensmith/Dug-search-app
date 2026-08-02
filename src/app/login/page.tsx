@@ -10,8 +10,39 @@ import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
 import { setWelcomeName } from '@/components/ui/WelcomeToast'
 import { HOME_BY_ROLE } from '@/lib/roles'
+import { IconChevronRight, IconStore, IconUser } from '@/components/ui/icons'
 
 type Portal = 'patient' | 'pharmacy'
+
+const actionCardClass =
+  'group flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-700'
+
+function ActionCardBody({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode
+  title: string
+  subtitle: string
+}) {
+  return (
+    <>
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 transition-colors group-hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:group-hover:bg-emerald-500/20">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-semibold text-gray-900 dark:text-gray-50">{title}</span>
+        <span className="block truncate text-sm text-gray-500 dark:text-gray-400">{subtitle}</span>
+      </span>
+      <IconChevronRight
+        width={18}
+        height={18}
+        className="shrink-0 text-gray-300 transition-all group-hover:translate-x-0.5 group-hover:text-emerald-600 dark:text-gray-600 dark:group-hover:text-emerald-400"
+      />
+    </>
+  )
+}
 
 function LoginForm() {
   const router = useRouter()
@@ -113,45 +144,43 @@ function LoginForm() {
           </form>
         </Card>
 
-        {portal === 'patient' ? (
-          <>
-            <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-              New here?{' '}
-              <Link href="/register" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
-                Create a patient account
+        <div className="mt-8 space-y-3">
+          {portal === 'patient' ? (
+            <>
+              <Link href="/register" className={actionCardClass}>
+                <ActionCardBody
+                  icon={<IconUser width={20} height={20} />}
+                  title="Create a patient account"
+                  subtitle="New here? It's free and takes a minute"
+                />
               </Link>
-            </p>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              Own a pharmacy?{' '}
-              <button
-                type="button"
-                onClick={() => setPortal('pharmacy')}
-                className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
-              >
-                Switch to the pharmacy portal
+              <button type="button" onClick={() => setPortal('pharmacy')} className={actionCardClass}>
+                <ActionCardBody
+                  icon={<IconStore width={20} height={20} />}
+                  title="Own a pharmacy?"
+                  subtitle="Switch to the pharmacy portal"
+                />
               </button>
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-              New pharmacy?{' '}
-              <Link href="/pharmacy/register" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
-                Add it here
+            </>
+          ) : (
+            <>
+              <Link href="/pharmacy/register" className={actionCardClass}>
+                <ActionCardBody
+                  icon={<IconStore width={20} height={20} />}
+                  title="Add your pharmacy outlet"
+                  subtitle="New pharmacy? Get discovered by patients"
+                />
               </Link>
-            </p>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              Are you a patient?{' '}
-              <button
-                type="button"
-                onClick={() => setPortal('patient')}
-                className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
-              >
-                Switch to the patient portal
+              <button type="button" onClick={() => setPortal('patient')} className={actionCardClass}>
+                <ActionCardBody
+                  icon={<IconUser width={20} height={20} />}
+                  title="Are you a patient?"
+                  subtitle="Switch to the patient portal"
+                />
               </button>
-            </p>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
       <SiteFooter />
     </div>
