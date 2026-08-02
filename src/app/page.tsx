@@ -57,7 +57,7 @@ const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
   ),
 })
 
-const STATE_STORAGE_KEY = 'pharmafinder_state'
+const STATE_STORAGE_KEY = 'mediquest_state'
 
 type Pos = { lat: number; lng: number }
 

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PharmaFinder",
+  title: "MediQuest",
   description:
     "Find which pharmacies near you in Nigeria have your medicine in stock, with directions and phone numbers.",
 };

@@ -1,4 +1,4 @@
-# PharmaFinder
+# MediQuest
 
 Nationwide (Nigeria) web app: patients pick their state and search for a drug
 to see which nearby pharmacies have it in stock (with map + directions);

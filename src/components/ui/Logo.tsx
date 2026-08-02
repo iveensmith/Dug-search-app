@@ -28,7 +28,7 @@ export default function Logo({ size = 'md', href = '/', tagline, className = '' 
       <LogoMark size={size} />
       <span className="text-left">
         <span className="block text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-gray-50">
-          PharmaFinder
+          MediQuest
         </span>
         {tagline && (
           <span className="block text-xs font-medium text-gray-500 dark:text-gray-400">{tagline}</span>

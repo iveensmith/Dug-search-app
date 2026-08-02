@@ -1,4 +1,4 @@
-// PharmaFinder — nationwide (Nigeria) MVP schema
+// MediQuest — nationwide (Nigeria) MVP schema
 // Geospatial note: plain lat/lng Float columns + Haversine in raw SQL. Search
 // is scoped by state (see NigerianState) rather than a fixed-radius bounding
 // box, so this stays accurate at country scale without needing PostGIS.

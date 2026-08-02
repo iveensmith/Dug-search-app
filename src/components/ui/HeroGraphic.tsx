@@ -3,7 +3,7 @@
  *  to use, and won't fabricate any). */
 export default function HeroGraphic() {
   return (
-    <svg viewBox="0 0 400 400" className="mx-auto w-full max-w-sm" role="img" aria-label="PharmaFinder illustration">
+    <svg viewBox="0 0 400 400" className="mx-auto w-full max-w-sm" role="img" aria-label="MediQuest illustration">
       <circle cx="190" cy="190" r="170" className="fill-emerald-50 dark:fill-emerald-500/10" />
       <circle cx="190" cy="190" r="170" className="fill-none stroke-emerald-200 dark:stroke-emerald-800" strokeWidth="1.5" />
 

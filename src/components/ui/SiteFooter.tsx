@@ -8,7 +8,7 @@ export default function SiteFooter() {
         <div>
           <div className="flex items-center gap-2">
             <LogoMark size="sm" />
-            <span className="text-lg font-bold text-white">PharmaFinder</span>
+            <span className="text-lg font-bold text-white">MediQuest</span>
           </div>
           <p className="mt-3 text-sm text-emerald-100/80">
             Helping patients across Nigeria find which nearby pharmacies have their medicine in
@@ -36,7 +36,7 @@ export default function SiteFooter() {
 
       <div className="border-t border-emerald-700/60 dark:border-emerald-900">
         <p className="mx-auto w-full max-w-6xl px-4 py-4 text-xs text-emerald-200/80">
-          © {new Date().getFullYear()} PharmaFinder. Not a substitute for professional medical advice.
+          © {new Date().getFullYear()} MediQuest. Not a substitute for professional medical advice.
         </p>
       </div>
     </footer>

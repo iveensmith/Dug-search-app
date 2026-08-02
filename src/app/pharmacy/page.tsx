@@ -194,7 +194,7 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
       const url = URL.createObjectURL(await res.blob())
       const a = document.createElement('a')
       a.href = url
-      a.download = `pharmafinder-stock-${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = `mediquest-stock-${new Date().toISOString().slice(0, 10)}.csv`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
@@ -211,7 +211,7 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
     const a = document.createElement('a')
     a.href = url
-    a.download = 'pharmafinder-inventory-template.csv'
+    a.download = 'mediquest-inventory-template.csv'
     a.click()
     URL.revokeObjectURL(url)
   }

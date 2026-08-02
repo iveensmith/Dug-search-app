@@ -55,7 +55,7 @@ export default function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
           <LogoMark size="sm" />
-          <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-50">PharmaFinder</span>
+          <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-50">MediQuest</span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">

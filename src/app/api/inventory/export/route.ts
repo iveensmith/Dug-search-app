@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(csv, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="pharmafinder-stock-${date}.csv"`,
+      'Content-Disposition': `attachment; filename="mediquest-stock-${date}.csv"`,
     },
   })
 }

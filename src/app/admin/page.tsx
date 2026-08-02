@@ -124,7 +124,7 @@ export default function AdminPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 pb-16">
       <AppHeader
-        title="Admin — PharmaFinder"
+        title="Admin — MediQuest"
         subtitle={`${pending.length} pending registration${pending.length === 1 ? '' : 's'}`}
         onLogout={logout}
       />
