@@ -134,6 +134,7 @@ model Pharmacy {
   name               String
   address            String
   state              NigerianState      @default(AKWA_IBOM) // default backfills pre-existing Uyo-only rows; every registration sets it explicitly
+  lga                String? // Local Government Area within the state — validated against src/lib/lgas.ts; nullable for rows registered before LGAs existed
   latitude           Float
   longitude          Float
   phone              String
@@ -153,6 +154,7 @@ model Pharmacy {
 
   @@index([verificationStatus])
   @@index([state])
+  @@index([state, lga])
   @@index([latitude, longitude])
 }
 

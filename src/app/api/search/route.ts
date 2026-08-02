@@ -4,11 +4,13 @@ import { prisma } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { findPharmaciesWithDrug, findGenericSubstitutes } from '@/lib/geo'
 import { isValidState, stateCenter } from '@/lib/states'
+import { isValidLga } from '@/lib/lgas'
 
 const paramsSchema = z.object({
   drugId: z.string().min(1).optional(),
   q: z.string().max(200).default(''),
   state: z.string().refine(isValidState, { message: 'Unknown state' }),
+  lga: z.string().max(80).optional(),
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
 })
@@ -35,13 +37,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid search parameters' }, { status: 400 })
   }
   const { drugId, q, state, lat, lng } = parsed.data
+  // Unknown LGA for the state → ignore rather than error, so stale links
+  // still search the whole state.
+  const lga = parsed.data.lga && isValidLga(state, parsed.data.lga) ? parsed.data.lga : null
 
   const fallback = stateCenter(state)!
   const searchLat = lat ?? fallback.lat
   const searchLng = lng ?? fallback.lng
 
   const results = drugId
-    ? await findPharmaciesWithDrug({ drugId, state, lat: searchLat, lng: searchLng })
+    ? await findPharmaciesWithDrug({ drugId, state, lga, lat: searchLat, lng: searchLng })
     : []
 
   // Zero results for a real drug (not free-text) — check whether nearby
@@ -55,6 +60,7 @@ export async function GET(req: NextRequest) {
         genericName: drug.genericName,
         excludeDrugId: drugId,
         state,
+        lga,
         lat: searchLat,
         lng: searchLng,
       })

@@ -1,3 +1,4 @@
+import { Prisma } from '../generated/prisma/client'
 import { prisma } from './db'
 import type { NigerianStateValue } from './states'
 import type { DrugSuggestion } from './types'
@@ -26,11 +27,12 @@ export type PharmacyStockResult = {
 export async function findPharmaciesWithDrug(opts: {
   drugId: string
   state: NigerianStateValue
+  lga?: string | null // optional narrowing within the state
   lat: number
   lng: number
   limit?: number
 }): Promise<PharmacyStockResult[]> {
-  const { drugId, state, lat, lng } = opts
+  const { drugId, state, lga, lat, lng } = opts
   const limit = opts.limit ?? 20
 
   return prisma.$queryRaw<PharmacyStockResult[]>`
@@ -59,6 +61,7 @@ export async function findPharmaciesWithDrug(opts: {
       AND i."inStock" = true
       AND p."verificationStatus" = 'APPROVED'
       AND p."state" = ${state}::"NigerianState"
+      AND ${lga ? Prisma.sql`p."lga" = ${lga}` : Prisma.sql`TRUE`}
     ORDER BY "distanceKm" ASC
     LIMIT ${limit}
   `
@@ -78,10 +81,11 @@ export async function findGenericSubstitutes(opts: {
   genericName: string
   excludeDrugId: string
   state: NigerianStateValue
+  lga?: string | null
   lat: number
   lng: number
 }): Promise<SubstituteGroup[]> {
-  const { genericName, excludeDrugId, state, lat, lng } = opts
+  const { genericName, excludeDrugId, state, lga, lat, lng } = opts
 
   const siblings = await prisma.drug.findMany({
     where: { genericName, id: { not: excludeDrugId } },
@@ -90,7 +94,7 @@ export async function findGenericSubstitutes(opts: {
 
   const groups: SubstituteGroup[] = []
   for (const sibling of siblings) {
-    const results = await findPharmaciesWithDrug({ drugId: sibling.id, state, lat, lng, limit: 3 })
+    const results = await findPharmaciesWithDrug({ drugId: sibling.id, state, lga, lat, lng, limit: 3 })
     if (results.length > 0) {
       groups.push({
         drug: {

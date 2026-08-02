@@ -6,6 +6,7 @@ import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
 import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, type SubstituteGroup, drugLabel, directionsUrl } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
+import { lgasForState } from '@/lib/lgas'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
@@ -99,6 +100,8 @@ export default function Home() {
   // that can't register one (patients, pharmacists, admins).
   const [viewerRole, setViewerRole] = useState<string | null>(null)
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
+  const [selectedLga, setSelectedLga] = useState('') // '' = whole state
+  const selectedLgaRef = useRef('') // read inside runSearch (avoids stale closure)
   const [detectingState, setDetectingState] = useState(true)
   const [userPos, setUserPos] = useState<Pos | null>(null)
   const [locationDenied, setLocationDenied] = useState(false)
@@ -130,6 +133,15 @@ export default function Home() {
   function chooseState(value: NigerianStateValue) {
     setSelectedState(value)
     localStorage.setItem(STATE_STORAGE_KEY, value)
+    setSelectedLga('') // LGAs belong to a state — reset on state change
+    selectedLgaRef.current = ''
+  }
+
+  function chooseLga(value: string) {
+    setSelectedLga(value)
+    selectedLgaRef.current = value
+    // Narrow (or widen) an active search immediately
+    if (lastDrugRef.current && selectedState) runSearch(lastDrugRef.current, selectedState)
   }
 
   /** Current position if known, otherwise ask the browser (may show the permission prompt). */
@@ -205,6 +217,7 @@ export default function Home() {
     // Wait briefly for the location prompt so results sort from the user, not the fallback
     const pos = await ensureLocation()
     const params = new URLSearchParams({ drugId: drug.id, q: label, state: forState })
+    if (selectedLgaRef.current) params.set('lga', selectedLgaRef.current)
     if (pos) {
       params.set('lat', String(pos.lat))
       params.set('lng', String(pos.lng))
@@ -424,6 +437,19 @@ export default function Home() {
               ))}
             </Select>
           </Field>
+
+          {selectedState && (
+            <Field label="Area (LGA)" hint="(optional)" htmlFor="lga-picker">
+              <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)}>
+                <option value="">All of {stateLabel(selectedState)}</option>
+                {lgasForState(selectedState).map((lga) => (
+                  <option key={lga} value={lga}>
+                    {lga}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
 
           <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState} />
         </div>

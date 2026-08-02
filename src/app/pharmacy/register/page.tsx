@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue, stateCenter, stateLabel } from '@/lib/states'
+import { lgasForState } from '@/lib/lgas'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
@@ -37,6 +38,7 @@ export default function PharmacyRegisterPage() {
     pcnLicenseNumber: '',
   })
   const [selectedState, setSelectedState] = useState<NigerianStateValue | ''>('')
+  const [selectedLga, setSelectedLga] = useState('')
   const [position, setPosition] = useState(NIGERIA_CENTER)
   const [pinConfirmed, setPinConfirmed] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
@@ -65,6 +67,7 @@ export default function PharmacyRegisterPage() {
 
   function pickState(value: NigerianStateValue) {
     setSelectedState(value)
+    setSelectedLga('') // LGAs belong to a state
     const center = stateCenter(value)
     if (center) {
       setPosition(center)
@@ -108,6 +111,10 @@ export default function PharmacyRegisterPage() {
       setError('Please select which state your pharmacy is in')
       return
     }
+    if (!selectedLga) {
+      setError('Please select your Local Government Area (LGA)')
+      return
+    }
     if (!pinConfirmed) {
       setError('Please confirm the map pin is on your pharmacy before submitting')
       return
@@ -121,6 +128,7 @@ export default function PharmacyRegisterPage() {
         body: JSON.stringify({
           ...form,
           state: selectedState,
+          lga: selectedLga,
           latitude: position.lat,
           longitude: position.lng,
         }),
@@ -238,6 +246,21 @@ export default function PharmacyRegisterPage() {
               ))}
             </Select>
           </Field>
+
+          {selectedState && (
+            <Field label="Local Government Area (LGA)" htmlFor="lga">
+              <Select id="lga" value={selectedLga} onChange={(e) => setSelectedLga(e.target.value)} required>
+                <option value="" disabled>
+                  Select your LGA in {stateLabel(selectedState)}
+                </option>
+                {lgasForState(selectedState).map((lga) => (
+                  <option key={lga} value={lga}>
+                    {lga}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
 
           <Field label="Street address" htmlFor="address">
             <Input

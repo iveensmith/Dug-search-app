@@ -3,12 +3,14 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { normalizePhone, requireSession } from '@/lib/auth'
 import { isValidState } from '@/lib/states'
+import { isValidLga } from '@/lib/lgas'
 import { Prisma } from '@/generated/prisma/client'
 
 const bodySchema = z.object({
   pharmacyName: z.string().min(2).max(120),
   address: z.string().min(5).max(300),
   state: z.string().refine(isValidState, { message: 'Select a valid state' }),
+  lga: z.string().min(1).max(80),
   phone: z.string().min(7).max(20),
   pcnLicenseNumber: z.string().min(3).max(60),
   latitude: z.number().min(-90).max(90),
@@ -38,6 +40,12 @@ export async function POST(req: NextRequest) {
     )
   }
   const data = parsed.data
+  if (!isValidLga(data.state, data.lga)) {
+    return NextResponse.json(
+      { error: `"${data.lga}" is not an LGA in the selected state` },
+      { status: 400 },
+    )
+  }
 
   const existing = await prisma.pharmacy.findUnique({ where: { ownerUserId: session.userId } })
   if (existing) {
@@ -53,6 +61,7 @@ export async function POST(req: NextRequest) {
         name: data.pharmacyName,
         address: data.address,
         state: data.state,
+        lga: data.lga,
         phone: normalizePhone(data.phone),
         pcnLicenseNumber: data.pcnLicenseNumber.trim().toUpperCase(),
         latitude: data.latitude,
