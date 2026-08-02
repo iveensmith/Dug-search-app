@@ -1,10 +1,16 @@
 import Link from 'next/link'
 import { LogoMark } from '@/components/ui/Logo'
+import { IconMessageCircle } from '@/components/ui/icons'
+
+// PLACEHOLDER — no mailbox is receiving this yet. Swap it for the real
+// support address (and drop the "coming soon" note below) once one exists;
+// this constant is the only place it appears.
+const CONTACT_EMAIL = 'hello@mediquest.ng'
 
 export default function SiteFooter() {
   return (
     <footer className="bg-emerald-800 text-emerald-50 dark:bg-emerald-950">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-3">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
             <LogoMark size="sm" />
@@ -30,6 +36,27 @@ export default function SiteFooter() {
           <ul className="mt-3 space-y-2 text-sm">
             <li><Link href="/pharmacy/register" className="text-emerald-100/90 hover:text-white">Add your pharmacy outlet</Link></li>
             <li><Link href="/login" className="text-emerald-100/90 hover:text-white">Pharmacy / staff login</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-200">Contact us</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            <li>
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="inline-flex items-center gap-2 text-emerald-100/90 hover:text-white"
+              >
+                <IconMessageCircle width={15} height={15} className="shrink-0" />
+                {CONTACT_EMAIL}
+              </a>
+            </li>
+            <li className="text-emerald-200/70">Mailbox coming soon</li>
+            <li>
+              <Link href="/prescriptions" className="text-emerald-100/90 hover:text-white">
+                Medicine question? Ask a pharmacist
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
