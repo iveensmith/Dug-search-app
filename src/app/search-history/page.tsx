@@ -62,7 +62,7 @@ export default function SearchHistoryPage() {
             </Link>
           </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="stagger space-y-2">
             {searches.map((s) => (
               <li key={s.id}>
                 <Card className="flex items-center justify-between gap-3">

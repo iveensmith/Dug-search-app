@@ -141,7 +141,7 @@ export default function SiteHeader() {
       )}
 
       {open && (
-        <nav className="border-t border-gray-200 px-4 pb-4 pt-2 md:hidden dark:border-gray-800">
+        <nav className="animate-fade-in border-t border-gray-200 px-4 pb-4 pt-2 md:hidden dark:border-gray-800">
           <ul className="space-y-1">
             {navLinks.map((link) => (
               <li key={link.href}>

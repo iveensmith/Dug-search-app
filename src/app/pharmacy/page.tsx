@@ -753,7 +753,7 @@ export default function PharmacyDashboard() {
                     No drugs listed yet — tap &ldquo;Add drug&rdquo; above to add your first one.
                   </p>
                 ) : (
-                  <ul className="space-y-2">
+                  <ul className="stagger space-y-2">
                     {items.map((item) => (
                       <li key={item.id}>
                         <Card padded={false} className="flex items-center justify-between gap-3 p-3">
@@ -822,7 +822,7 @@ export default function PharmacyDashboard() {
                   No searches logged in your state yet.
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="stagger space-y-2">
                   {searches.map((s) => (
                     <li key={s.id}>
                       <Card className="flex items-center justify-between gap-3">

@@ -156,7 +156,7 @@ export default function PharmacyRegisterPage() {
       )}
 
       {me === null && (
-        <Card className="mx-auto max-w-md text-center">
+        <Card className="animate-fade-up mx-auto max-w-md text-center">
           <IconUser width={28} height={28} className="mx-auto text-gray-400 dark:text-gray-500" />
           <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">Sign in to add your outlet</p>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -178,7 +178,7 @@ export default function PharmacyRegisterPage() {
       )}
 
       {me && me.role !== 'PHARMACY_OWNER' && (
-        <Card className="mx-auto max-w-md text-center">
+        <Card className="animate-fade-up mx-auto max-w-md text-center">
           <IconStore width={28} height={28} className="mx-auto text-gray-400 dark:text-gray-500" />
           <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
             This needs a pharmacy owner account

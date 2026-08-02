@@ -334,7 +334,7 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
       {state.kind === 'idle' && (
         <>
-          <section className="grid items-center gap-8 py-10 md:grid-cols-2 md:gap-10 md:py-16">
+          <section className="animate-fade-up grid items-center gap-8 py-10 md:grid-cols-2 md:gap-10 md:py-16">
             <div>
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
@@ -350,7 +350,7 @@ export default function Home() {
             <HeroGraphic />
           </section>
 
-          <section className="grid gap-4 pb-10 sm:grid-cols-3">
+          <section className="stagger grid gap-4 pb-10 sm:grid-cols-3">
             {FEATURE_CARDS.filter(({ href }) => {
               // Outlet registration is for visitors and pharmacy owners;
               // drug search is for everyone except pharmacy owners.
@@ -359,10 +359,10 @@ export default function Home() {
               return true
             }).map(({ icon: Icon, title, cta, href }) => {
               const cardClass =
-                'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-colors hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
+                'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-600/5 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
               const inner = (
                 <>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white transition-transform duration-200 group-hover:scale-110 dark:bg-emerald-500 dark:text-emerald-950">
                     <Icon width={22} height={22} />
                   </div>
                   <p className="font-bold text-gray-900 dark:text-gray-50">{title}</p>
@@ -386,7 +386,7 @@ export default function Home() {
       )}
 
       {viewerRole === 'PHARMACY_OWNER' ? (
-        <Card className="mx-auto mb-10 w-full max-w-md text-center">
+        <Card className="animate-fade-up mx-auto mb-10 w-full max-w-md text-center">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
             <IconStore width={22} height={22} />
           </span>
@@ -457,7 +457,7 @@ export default function Home() {
 
       <main className="mt-5 flex-1">
         {state.kind === 'idle' && selectedState && (
-          <Card padded={false} className="overflow-hidden">
+          <Card padded={false} className="animate-fade-in overflow-hidden">
             {(userPos || locationDenied) && (
               <>
                 <div className="flex items-start gap-3.5 p-4">
@@ -534,7 +534,7 @@ export default function Home() {
         )}
 
         {state.kind === 'no-match' && (
-          <div className="mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+          <div className="animate-fade-up mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
             <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
             <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
               No drug matching “{state.query}” is in our list yet.
@@ -547,7 +547,7 @@ export default function Home() {
 
         {state.kind === 'results' && results.length === 0 && (
           <>
-            <div className="mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+            <div className="animate-fade-up mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
               <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
               <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
                 No pharmacy in {selectedLabel} currently has {state.label} in stock.
@@ -659,7 +659,7 @@ export default function Home() {
             )}
 
             <div className="md:grid md:grid-cols-2 md:gap-4">
-              <ul className={`space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
+              <ul className={`stagger space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
                 {sortedResults.map((r) => (
                   <li key={r.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
                     <div className="relative flex h-24 items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-700 dark:from-emerald-600 dark:to-emerald-900">
