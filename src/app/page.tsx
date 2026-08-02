@@ -390,33 +390,92 @@ export default function Home() {
         <p className="text-center text-xs text-gray-500 dark:text-gray-400">Pick your state above to search pharmacies there</p>
       )}
 
-      {selectedState && userPos ? (
-        <p className="flex items-center justify-center gap-1.5 text-center text-xs font-medium text-emerald-700 dark:text-emerald-400">
-          <IconMapPin width={14} height={14} />
-          Using your location — distances and directions start from where you are
-        </p>
-      ) : selectedState && locationDenied ? (
-        <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-          <p>
-            Location is off — measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
-            <button
-              onClick={enableLocation}
-              disabled={locating}
-              className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 disabled:opacity-50 dark:text-emerald-400"
-            >
-              {locating ? 'Getting your location…' : 'Use my location'}
-            </button>
+      {state.kind !== 'idle' &&
+        (selectedState && userPos ? (
+          <p className="flex items-center justify-center gap-1.5 text-center text-xs font-medium text-emerald-700 dark:text-emerald-400">
+            <IconMapPin width={14} height={14} />
+            Using your location — distances and directions start from where you are
           </p>
-          {locationHint && <p className="mt-1 text-amber-700 dark:text-amber-400">{locationHint}</p>}
-        </div>
-      ) : null}
+        ) : selectedState && locationDenied ? (
+          <div className="text-center text-xs text-gray-500 dark:text-gray-400">
+            <p>
+              Location is off — measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
+              <button
+                onClick={enableLocation}
+                disabled={locating}
+                className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 disabled:opacity-50 dark:text-emerald-400"
+              >
+                {locating ? 'Getting your location…' : 'Use my location'}
+              </button>
+            </p>
+            {locationHint && <p className="mt-1 text-amber-700 dark:text-amber-400">{locationHint}</p>}
+          </div>
+        ) : null)}
 
       <main className="mt-5 flex-1">
         {state.kind === 'idle' && selectedState && (
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Search by generic name (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Paracetamol</span>) or brand
-            (e.g. <span className="font-medium text-gray-700 dark:text-gray-300">Panadol</span>)
-          </p>
+          <Card padded={false} className="overflow-hidden">
+            {(userPos || locationDenied) && (
+              <>
+                <div className="flex items-start gap-3.5 p-4">
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      userPos
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                        : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
+                    }`}
+                  >
+                    <IconMapPin width={19} height={19} />
+                  </span>
+                  <div className="min-w-0 pt-0.5">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                      {userPos ? 'Using your location' : 'Location is off'}
+                    </p>
+                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                      {userPos ? (
+                        'Distances and directions start from where you are'
+                      ) : (
+                        <>
+                          Measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
+                          <button
+                            onClick={enableLocation}
+                            disabled={locating}
+                            className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 disabled:opacity-50 dark:text-emerald-400"
+                          >
+                            {locating ? 'Getting your location…' : 'Use my location'}
+                          </button>
+                        </>
+                      )}
+                    </p>
+                    {!userPos && locationHint && (
+                      <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">{locationHint}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 dark:border-gray-800" />
+              </>
+            )}
+            <div className="flex items-start gap-3.5 p-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400">
+                <IconSearch width={19} height={19} />
+              </span>
+              <div className="min-w-0 pt-0.5">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                  Search by generic name or brand
+                </p>
+                <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                  Try
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
+                    Paracetamol
+                  </span>
+                  or
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
+                    Panadol
+                  </span>
+                </p>
+              </div>
+            </div>
+          </Card>
         )}
 
         {state.kind === 'loading' && (
