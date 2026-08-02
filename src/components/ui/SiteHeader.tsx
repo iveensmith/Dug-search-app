@@ -154,16 +154,6 @@ export default function SiteHeader() {
               <>
                 <li>
                   <Link
-                    href="/account"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
-                  >
-                    <IconUser width={16} height={16} />
-                    {me.displayName ? `Hi, ${me.displayName.split(' ')[0]}` : 'My account'}
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     href={DASHBOARD_HREF[me.role]}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
