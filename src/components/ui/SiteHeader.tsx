@@ -49,11 +49,13 @@ export default function SiteHeader() {
     router.refresh()
   }
 
-  // "Add your pharmacy outlet" is for visitors and pharmacy owners — hide it
-  // from accounts that can't register one (patients, pharmacists, admins).
-  const navLinks = NAV_LINKS.filter(
-    (link) => link.href !== '/pharmacy/register' || !me || me.role === 'PHARMACY_OWNER',
-  )
+  // Role-scoped nav: "Add your pharmacy outlet" is for visitors and pharmacy
+  // owners; "Find medicine" (patient search) is for everyone else.
+  const navLinks = NAV_LINKS.filter((link) => {
+    if (link.href === '/pharmacy/register') return !me || me.role === 'PHARMACY_OWNER'
+    if (link.href === '/') return me?.role !== 'PHARMACY_OWNER'
+    return true
+  })
 
   return (
     <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">

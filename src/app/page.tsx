@@ -351,10 +351,13 @@ export default function Home() {
           </section>
 
           <section className="grid gap-4 pb-10 sm:grid-cols-3">
-            {FEATURE_CARDS.filter(
-              ({ href }) =>
-                href !== '/pharmacy/register' || viewerRole === null || viewerRole === 'PHARMACY_OWNER',
-            ).map(({ icon: Icon, title, cta, href }) => {
+            {FEATURE_CARDS.filter(({ href }) => {
+              // Outlet registration is for visitors and pharmacy owners;
+              // drug search is for everyone except pharmacy owners.
+              if (href === '/pharmacy/register') return viewerRole === null || viewerRole === 'PHARMACY_OWNER'
+              if (href === '#search') return viewerRole !== 'PHARMACY_OWNER'
+              return true
+            }).map(({ icon: Icon, title, cta, href }) => {
               const cardClass =
                 'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-colors hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
               const inner = (
@@ -382,6 +385,27 @@ export default function Home() {
         </>
       )}
 
+      {viewerRole === 'PHARMACY_OWNER' ? (
+        <Card className="mx-auto mb-10 w-full max-w-md text-center">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <IconStore width={22} height={22} />
+          </span>
+          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
+            You&apos;re signed in as a pharmacy owner
+          </p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Drug search is for patients. Manage your outlet&apos;s inventory and see local demand from
+            your dashboard.
+          </p>
+          <Link
+            href="/pharmacy"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+          >
+            Go to your dashboard
+          </Link>
+        </Card>
+      ) : (
+        <>
       <Card id="search" className="mb-3 scroll-mt-20" padded={false}>
         <div className="space-y-3 p-4">
           <Field label="Searching in" htmlFor="state-picker">
@@ -699,6 +723,8 @@ export default function Home() {
           </>
         )}
       </main>
+        </>
+      )}
       </div>
 
       <SiteFooter />

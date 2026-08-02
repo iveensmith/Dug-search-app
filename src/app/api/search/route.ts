@@ -18,6 +18,17 @@ const paramsSchema = z.object({
 // matched — either way the search is logged so coverage gaps show up in
 // admin analytics.
 export async function GET(req: NextRequest) {
+  // Patient search isn't for pharmacy owner accounts — they manage stock
+  // from their dashboard instead (mirrors the hidden search UI on the home
+  // page, so the API can't be used to sidestep it).
+  const session = await getSession(req)
+  if (session?.role === 'PHARMACY_OWNER') {
+    return NextResponse.json(
+      { error: 'Drug search is not available on a pharmacy owner account' },
+      { status: 403 },
+    )
+  }
+
   const raw = Object.fromEntries(req.nextUrl.searchParams.entries())
   const parsed = paramsSchema.safeParse(raw)
   if (!parsed.success) {
@@ -49,8 +60,6 @@ export async function GET(req: NextRequest) {
       })
     }
   }
-
-  const session = await getSession(req)
 
   await prisma.searchLog.create({
     data: {
