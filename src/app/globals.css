@@ -161,6 +161,50 @@ body {
   animation: toast-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Hero graphic: the two circles roll into place like wheels — rotation
+   direction matches travel direction (clockwise when entering from the
+   left, counter-clockwise from the right). transform-box: fill-box makes
+   each group rotate around its own circle's centre. */
+@keyframes hero-roll-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-150px) rotate(-150deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-roll-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(130px) rotate(150deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-roll-left,
+.hero-roll-right {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hero-roll-left {
+  animation: hero-roll-in-left 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero-roll-right {
+  animation: hero-roll-in-right 0.9s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Stagger: children fade up one after another (first 8, then no delay). */
 .stagger > * {
   animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
