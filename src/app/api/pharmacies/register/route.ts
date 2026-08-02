@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { normalizePhone, requireSession, setSessionCookie, signSession } from '@/lib/auth'
+import { normalizePhone, requireSession } from '@/lib/auth'
 import { isValidState } from '@/lib/states'
 import { Prisma } from '@/generated/prisma/client'
 
@@ -15,14 +15,19 @@ const bodySchema = z.object({
   longitude: z.number().min(-180).max(180),
 })
 
-// Registering an outlet requires being signed in — the pharmacy is attached
-// to the caller's account. A non-owner account (e.g. a patient) gets a
-// sibling PHARMACY_OWNER account sharing its email/phone/password (one
-// account per role, same identifier — see the User model), and the session
-// is re-signed as that owner account so the dashboard works immediately.
+// Registering an outlet requires being signed in as a pharmacy owner — the
+// pharmacy is attached to the caller's account. Patients (and other roles)
+// are refused; they need a separate PHARMACY_OWNER account, created via
+// /register?type=pharmacy (one account per role — see the User model).
 export async function POST(req: NextRequest) {
   const session = await requireSession(req)
   if (session instanceof NextResponse) return session
+  if (session.role !== 'PHARMACY_OWNER') {
+    return NextResponse.json(
+      { error: 'Pharmacy outlets are managed from a pharmacy owner account — create one, or log in with yours.' },
+      { status: 403 },
+    )
+  }
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) {
@@ -34,64 +39,30 @@ export async function POST(req: NextRequest) {
   }
   const data = parsed.data
 
-  const caller = await prisma.user.findUnique({ where: { id: session.userId } })
-  if (!caller) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
+  const existing = await prisma.pharmacy.findUnique({ where: { ownerUserId: session.userId } })
+  if (existing) {
+    return NextResponse.json(
+      { error: 'This account already has a pharmacy outlet — each account can manage one.' },
+      { status: 409 },
+    )
+  }
 
   try {
-    const { owner } = await prisma.$transaction(async (tx) => {
-      // Resolve the owner account: the caller if they're already a
-      // pharmacy owner, else their existing or newly created owner-role
-      // sibling account.
-      let owner = caller
-      if (caller.role !== 'PHARMACY_OWNER') {
-        const sibling = caller.email
-          ? await tx.user.findUnique({
-              where: { email_role: { email: caller.email, role: 'PHARMACY_OWNER' } },
-            })
-          : null
-        owner =
-          sibling ??
-          (await tx.user.create({
-            data: {
-              email: caller.email,
-              phone: caller.phone,
-              passwordHash: caller.passwordHash, // same password as the account they're signed in with
-              displayName: caller.displayName ?? `${data.pharmacyName} Owner`,
-              role: 'PHARMACY_OWNER',
-              state: caller.state,
-            },
-          }))
-      }
-
-      const existing = await tx.pharmacy.findUnique({ where: { ownerUserId: owner.id } })
-      if (existing) throw new AlreadyOwnsPharmacyError()
-
-      await tx.pharmacy.create({
-        data: {
-          name: data.pharmacyName,
-          address: data.address,
-          state: data.state,
-          phone: normalizePhone(data.phone),
-          pcnLicenseNumber: data.pcnLicenseNumber.trim().toUpperCase(),
-          latitude: data.latitude,
-          longitude: data.longitude,
-          verificationStatus: 'PENDING',
-          ownerUserId: owner.id,
-        },
-      })
-      return { owner }
+    await prisma.pharmacy.create({
+      data: {
+        name: data.pharmacyName,
+        address: data.address,
+        state: data.state,
+        phone: normalizePhone(data.phone),
+        pcnLicenseNumber: data.pcnLicenseNumber.trim().toUpperCase(),
+        latitude: data.latitude,
+        longitude: data.longitude,
+        verificationStatus: 'PENDING',
+        ownerUserId: session.userId,
+      },
     })
-
-    const res = NextResponse.json({ ok: true }, { status: 201 })
-    setSessionCookie(res, await signSession({ userId: owner.id, role: owner.role }))
-    return res
+    return NextResponse.json({ ok: true }, { status: 201 })
   } catch (e) {
-    if (e instanceof AlreadyOwnsPharmacyError) {
-      return NextResponse.json(
-        { error: 'This account already has a pharmacy outlet — each account can manage one.' },
-        { status: 409 },
-      )
-    }
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       const target = String(e.meta?.target ?? '')
       const friendly = target.includes('pcn')
@@ -102,5 +73,3 @@ export async function POST(req: NextRequest) {
     throw e
   }
 }
-
-class AlreadyOwnsPharmacyError extends Error {}

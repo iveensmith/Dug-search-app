@@ -49,6 +49,12 @@ export default function SiteHeader() {
     router.refresh()
   }
 
+  // "Add your pharmacy outlet" is for visitors and pharmacy owners — hide it
+  // from accounts that can't register one (patients, pharmacists, admins).
+  const navLinks = NAV_LINKS.filter(
+    (link) => link.href !== '/pharmacy/register' || !me || me.role === 'PHARMACY_OWNER',
+  )
+
   return (
     <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
       <WelcomeToast />
@@ -59,7 +65,7 @@ export default function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
-          {NAV_LINKS.map((link) => {
+          {navLinks.map((link) => {
             const active = pathname === link.href
             return (
               <Link
@@ -135,7 +141,7 @@ export default function SiteHeader() {
       {open && (
         <nav className="border-t border-gray-200 px-4 pb-4 pt-2 md:hidden dark:border-gray-800">
           <ul className="space-y-1">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

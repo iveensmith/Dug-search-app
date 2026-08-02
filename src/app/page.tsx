@@ -95,6 +95,9 @@ async function detectStateFromPosition(pos: Pos): Promise<NigerianStateValue | n
 
 export default function Home() {
   const [state, setState] = useState<SearchState>({ kind: 'idle' })
+  // Viewer's role — hides the "Add Your Pharmacy Outlet" card from accounts
+  // that can't register one (patients, pharmacists, admins).
+  const [viewerRole, setViewerRole] = useState<string | null>(null)
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
   const [detectingState, setDetectingState] = useState(true)
   const [userPos, setUserPos] = useState<Pos | null>(null)
@@ -139,6 +142,19 @@ export default function Home() {
   // remembered browser choice, then a best-effort guess from geolocation.
   // Also kicks off the quiet location fetch so the first search is
   // location-aware from the start.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setViewerRole(data.user?.role ?? null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     const timer = setTimeout(async () => {
@@ -335,7 +351,10 @@ export default function Home() {
           </section>
 
           <section className="grid gap-4 pb-10 sm:grid-cols-3">
-            {FEATURE_CARDS.map(({ icon: Icon, title, cta, href }) => {
+            {FEATURE_CARDS.filter(
+              ({ href }) =>
+                href !== '/pharmacy/register' || viewerRole === null || viewerRole === 'PHARMACY_OWNER',
+            ).map(({ icon: Icon, title, cta, href }) => {
               const cardClass =
                 'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-colors hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
               const inner = (

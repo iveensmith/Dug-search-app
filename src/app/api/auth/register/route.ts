@@ -5,12 +5,15 @@ import { hashPassword, setSessionCookie, signSession } from '@/lib/auth'
 import { isValidState } from '@/lib/states'
 import { Prisma } from '@/generated/prisma/client'
 
-// Patient sign-up: email is the only login identifier
+// Sign-up: email is the only login identifier. accountType picks the role —
+// 'patient' (default) or 'pharmacy' for a pharmacy owner account, which is
+// what /pharmacy/register requires before an outlet can be added.
 const bodySchema = z.object({
   email: z.string().email().max(200),
   displayName: z.string().min(2).max(80).optional(),
   password: z.string().min(8).max(200),
   state: z.string().refine(isValidState, { message: 'Select a valid state' }).optional(),
+  accountType: z.enum(['patient', 'pharmacy']).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -19,7 +22,7 @@ export async function POST(req: NextRequest) {
     const issue = parsed.error.issues[0]
     return NextResponse.json({ error: issue.message }, { status: 400 })
   }
-  const { email, displayName, password, state } = parsed.data
+  const { email, displayName, password, state, accountType } = parsed.data
 
   try {
     const user = await prisma.user.create({
@@ -27,7 +30,7 @@ export async function POST(req: NextRequest) {
         email: email.toLowerCase(),
         displayName,
         passwordHash: await hashPassword(password),
-        role: 'PATIENT',
+        role: accountType === 'pharmacy' ? 'PHARMACY_OWNER' : 'PATIENT',
         state,
       },
     })

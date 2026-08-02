@@ -13,6 +13,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const isPharmacy = searchParams.get('type') === 'pharmacy'
   const [form, setForm] = useState({ displayName: '', email: '', password: '' })
   const [homeState, setHomeState] = useState<NigerianStateValue | ''>('')
   const [error, setError] = useState('')
@@ -31,6 +32,7 @@ function RegisterForm() {
           email: form.email,
           password: form.password,
           state: homeState || undefined,
+          accountType: isPharmacy ? 'pharmacy' : 'patient',
         }),
       })
       const data = await res.json()
@@ -38,7 +40,7 @@ function RegisterForm() {
         setError(data.error ?? 'Sign-up failed')
         return
       }
-      router.push(searchParams.get('next') ?? '/prescriptions')
+      router.push(searchParams.get('next') ?? (isPharmacy ? '/pharmacy/register' : '/prescriptions'))
     } catch {
       setError('Network problem — try again')
     } finally {
@@ -51,8 +53,12 @@ function RegisterForm() {
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Create your account</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">For patients — free, takes a minute</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+            {isPharmacy ? 'Create a pharmacy owner account' : 'Create your account'}
+          </h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            {isPharmacy ? 'Then add your outlet — free, takes a minute' : 'For patients — free, takes a minute'}
+          </p>
         </div>
 
       <Card>
@@ -86,20 +92,22 @@ function RegisterForm() {
               autoComplete="new-password"
             />
           </Field>
-          <Field label="Your state" hint="(optional — speeds up search)" htmlFor="homeState">
-            <Select
-              id="homeState"
-              value={homeState}
-              onChange={(e) => setHomeState(e.target.value as NigerianStateValue)}
-            >
-              <option value="">Prefer not to say</option>
-              {NIGERIAN_STATES.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          {!isPharmacy && (
+            <Field label="Your state" hint="(optional — speeds up search)" htmlFor="homeState">
+              <Select
+                id="homeState"
+                value={homeState}
+                onChange={(e) => setHomeState(e.target.value as NigerianStateValue)}
+              >
+                <option value="">Prefer not to say</option>
+                {NIGERIAN_STATES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
 
           {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 

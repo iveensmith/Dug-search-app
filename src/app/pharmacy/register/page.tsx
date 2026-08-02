@@ -10,7 +10,7 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
-import { IconShieldCheck, IconUser } from '@/components/ui/icons'
+import { IconShieldCheck, IconStore, IconUser } from '@/components/ui/icons'
 
 type Me = { id: string; email: string | null; displayName: string | null; role: string }
 
@@ -168,16 +168,44 @@ export default function PharmacyRegisterPage() {
           <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
             Don&apos;t have an account?{' '}
             <Link
-              href="/register?next=/pharmacy/register"
+              href="/register?type=pharmacy&next=/pharmacy/register"
               className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
             >
-              Create one
+              Create a pharmacy owner account
             </Link>
           </p>
         </Card>
       )}
 
-      {me && (
+      {me && me.role !== 'PHARMACY_OWNER' && (
+        <Card className="mx-auto max-w-md text-center">
+          <IconStore width={28} height={28} className="mx-auto text-gray-400 dark:text-gray-500" />
+          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
+            This needs a pharmacy owner account
+          </p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            You&apos;re signed in as a {me.role === 'PATIENT' ? 'patient' : me.role.toLowerCase().replace('_', ' ')} —
+            pharmacy outlets are managed from a separate pharmacy owner account.
+          </p>
+          <Button
+            className="mt-4 w-full"
+            onClick={() => router.push('/register?type=pharmacy&next=/pharmacy/register')}
+          >
+            Create a pharmacy owner account
+          </Button>
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            Already have one?{' '}
+            <Link
+              href="/login?next=/pharmacy/register"
+              className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            >
+              Log in with it
+            </Link>
+          </p>
+        </Card>
+      )}
+
+      {me && me.role === 'PHARMACY_OWNER' && (
         <>
       <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
         <IconShieldCheck width={18} height={18} className="mt-0.5 shrink-0" />
