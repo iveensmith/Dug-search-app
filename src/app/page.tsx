@@ -711,7 +711,12 @@ export default function Home() {
                         </div>
                       </div>
                       <p className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{r.address}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {r.address}
+                        {r.lga && (
+                          <span className="text-gray-400 dark:text-gray-500"> · {r.lga} LGA</span>
+                        )}
+                      </p>
                       <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
                         <IconPhone width={12} height={12} /> {r.phone}
                       </p>

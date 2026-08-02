@@ -13,6 +13,7 @@ export type PharmacyResult = {
   id: string
   name: string
   address: string
+  lga: string | null
   latitude: number
   longitude: number
   phone: string

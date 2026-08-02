@@ -7,6 +7,7 @@ export type PharmacyStockResult = {
   id: string
   name: string
   address: string
+  lga: string | null
   latitude: number
   longitude: number
   phone: string
@@ -40,6 +41,7 @@ export async function findPharmaciesWithDrug(opts: {
       p."id",
       p."name",
       p."address",
+      p."lga",
       p."latitude",
       p."longitude",
       p."phone",
