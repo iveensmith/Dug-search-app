@@ -107,16 +107,16 @@ export default function PrescriptionsPage() {
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-      <header className="py-6">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">Ask a pharmacist</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+      <header className="py-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Ask a pharmacist</h1>
+        <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
           Upload a prescription you don&apos;t understand — a licensed pharmacist will explain it
         </p>
       </header>
 
       <PrescriptionDisclaimer />
 
-      <Card className="mt-4">
+      <Card className="mt-5">
         <form onSubmit={submit}>
           <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Photo of the prescription
@@ -163,7 +163,7 @@ export default function PrescriptionsPage() {
               </button>
             </div>
           )}
-          <div className="mt-4">
+          <div className="mt-5">
             <Field label="What confuses you?" hint="(optional)" htmlFor="note">
               <Textarea
                 id="note"
@@ -177,20 +177,20 @@ export default function PrescriptionsPage() {
             </Field>
           </div>
           {error && <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
-          <Button type="submit" loading={busy} className="mt-3 w-full" size="lg">
+          <Button type="submit" loading={busy} className="mt-5 w-full" size="lg">
             {busy ? 'Uploading…' : 'Send to a pharmacist'}
           </Button>
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
             A pharmacist usually replies within a few hours. You&apos;ll see their answer on this
             page — we&apos;ll never post it anywhere else.
           </p>
-          <div className="mt-4">
+          <div className="mt-6">
             <PrescriptionDisclaimer variant="full" />
           </div>
         </form>
       </Card>
 
-      <h2 className="mb-2 mt-8 font-semibold text-gray-900 dark:text-gray-100">Your questions</h2>
+      <h2 className="mb-3 mt-12 font-semibold text-gray-900 dark:text-gray-100">Your questions</h2>
       {!uploads ? (
         <ul className="space-y-2" aria-label="Loading your questions" aria-live="polite">
           {[0, 1].map((i) => (

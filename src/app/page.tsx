@@ -414,10 +414,10 @@ export default function Home() {
   const searchPanel = (
     <Card
       id="search"
-      className="mb-3 scroll-mt-24 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:shadow-black/20 dark:ring-emerald-900/40"
+      className="mb-4 scroll-mt-24 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:shadow-black/20 dark:ring-emerald-900/40"
       padded={false}
     >
-      <div className="space-y-3 p-4">
+      <div className="space-y-4 p-5">
         {areaChosen && !pickerOpen ? (
           <div className="flex items-center justify-between gap-2 rounded-xl bg-emerald-50 px-3.5 py-2.5 dark:bg-emerald-500/10">
             <p className="flex min-w-0 items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -474,19 +474,23 @@ export default function Home() {
 
         <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!areaChosen} />
 
-        <div className="flex flex-wrap items-center gap-2 pt-0.5">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Popular:</span>
-          {QUICK_SEARCHES.map((term) => (
-            <button
-              key={term}
-              type="button"
-              onClick={() => quickSearch(term)}
-              disabled={!areaChosen}
-              className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
-            >
-              {term}
-            </button>
-          ))}
+        <div className="pt-1">
+          <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+            Popular searches
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {QUICK_SEARCHES.map((term) => (
+              <button
+                key={term}
+                type="button"
+                onClick={() => quickSearch(term)}
+                disabled={!areaChosen}
+                className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
         </div>
 
         {!detectingState && !areaChosen && (
@@ -533,21 +537,21 @@ export default function Home() {
               headline and the search box on mobile, while explicit
               row/column placement keeps the two-column layout on desktop
               (copy + search stacked left, illustration right). */}
-          <section className="animate-fade-up grid items-center gap-y-6 py-10 md:grid-cols-2 md:gap-x-12 md:py-14">
+          <section className="animate-fade-up grid items-center gap-y-10 py-12 md:grid-cols-2 md:gap-x-16 md:py-20">
             <div className="md:col-start-1 md:row-start-1">
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
               </p>
-              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50">
+              <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50">
                 Find Medicine In Stock Near You
               </h1>
-              <p className="mt-4 max-w-md text-gray-600 dark:text-gray-400">
+              <p className="mt-5 max-w-md leading-relaxed text-gray-600 dark:text-gray-400">
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
             </div>
 
-            <div className="relative pb-14 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
+            <div className="relative pb-16 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
               <HeroGraphic />
               {/* Deliberately styled as a mock-up, not a live result: dashed
                   border, muted type and an explicit banner, so nobody reads
@@ -577,7 +581,7 @@ export default function Home() {
             <div className="md:col-start-1 md:row-start-2">
               {searchPanel}
 
-              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-6 text-sm text-gray-600 dark:text-gray-400">
                 Not sure what you need?{' '}
                 <Link
                   href="/prescriptions"
@@ -587,9 +591,9 @@ export default function Home() {
                 </Link>
               </p>
 
-              <ul className="mt-6 flex max-w-md flex-wrap gap-x-5 gap-y-2.5">
+              <ul className="mt-8 grid max-w-md grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
                 {TRUST_BADGES.map((t) => (
-                  <li key={t} className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <li key={t} className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <IconShieldCheck width={16} height={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
                     {t}
                   </li>
@@ -598,18 +602,18 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="reveal pb-16">
+          <section className="reveal border-t border-gray-200/80 py-16 md:py-24 dark:border-gray-800/80">
             <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
               How it works
             </h2>
-            <p className="mx-auto mt-2 max-w-md text-center text-sm text-gray-600 dark:text-gray-400">
+            <p className="mx-auto mt-3 max-w-md text-center text-sm text-gray-600 dark:text-gray-400">
               Three steps between you and your medicine.
             </p>
-            <ol className="mt-8 grid gap-4 sm:grid-cols-3">
+            <ol className="mt-10 grid gap-5 sm:grid-cols-3">
               {HOW_IT_WORKS.map(({ icon: Icon, title, text }, i) => (
                 <li
                   key={title}
-                  className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+                  className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-7 dark:border-gray-800 dark:bg-gray-900"
                 >
                   <span className="absolute right-5 top-4 text-4xl font-black text-emerald-100 dark:text-emerald-500/15">
                     {i + 1}
@@ -617,8 +621,8 @@ export default function Home() {
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                     <Icon width={20} height={20} />
                   </span>
-                  <p className="mt-4 font-bold text-gray-900 dark:text-gray-50">{title}</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{text}</p>
+                  <p className="mt-5 font-bold text-gray-900 dark:text-gray-50">{title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{text}</p>
                 </li>
               ))}
             </ol>
@@ -650,7 +654,7 @@ export default function Home() {
           </div>
         ) : null)}
 
-      <main className="mt-5 flex-1">
+      <main className="mt-8 flex-1">
         {state.kind === 'idle' && selectedState && (
           <Card padded={false} className="animate-fade-in overflow-hidden">
             {(userPos || locationDenied) && (

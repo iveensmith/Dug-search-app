@@ -81,7 +81,7 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
 
   return (
     <div className="relative">
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 min-[420px]:flex-row">
         <div className="relative min-w-0 flex-1">
           <IconSearch
             width={18}
@@ -116,7 +116,7 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
             disabled={disabled}
           />
         </div>
-        <Button onClick={submit} disabled={disabled} size="lg" className="shrink-0">
+        <Button onClick={submit} disabled={disabled} size="lg" className="w-full shrink-0 min-[420px]:w-auto">
           Search
         </Button>
       </div>

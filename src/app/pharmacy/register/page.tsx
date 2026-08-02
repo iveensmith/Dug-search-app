@@ -175,9 +175,9 @@ export default function PharmacyRegisterPage() {
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-      <header className="py-8 text-center">
+      <header className="py-10 text-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Add your pharmacy outlet</h1>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
       </header>
 
       {me === undefined && (
@@ -249,7 +249,7 @@ export default function PharmacyRegisterPage() {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <div className="flex items-center justify-between text-xs font-medium">
           {STEPS.map((label, i) => (
             <span
@@ -267,7 +267,7 @@ export default function PharmacyRegisterPage() {
             </span>
           ))}
         </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
           <div
             className="h-full rounded-full bg-emerald-600 transition-all duration-300 dark:bg-emerald-500"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
@@ -275,8 +275,8 @@ export default function PharmacyRegisterPage() {
         </div>
       </div>
 
-      <Card className="mt-4">
-        <form onSubmit={submit} className="space-y-4">
+      <Card className="mt-5">
+        <form onSubmit={submit} className="space-y-5">
           {step === 0 && (
             <>
               <Field label="Pharmacy name" htmlFor="pharmacyName">
