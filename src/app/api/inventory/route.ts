@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
       name: pharmacy.name,
       address: pharmacy.address,
       state: pharmacy.state,
+      lga: pharmacy.lga,
       verificationStatus: pharmacy.verificationStatus,
       open24h: pharmacy.open24h,
       opensAt: pharmacy.opensAt,

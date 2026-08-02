@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
+import { lgasForState } from '@/lib/lgas'
 import { DRUG_FORMS, formUsesPackSize, type DrugFormValue } from '@/lib/drugForms'
 import AppHeader from '@/components/ui/AppHeader'
 import Card from '@/components/ui/Card'
@@ -30,6 +31,7 @@ type Dashboard = {
     name: string
     address: string
     state: string
+    lga: string | null
     verificationStatus: string
     open24h: boolean
     opensAt: string | null
@@ -105,6 +107,82 @@ function AddOnFields({
         </Field>
       </div>
     </>
+  )
+}
+
+// Required — patient searches filter by LGA, so an outlet without one is
+// invisible to LGA-scoped searches. Mainly here for outlets registered
+// before the LGA field existed.
+function LgaCard({
+  pharmacy,
+  onSaved,
+}: {
+  pharmacy: Dashboard['pharmacy']
+  onSaved: (lga: string) => void
+}) {
+  const [lga, setLga] = useState(pharmacy.lga ?? '')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  async function save() {
+    if (!lga) {
+      setError('Pick your LGA')
+      return
+    }
+    setSaving(true)
+    setError('')
+    setSaved(false)
+    try {
+      const res = await fetch('/api/pharmacy/lga', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lga }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Could not save your LGA')
+        return
+      }
+      onSaved(data.lga)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      setError('Network problem — try again')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Card className="mb-4">
+      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Local Government Area</p>
+      {!pharmacy.lga && (
+        <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+          <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0" />
+          <p>
+            Required — patients search by LGA, so your pharmacy won&apos;t appear in their results
+            until this is set.
+          </p>
+        </div>
+      )}
+      <Field label={`Your LGA in ${stateLabel(pharmacy.state)}`} htmlFor="pharmacy-lga">
+        <Select id="pharmacy-lga" value={lga} onChange={(e) => setLga(e.target.value)} required>
+          <option value="" disabled>
+            Select your LGA
+          </option>
+          {lgasForState(pharmacy.state).map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+      <Button size="sm" className="mt-3" onClick={save} loading={saving}>
+        {saved ? 'Saved \u2713' : saving ? 'Saving\u2026' : 'Save LGA'}
+      </Button>
+    </Card>
   )
 }
 
@@ -540,6 +618,10 @@ export default function PharmacyDashboard() {
 
       {pharmacy.verificationStatus === 'APPROVED' && (
         <>
+          <LgaCard
+            pharmacy={pharmacy}
+            onSaved={(lga) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, lga } } : d))}
+          />
           <HoursCard
             pharmacy={pharmacy}
             onSaved={(hours) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, ...hours } } : d))}

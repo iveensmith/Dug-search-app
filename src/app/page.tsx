@@ -232,7 +232,7 @@ export default function Home() {
   }
 
   function searchDrug(drug: DrugSuggestion) {
-    if (!selectedState) return
+    if (!selectedState || !selectedLgaRef.current) return
     return runSearch(drug, selectedState)
   }
 
@@ -439,9 +439,11 @@ export default function Home() {
           </Field>
 
           {selectedState && (
-            <Field label="Area (LGA)" hint="(optional)" htmlFor="lga-picker">
-              <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)}>
-                <option value="">All of {stateLabel(selectedState)}</option>
+            <Field label="Area (LGA)" htmlFor="lga-picker">
+              <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)} required>
+                <option value="" disabled>
+                  Select your LGA in {stateLabel(selectedState)}
+                </option>
                 {lgasForState(selectedState).map((lga) => (
                   <option key={lga} value={lga}>
                     {lga}
@@ -451,12 +453,16 @@ export default function Home() {
             </Field>
           )}
 
-          <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState} />
+          <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState || !selectedLga} />
         </div>
       </Card>
 
-      {!selectedState && !detectingState && (
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400">Pick your state above to search pharmacies there</p>
+      {!detectingState && (!selectedState || !selectedLga) && state.kind === 'idle' && (
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          {!selectedState
+            ? 'Pick your state above to search pharmacies there'
+            : 'Now pick your LGA to search pharmacies in your area'}
+        </p>
       )}
 
       {state.kind !== 'idle' &&
