@@ -529,8 +529,12 @@ export default function Home() {
         <>
       {state.kind === 'idle' && (
         <>
-          <section className="animate-fade-up grid items-center gap-10 py-10 md:grid-cols-2 md:gap-12 md:py-14">
-            <div>
+          {/* Three grid children so the illustration can sit between the
+              headline and the search box on mobile, while explicit
+              row/column placement keeps the two-column layout on desktop
+              (copy + search stacked left, illustration right). */}
+          <section className="animate-fade-up grid items-center gap-y-6 py-10 md:grid-cols-2 md:gap-x-12 md:py-14">
+            <div className="md:col-start-1 md:row-start-1">
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
               </p>
@@ -541,8 +545,37 @@ export default function Home() {
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
+            </div>
 
-              <div className="mt-6">{searchPanel}</div>
+            <div className="relative pb-14 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
+              <HeroGraphic />
+              {/* Deliberately styled as a mock-up, not a live result: dashed
+                  border, muted type and an explicit banner, so nobody reads
+                  these placeholder names as real pharmacies. */}
+              <div
+                aria-hidden="true"
+                className="animate-float absolute -bottom-1 left-0 w-60 select-none rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 sm:w-64 dark:border-gray-600 dark:bg-gray-900/95"
+              >
+                <p className="mb-2.5 rounded-md bg-gray-200 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-white/10 dark:text-gray-400">
+                  Sample — not live results
+                </p>
+                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Paracetamol 500 mg</p>
+                <ul className="mt-2.5 space-y-2">
+                  {EXAMPLE_RESULTS.map(([name, dist]) => (
+                    <li key={name} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <IconCheck width={14} height={14} className="shrink-0 text-gray-400 dark:text-gray-500" />
+                        <span className="truncate text-gray-400 dark:text-gray-500">{name}</span>
+                      </span>
+                      <span className="shrink-0 text-xs font-semibold text-gray-400 dark:text-gray-500">{dist}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="md:col-start-1 md:row-start-2">
+              {searchPanel}
 
               <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                 Not sure what you need?{' '}
@@ -562,33 +595,6 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            <div className="relative hidden pb-12 md:block">
-              <HeroGraphic />
-              {/* Deliberately styled as a mock-up, not a live result: dashed
-                  border, muted type and an explicit banner, so nobody reads
-                  these placeholder names as real pharmacies. */}
-              <div
-                aria-hidden="true"
-                className="animate-float absolute -bottom-1 left-0 w-64 select-none rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 dark:border-gray-600 dark:bg-gray-900/95"
-              >
-                <p className="mb-2.5 rounded-md bg-gray-200 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-white/10 dark:text-gray-400">
-                  Sample — not live results
-                </p>
-                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Paracetamol 500 mg</p>
-                <ul className="mt-2.5 space-y-2">
-                  {EXAMPLE_RESULTS.map(([name, dist]) => (
-                    <li key={name} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <IconCheck width={14} height={14} className="shrink-0 text-gray-400 dark:text-gray-500" />
-                        <span className="truncate text-gray-400 dark:text-gray-500">{name}</span>
-                      </span>
-                      <span className="shrink-0 text-xs font-semibold text-gray-400 dark:text-gray-500">{dist}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </section>
 
