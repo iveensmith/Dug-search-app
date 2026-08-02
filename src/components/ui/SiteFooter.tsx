@@ -3,8 +3,8 @@ import { LogoMark } from '@/components/ui/Logo'
 import { IconMessageCircle } from '@/components/ui/icons'
 
 // PLACEHOLDER — no mailbox is receiving this yet. Swap it for the real
-// support address (and drop the "coming soon" note below) once one exists;
-// this constant is the only place it appears.
+// support address once one exists; this constant is the only place it
+// appears.
 const CONTACT_EMAIL = 'hello@mediquest.ng'
 
 export default function SiteFooter() {
@@ -51,7 +51,6 @@ export default function SiteFooter() {
                 {CONTACT_EMAIL}
               </a>
             </li>
-            <li className="text-emerald-200/70">Mailbox coming soon</li>
             <li>
               <Link href="/prescriptions" className="text-emerald-100/90 hover:text-white">
                 Medicine question? Ask a pharmacist
