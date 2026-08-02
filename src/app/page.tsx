@@ -662,8 +662,8 @@ export default function Home() {
               <ul className={`stagger space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
                 {sortedResults.map((r) => (
                   <li key={r.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
-                    <div className="relative flex h-24 items-center justify-center bg-gradient-to-br from-emerald-500 to-emerald-700 dark:from-emerald-600 dark:to-emerald-900">
-                      <IconMapPin width={36} height={36} className="text-white/90" />
+                    <div className="relative flex h-24 items-center justify-center border-b border-transparent bg-gradient-to-br from-emerald-500 to-emerald-700 dark:border-emerald-900/40 dark:from-emerald-950/80 dark:to-emerald-900/40">
+                      <IconMapPin width={36} height={36} className="text-white/90 dark:text-emerald-400/70" />
                       <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-emerald-700 shadow-sm dark:bg-gray-950/90 dark:text-emerald-400">
                         {r.distanceKm.toFixed(1)} km away
                       </span>
