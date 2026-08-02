@@ -18,14 +18,44 @@ import NotifyMeForm from '@/components/NotifyMeForm'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
+  IconCheck,
   IconMapPin,
   IconMessageCircle,
   IconPhone,
   IconRoute,
   IconSearch,
+  IconShieldCheck,
   IconStore,
   IconX,
 } from '@/components/ui/icons'
+
+const TRUST_BADGES = ['Verified pharmacies', 'Licensed pharmacists', 'Live inventory', 'Secure & private']
+
+const QUICK_SEARCHES = ['Paracetamol', 'Amoxicillin', 'Coartem', 'Ventolin', 'Insulin']
+
+const HOW_IT_WORKS = [
+  {
+    icon: IconSearch,
+    title: 'Search your medicine',
+    text: 'Type the drug name — we match generics and brand names as you type.',
+  },
+  {
+    icon: IconMapPin,
+    title: 'Compare nearby pharmacies',
+    text: 'See verified pharmacies in your LGA that have it in stock, nearest first.',
+  },
+  {
+    icon: IconRoute,
+    title: 'Go get it',
+    text: 'Get turn-by-turn directions or call ahead — no more pharmacy-hopping.',
+  },
+] as const
+
+const EXAMPLE_RESULTS = [
+  ['Wellspring Pharmacy', '1.2 km'],
+  ['GreenCross Pharmacy', '2.3 km'],
+  ['CityCare Pharmacy', '3.1 km'],
+] as const
 
 const FEATURE_CARDS = [
   {
@@ -236,6 +266,21 @@ export default function Home() {
     return runSearch(drug, selectedState)
   }
 
+  // One-tap search for the "Popular" chips: resolve the term against the
+  // drug list, then run the normal search (or log the gap if unmatched).
+  async function quickSearch(term: string) {
+    if (!selectedState || !selectedLgaRef.current) return
+    try {
+      const res = await fetch(`/api/drugs/search?q=${encodeURIComponent(term)}`)
+      const json = await res.json()
+      const drug: DrugSuggestion | undefined = (json.drugs ?? [])[0]
+      if (drug) await runSearch(drug, selectedState)
+      else await logNoMatch(term)
+    } catch {
+      /* network hiccup — leave the page as-is */
+    }
+  }
+
   async function logNoMatch(query: string) {
     if (!selectedState) return
     lastDrugRef.current = null // nothing to re-sort if location arrives later
@@ -347,7 +392,7 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
       {state.kind === 'idle' && (
         <>
-          <section className="animate-fade-up grid items-center gap-8 py-10 md:grid-cols-2 md:gap-10 md:py-16">
+          <section className="animate-fade-up grid items-center gap-10 py-12 md:grid-cols-2 md:gap-12 md:py-20">
             <div>
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
@@ -359,11 +404,40 @@ export default function Home() {
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
+              <ul className="mt-6 flex max-w-md flex-wrap gap-x-5 gap-y-2.5">
+                {TRUST_BADGES.map((t) => (
+                  <li key={t} className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <IconShieldCheck width={16} height={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <HeroGraphic />
+            <div className="relative pb-10">
+              <HeroGraphic />
+              <div className="animate-float absolute -bottom-1 left-0 w-64 rounded-2xl border border-gray-200 bg-white/95 p-4 shadow-xl shadow-emerald-900/10 backdrop-blur-sm sm:left-2 dark:border-gray-700 dark:bg-gray-900/95">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-gray-900 dark:text-gray-50">Paracetamol 500 mg</p>
+                  <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:bg-white/10 dark:text-gray-400">
+                    Example
+                  </span>
+                </div>
+                <ul className="mt-3 space-y-2.5">
+                  {EXAMPLE_RESULTS.map(([name, dist]) => (
+                    <li key={name} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <IconCheck width={14} height={14} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        <span className="truncate text-gray-700 dark:text-gray-300">{name}</span>
+                      </span>
+                      <span className="shrink-0 text-xs font-semibold text-emerald-700 dark:text-emerald-400">{dist}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </section>
 
-          <section className="stagger grid gap-4 pb-10 sm:grid-cols-3">
+          <section className="stagger grid gap-4 pb-16 sm:grid-cols-3">
             {FEATURE_CARDS.filter(({ href }) => {
               // Outlet registration is for visitors and pharmacy owners;
               // drug search is for everyone except pharmacy owners.
@@ -395,6 +469,32 @@ export default function Home() {
               )
             })}
           </section>
+
+          <section className="reveal pb-16">
+            <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+              How it works
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-center text-sm text-gray-600 dark:text-gray-400">
+              Three steps between you and your medicine.
+            </p>
+            <ol className="mt-8 grid gap-4 sm:grid-cols-3">
+              {HOW_IT_WORKS.map(({ icon: Icon, title, text }, i) => (
+                <li
+                  key={title}
+                  className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+                >
+                  <span className="absolute right-5 top-4 text-4xl font-black text-emerald-100 dark:text-emerald-500/15">
+                    {i + 1}
+                  </span>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                    <Icon width={20} height={20} />
+                  </span>
+                  <p className="mt-4 font-bold text-gray-900 dark:text-gray-50">{title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{text}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
         </>
       )}
 
@@ -419,7 +519,7 @@ export default function Home() {
         </Card>
       ) : (
         <>
-      <Card id="search" className="mb-3 scroll-mt-20" padded={false}>
+      <Card id="search" className="mb-3 scroll-mt-24 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:shadow-black/20 dark:ring-emerald-900/40" padded={false}>
         <div className="space-y-3 p-4">
           <Field label="Searching in" htmlFor="state-picker">
             <Select
@@ -454,6 +554,21 @@ export default function Home() {
           )}
 
           <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState || !selectedLga} />
+
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Popular:</span>
+            {QUICK_SEARCHES.map((term) => (
+              <button
+                key={term}
+                type="button"
+                onClick={() => quickSearch(term)}
+                disabled={!selectedState || !selectedLga}
+                className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
         </div>
       </Card>
 

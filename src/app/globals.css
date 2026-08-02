@@ -205,6 +205,29 @@ body {
   animation: hero-roll-in-right 0.9s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Scroll reveal — progressive enhancement via CSS scroll-driven animations:
+   browsers without animation-timeline support simply show the content. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+}
+
+/* Gentle idle float for the hero's example-results card */
+@keyframes float-soft {
+  from {
+    transform: rotate(-2deg) translateY(0);
+  }
+  to {
+    transform: rotate(-2deg) translateY(-8px);
+  }
+}
+.animate-float {
+  animation: float-soft 3.5s ease-in-out infinite alternate;
+}
+
 /* Stagger: children fade up one after another (first 8, then no delay). */
 .stagger > * {
   animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
