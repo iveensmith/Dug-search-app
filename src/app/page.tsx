@@ -4,7 +4,15 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
-import { type ActiveRoute, type DrugSuggestion, type PharmacyResult, type SubstituteGroup, drugLabel, directionsUrl } from '@/lib/types'
+import {
+  type ActiveRoute,
+  type DrugSuggestion,
+  type PharmacyResult,
+  type SubstituteGroup,
+  drugLabel,
+  directionsUrl,
+  relativeTime,
+} from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 import { lgasForState } from '@/lib/lgas'
 import SiteHeader from '@/components/ui/SiteHeader'
@@ -29,7 +37,7 @@ import {
   IconX,
 } from '@/components/ui/icons'
 
-const TRUST_BADGES = ['Verified pharmacies', 'Licensed pharmacists', 'Live inventory', 'Secure & private']
+const TRUST_BADGES = ['PCN-verified pharmacies', 'Licensed pharmacists', 'Stock kept up to date', 'Secure & private']
 
 const QUICK_SEARCHES = ['Paracetamol', 'Amoxicillin', 'Coartem', 'Ventolin', 'Insulin']
 
@@ -57,27 +65,6 @@ const EXAMPLE_RESULTS = [
   ['CityCare Pharmacy', '3.1 km'],
 ] as const
 
-const FEATURE_CARDS = [
-  {
-    icon: IconSearch,
-    title: 'Find Your Medicine',
-    cta: 'Search now',
-    href: '#search',
-  },
-  {
-    icon: IconMessageCircle,
-    title: 'Ask a Pharmacist',
-    cta: 'Chat now',
-    href: '/prescriptions',
-  },
-  {
-    icon: IconStore,
-    title: 'Add Your Pharmacy Outlet',
-    cta: 'Register now',
-    href: '/pharmacy/register',
-  },
-] as const satisfies { icon: typeof IconSearch; title: string; cta: string; href: string }[]
-
 // Leaflet touches `window` — client-only
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
   ssr: false,
@@ -95,7 +82,14 @@ type Pos = { lat: number; lng: number }
 type SearchState =
   | { kind: 'idle' }
   | { kind: 'loading'; label: string }
-  | { kind: 'results'; label: string; drugId: string; results: PharmacyResult[]; substitutes: SubstituteGroup[] }
+  | {
+      kind: 'results'
+      label: string
+      drugId: string
+      results: PharmacyResult[]
+      substitutes: SubstituteGroup[]
+      elsewhere: PharmacyResult[] // same drug, elsewhere in the state — powers the empty state
+    }
   | { kind: 'no-match'; query: string }
 
 function getPosition(timeoutMs: number): Promise<Pos | null> {
@@ -111,14 +105,26 @@ function getPosition(timeoutMs: number): Promise<Pos | null> {
 
 // Nominatim reverse geocode → best-guess Nigerian state, purely to pre-fill
 // the picker. Never blocks search — the user can always override it.
-async function detectStateFromPosition(pos: Pos): Promise<NigerianStateValue | null> {
+async function detectAreaFromPosition(
+  pos: Pos,
+): Promise<{ state: NigerianStateValue; lga: string | null } | null> {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`,
     )
     const data = await res.json()
     const stateName: string | undefined = data?.address?.state
-    return stateName ? matchStateName(stateName) : null
+    const state = stateName ? matchStateName(stateName) : null
+    if (!state) return null
+
+    // Nominatim reports Nigerian LGAs inconsistently — county is the usual
+    // field, city/town sometimes. Match loosely against the canonical list
+    // and fall back to "not detected" rather than guessing wrong.
+    const candidates = [data?.address?.county, data?.address?.city, data?.address?.town]
+      .filter((v): v is string => typeof v === 'string')
+      .map((v) => v.replace(/\s+(local government area|lga)$/i, '').trim().toLowerCase())
+    const lga = lgasForState(state).find((l) => candidates.includes(l.toLowerCase())) ?? null
+    return { state, lga }
   } catch {
     return null
   }
@@ -130,7 +136,8 @@ export default function Home() {
   // that can't register one (patients, pharmacists, admins).
   const [viewerRole, setViewerRole] = useState<string | null>(null)
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
-  const [selectedLga, setSelectedLga] = useState('') // '' = whole state
+  const [selectedLga, setSelectedLga] = useState('')
+  const [pickerOpen, setPickerOpen] = useState(false) // full state/LGA dropdowns vs the compact chip
   const selectedLgaRef = useRef('') // read inside runSearch (avoids stale closure)
   const [detectingState, setDetectingState] = useState(true)
   const [userPos, setUserPos] = useState<Pos | null>(null)
@@ -170,6 +177,7 @@ export default function Home() {
   function chooseLga(value: string) {
     setSelectedLga(value)
     selectedLgaRef.current = value
+    setPickerOpen(false) // both parts chosen — collapse back to the chip
     // Narrow (or widen) an active search immediately
     if (lastDrugRef.current && selectedState) runSearch(lastDrugRef.current, selectedState)
   }
@@ -225,9 +233,17 @@ export default function Home() {
       if (cancelled) return
       applyPosition(pos)
 
-      if (!stored && !accountState && pos) {
-        const detected = await detectStateFromPosition(pos)
-        if (detected && !cancelled) chooseState(detected)
+      if (pos && !cancelled) {
+        const detected = await detectAreaFromPosition(pos)
+        if (detected && !cancelled) {
+          // Only override a remembered/account state when we have nothing saved
+          if (!stored && !accountState) chooseState(detected.state)
+          const forState = stored && isValidState(stored) ? stored : accountState ?? detected.state
+          if (detected.lga && forState === detected.state) {
+            setSelectedLga(detected.lga)
+            selectedLgaRef.current = detected.lga
+          }
+        }
       }
       if (!cancelled) setDetectingState(false)
     }, 0)
@@ -255,9 +271,16 @@ export default function Home() {
     try {
       const res = await fetch(`/api/search?${params}`)
       const data = await res.json()
-      setState({ kind: 'results', label, drugId: drug.id, results: data.results ?? [], substitutes: data.substitutes ?? [] })
+      setState({
+        kind: 'results',
+        label,
+        drugId: drug.id,
+        results: data.results ?? [],
+        substitutes: data.substitutes ?? [],
+        elsewhere: data.elsewhere ?? [],
+      })
     } catch {
-      setState({ kind: 'results', label, drugId: drug.id, results: [], substitutes: [] })
+      setState({ kind: 'results', label, drugId: drug.id, results: [], substitutes: [], elsewhere: [] })
     }
   }
 
@@ -384,15 +407,129 @@ export default function Home() {
   const fallbackCenter = selectedState ? stateCenter(selectedState) : null
   const mapCenter = userPos ?? fallbackCenter ?? { lat: 9.082, lng: 8.6753 } // Nigeria's geographic centre — only used before a state is picked
   const selectedLabel = selectedState ? stateLabel(selectedState) : null
+  const areaChosen = Boolean(selectedState && selectedLga)
+
+  // The one interactive thing that matters — rendered inside the hero while
+  // idle, and above the results once a search has run.
+  const searchPanel = (
+    <Card
+      id="search"
+      className="mb-3 scroll-mt-24 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:shadow-black/20 dark:ring-emerald-900/40"
+      padded={false}
+    >
+      <div className="space-y-3 p-4">
+        {areaChosen && !pickerOpen ? (
+          <div className="flex items-center justify-between gap-2 rounded-xl bg-emerald-50 px-3.5 py-2.5 dark:bg-emerald-500/10">
+            <p className="flex min-w-0 items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <IconMapPin width={16} height={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span className="truncate">
+                Searching in{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLga}</span>,{' '}
+                {selectedLabel}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              className="shrink-0 cursor-pointer text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            >
+              Change
+            </button>
+          </div>
+        ) : (
+          <>
+            <Field label="Searching in" htmlFor="state-picker">
+              <Select
+                id="state-picker"
+                value={selectedState ?? ''}
+                onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
+              >
+                <option value="" disabled>
+                  {detectingState ? 'Detecting your location…' : 'Select your state'}
+                </option>
+                {NIGERIAN_STATES.map((st) => (
+                  <option key={st.value} value={st.value}>
+                    {st.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            {selectedState && (
+              <Field label="Area (LGA)" htmlFor="lga-picker">
+                <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)} required>
+                  <option value="" disabled>
+                    Select your LGA in {selectedLabel}
+                  </option>
+                  {lgasForState(selectedState).map((lga) => (
+                    <option key={lga} value={lga}>
+                      {lga}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+          </>
+        )}
+
+        <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!areaChosen} />
+
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Popular:</span>
+          {QUICK_SEARCHES.map((term) => (
+            <button
+              key={term}
+              type="button"
+              onClick={() => quickSearch(term)}
+              disabled={!areaChosen}
+              className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+            >
+              {term}
+            </button>
+          ))}
+        </div>
+
+        {!detectingState && !areaChosen && (
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {!selectedState
+              ? 'Pick your state to search pharmacies there'
+              : 'Now pick your LGA — results are scoped to your area'}
+          </p>
+        )}
+      </div>
+    </Card>
+  )
+
 
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
+      {viewerRole === 'PHARMACY_OWNER' ? (
+        <Card className="animate-fade-up mx-auto mb-10 w-full max-w-md text-center">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <IconStore width={22} height={22} />
+          </span>
+          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
+            You&apos;re signed in as a pharmacy owner
+          </p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Drug search is for patients. Manage your outlet&apos;s inventory and see local demand from
+            your dashboard.
+          </p>
+          <Link
+            href="/pharmacy"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+          >
+            Go to your dashboard
+          </Link>
+        </Card>
+      ) : (
+        <>
       {state.kind === 'idle' && (
         <>
-          <section className="animate-fade-up grid items-center gap-10 py-12 md:grid-cols-2 md:gap-12 md:py-20">
+          <section className="animate-fade-up grid items-center gap-10 py-10 md:grid-cols-2 md:gap-12 md:py-14">
             <div>
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
@@ -404,6 +541,19 @@ export default function Home() {
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
+
+              <div className="mt-6">{searchPanel}</div>
+
+              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                Not sure what you need?{' '}
+                <Link
+                  href="/prescriptions"
+                  className="font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                >
+                  Ask a pharmacist
+                </Link>
+              </p>
+
               <ul className="mt-6 flex max-w-md flex-wrap gap-x-5 gap-y-2.5">
                 {TRUST_BADGES.map((t) => (
                   <li key={t} className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -413,61 +563,33 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <div className="relative pb-10">
+
+            <div className="relative hidden pb-12 md:block">
               <HeroGraphic />
-              <div className="animate-float absolute -bottom-1 left-0 w-64 rounded-2xl border border-gray-200 bg-white/95 p-4 shadow-xl shadow-emerald-900/10 backdrop-blur-sm sm:left-2 dark:border-gray-700 dark:bg-gray-900/95">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-bold text-gray-900 dark:text-gray-50">Paracetamol 500 mg</p>
-                  <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:bg-white/10 dark:text-gray-400">
-                    Example
-                  </span>
-                </div>
-                <ul className="mt-3 space-y-2.5">
+              {/* Deliberately styled as a mock-up, not a live result: dashed
+                  border, muted type and an explicit banner, so nobody reads
+                  these placeholder names as real pharmacies. */}
+              <div
+                aria-hidden="true"
+                className="animate-float absolute -bottom-1 left-0 w-64 select-none rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 dark:border-gray-600 dark:bg-gray-900/95"
+              >
+                <p className="mb-2.5 rounded-md bg-gray-200 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-white/10 dark:text-gray-400">
+                  Sample — not live results
+                </p>
+                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Paracetamol 500 mg</p>
+                <ul className="mt-2.5 space-y-2">
                   {EXAMPLE_RESULTS.map(([name, dist]) => (
                     <li key={name} className="flex items-center justify-between gap-2 text-sm">
                       <span className="flex min-w-0 items-center gap-1.5">
-                        <IconCheck width={14} height={14} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-                        <span className="truncate text-gray-700 dark:text-gray-300">{name}</span>
+                        <IconCheck width={14} height={14} className="shrink-0 text-gray-400 dark:text-gray-500" />
+                        <span className="truncate text-gray-400 dark:text-gray-500">{name}</span>
                       </span>
-                      <span className="shrink-0 text-xs font-semibold text-emerald-700 dark:text-emerald-400">{dist}</span>
+                      <span className="shrink-0 text-xs font-semibold text-gray-400 dark:text-gray-500">{dist}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-          </section>
-
-          <section className="stagger grid gap-4 pb-16 sm:grid-cols-3">
-            {FEATURE_CARDS.filter(({ href }) => {
-              // Outlet registration is for visitors and pharmacy owners;
-              // drug search is for everyone except pharmacy owners.
-              if (href === '/pharmacy/register') return viewerRole === null || viewerRole === 'PHARMACY_OWNER'
-              if (href === '#search') return viewerRole !== 'PHARMACY_OWNER'
-              return true
-            }).map(({ icon: Icon, title, cta, href }) => {
-              const cardClass =
-                'group flex flex-col items-center gap-3 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-600/5 dark:border-emerald-900/50 dark:bg-emerald-500/5 dark:hover:border-emerald-700'
-              const inner = (
-                <>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white transition-transform duration-200 group-hover:scale-110 dark:bg-emerald-500 dark:text-emerald-950">
-                    <Icon width={22} height={22} />
-                  </div>
-                  <p className="font-bold text-gray-900 dark:text-gray-50">{title}</p>
-                  <span className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors group-hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950">
-                    {cta}
-                  </span>
-                </>
-              )
-              return href.startsWith('#') ? (
-                <a key={title} href={href} className={cardClass}>
-                  {inner}
-                </a>
-              ) : (
-                <Link key={title} href={href} className={cardClass}>
-                  {inner}
-                </Link>
-              )
-            })}
           </section>
 
           <section className="reveal pb-16">
@@ -498,87 +620,7 @@ export default function Home() {
         </>
       )}
 
-      {viewerRole === 'PHARMACY_OWNER' ? (
-        <Card className="animate-fade-up mx-auto mb-10 w-full max-w-md text-center">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-            <IconStore width={22} height={22} />
-          </span>
-          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
-            You&apos;re signed in as a pharmacy owner
-          </p>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Drug search is for patients. Manage your outlet&apos;s inventory and see local demand from
-            your dashboard.
-          </p>
-          <Link
-            href="/pharmacy"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
-          >
-            Go to your dashboard
-          </Link>
-        </Card>
-      ) : (
-        <>
-      <Card id="search" className="mb-3 scroll-mt-24 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:shadow-black/20 dark:ring-emerald-900/40" padded={false}>
-        <div className="space-y-3 p-4">
-          <Field label="Searching in" htmlFor="state-picker">
-            <Select
-              id="state-picker"
-              value={selectedState ?? ''}
-              onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
-            >
-              <option value="" disabled>
-                {detectingState ? 'Detecting your state…' : 'Select your state'}
-              </option>
-              {NIGERIAN_STATES.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          {selectedState && (
-            <Field label="Area (LGA)" htmlFor="lga-picker">
-              <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)} required>
-                <option value="" disabled>
-                  Select your LGA in {stateLabel(selectedState)}
-                </option>
-                {lgasForState(selectedState).map((lga) => (
-                  <option key={lga} value={lga}>
-                    {lga}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          )}
-
-          <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!selectedState || !selectedLga} />
-
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Popular:</span>
-            {QUICK_SEARCHES.map((term) => (
-              <button
-                key={term}
-                type="button"
-                onClick={() => quickSearch(term)}
-                disabled={!selectedState || !selectedLga}
-                className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
-              >
-                {term}
-              </button>
-            ))}
-          </div>
-        </div>
-      </Card>
-
-      {!detectingState && (!selectedState || !selectedLga) && state.kind === 'idle' && (
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-          {!selectedState
-            ? 'Pick your state above to search pharmacies there'
-            : 'Now pick your LGA to search pharmacies in your area'}
-        </p>
-      )}
+      {state.kind !== 'idle' && searchPanel}
 
       {state.kind !== 'idle' &&
         (selectedState && userPos ? (
@@ -694,13 +736,67 @@ export default function Home() {
 
         {state.kind === 'results' && results.length === 0 && (
           <>
-            <div className="animate-fade-up mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
-              <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
-              <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
-                No pharmacy in {selectedLabel} currently has {state.label} in stock.
-              </p>
-              <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">Stock changes daily — check back soon.</p>
+            <div className="animate-fade-up rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/60 dark:bg-amber-950/30">
+              <div className="flex items-start gap-3">
+                <IconAlertCircle width={22} height={22} className="mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-amber-900 dark:text-amber-200">
+                    No pharmacy in {selectedLga} has {state.label} right now
+                  </p>
+                  <p className="mt-1 text-sm text-amber-800 dark:text-amber-300/90">
+                    Here&apos;s what you can do instead — stock changes daily, so it&apos;s worth
+                    checking back.
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {state.elsewhere.length > 0 && (
+              <div className="mt-4">
+                <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <IconMapPin width={15} height={15} className="text-emerald-600 dark:text-emerald-400" />
+                  Available elsewhere in {selectedLabel}
+                </h2>
+                <ul className="space-y-2">
+                  {state.elsewhere.map((r) => (
+                    <li key={r.id}>
+                      <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{r.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {r.lga ? `${r.lga} · ` : ''}
+                            {r.distanceKm.toFixed(1)} km away
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                            Stock updated {relativeTime(r.stockUpdatedAt)}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <a
+                            href={`tel:${r.phone.replace(/\s/g, '')}`}
+                            onClick={(e) => handleCall(e, r.phone)}
+                            className="flex-1 rounded-lg border border-emerald-600/60 px-3 py-2 text-center text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 sm:flex-none dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
+                          >
+                            {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
+                          </a>
+                          <a
+                            href={directionsUrl(r.latitude, r.longitude)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-emerald-700 sm:flex-none dark:bg-emerald-500 dark:text-emerald-950"
+                          >
+                            Directions
+                          </a>
+                        </div>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  Call ahead before travelling — these are outside {selectedLga}.
+                </p>
+              </div>
+            )}
 
             {state.substitutes.length > 0 && (
               <div className="mt-4">
@@ -732,6 +828,28 @@ export default function Home() {
             )}
 
             <NotifyMeForm drugId={state.drugId} state={selectedState} />
+
+            <Card className="mt-4">
+              <div className="flex items-start gap-3.5">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                  <IconMessageCircle width={19} height={19} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                    Is there another option?
+                  </p>
+                  <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                    A licensed pharmacist can tell you what else treats the same thing.
+                  </p>
+                  <Link
+                    href="/prescriptions"
+                    className="mt-2 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                  >
+                    Ask a pharmacist
+                  </Link>
+                </div>
+              </div>
+            </Card>
           </>
         )}
 
@@ -834,6 +952,9 @@ export default function Home() {
                       </p>
                       <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
                         <IconPhone width={12} height={12} /> {r.phone}
+                      </p>
+                      <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                        Stock updated {relativeTime(r.stockUpdatedAt)} by the pharmacy
                       </p>
                       <div className="mt-3 flex gap-2">
                         <Button

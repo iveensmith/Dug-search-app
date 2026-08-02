@@ -11,7 +11,7 @@ import Card from '@/components/ui/Card'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Textarea } from '@/components/ui/Field'
-import { IconUpload } from '@/components/ui/icons'
+import { IconClipboardList, IconUpload, IconX } from '@/components/ui/icons'
 
 type UploadRow = {
   id: string
@@ -35,6 +35,7 @@ export default function PrescriptionsPage() {
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [preview, setPreview] = useState<{ url: string; name: string } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async () => {
@@ -54,6 +55,24 @@ export default function PrescriptionsPage() {
     const timer = setTimeout(load, 0)
     return () => clearTimeout(timer)
   }, [load])
+
+  // Object URLs must be released or the blob stays in memory for the session
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview.url)
+  }, [preview])
+
+  function pickFile(file: File | undefined) {
+    setPreview((old) => {
+      if (old) URL.revokeObjectURL(old.url)
+      return file ? { url: URL.createObjectURL(file), name: file.name } : null
+    })
+    setError('')
+  }
+
+  function clearFile() {
+    if (fileRef.current) fileRef.current.value = ''
+    pickFile(undefined)
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -75,7 +94,7 @@ export default function PrescriptionsPage() {
         return
       }
       setNote('')
-      if (fileRef.current) fileRef.current.value = ''
+      clearFile()
       router.push(`/prescriptions/${data.upload.id}`)
     } catch {
       setError('Network problem — try again')
@@ -112,9 +131,38 @@ export default function PrescriptionsPage() {
               type="file"
               accept="image/jpeg,image/png,image/webp"
               capture="environment"
+              onChange={(e) => pickFile(e.target.files?.[0])}
               className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-700 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
             />
           </div>
+
+          {preview && (
+            <div className="animate-fade-in mt-3 flex items-start gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+              {/* Local blob preview — next/image would need a remote loader
+                  and this never leaves the browser. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={preview.url}
+                alt="Prescription you selected"
+                className="h-24 w-24 shrink-0 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Ready to send</p>
+                <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{preview.name}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Check it&apos;s sharp and the whole slip is visible.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={clearFile}
+                aria-label="Remove photo"
+                className="shrink-0 cursor-pointer rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-white/10"
+              >
+                <IconX width={16} height={16} />
+              </button>
+            </div>
+          )}
           <div className="mt-4">
             <Field label="What confuses you?" hint="(optional)" htmlFor="note">
               <Textarea
@@ -132,16 +180,40 @@ export default function PrescriptionsPage() {
           <Button type="submit" loading={busy} className="mt-3 w-full" size="lg">
             {busy ? 'Uploading…' : 'Send to a pharmacist'}
           </Button>
+          <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+            A pharmacist usually replies within a few hours. You&apos;ll see their answer on this
+            page — we&apos;ll never post it anywhere else.
+          </p>
+          <div className="mt-4">
+            <PrescriptionDisclaimer variant="full" />
+          </div>
         </form>
       </Card>
 
       <h2 className="mb-2 mt-8 font-semibold text-gray-900 dark:text-gray-100">Your questions</h2>
       {!uploads ? (
-        <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+        <ul className="space-y-2" aria-label="Loading your questions" aria-live="polite">
+          {[0, 1].map((i) => (
+            <li
+              key={i}
+              className="animate-pulse rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+            >
+              <div className="h-4 w-2/5 rounded bg-gray-200 dark:bg-gray-800" />
+              <div className="mt-2 h-3 w-1/4 rounded bg-gray-100 dark:bg-gray-800/70" />
+            </li>
+          ))}
+        </ul>
       ) : uploads.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-          Nothing yet — upload a prescription above to ask your first question.
-        </p>
+        <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <IconClipboardList width={22} height={22} />
+          </span>
+          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">No questions yet</p>
+          <p className="mt-1 max-w-sm text-sm text-gray-600 dark:text-gray-400">
+            Snap a photo of a prescription you don&apos;t follow — dosage, timing, what a drug is
+            for — and a licensed pharmacist will explain it in plain language.
+          </p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {uploads.map((u) => {

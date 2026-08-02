@@ -48,3 +48,17 @@ export type ActiveRoute = {
   durationMin: number
   coords: [number, number][] // [lat, lng] polyline
 }
+
+/** "2 hours ago" / "just now" — for stock freshness stamps. */
+export function relativeTime(iso: string | Date): string {
+  const then = new Date(iso).getTime()
+  const mins = Math.max(0, Math.round((Date.now() - then) / 60000))
+  if (mins < 2) return 'just now'
+  if (mins < 60) return `${mins} min ago`
+  const hours = Math.round(mins / 60)
+  if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+  const days = Math.round(hours / 24)
+  if (days < 30) return `${days} ${days === 1 ? 'day' : 'days'} ago`
+  const months = Math.round(days / 30)
+  return `${months} ${months === 1 ? 'month' : 'months'} ago`
+}

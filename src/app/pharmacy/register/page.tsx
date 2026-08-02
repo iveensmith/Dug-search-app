@@ -24,6 +24,8 @@ const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ),
 })
 
+const STEPS = ['Pharmacy details', 'Pin location', 'Confirm'] as const
+
 // Shown until a state is picked — Nigeria's approximate geographic centre
 const NIGERIA_CENTER = { lat: 9.082, lng: 8.6753 }
 
@@ -45,6 +47,8 @@ export default function PharmacyRegisterPage() {
   const [geocodeNote, setGeocodeNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [step, setStep] = useState(0) // 0 details · 1 location · 2 confirm
+  const [touchedPcn, setTouchedPcn] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -60,6 +64,25 @@ export default function PharmacyRegisterPage() {
       cancelled = true
     }
   }, [])
+
+  // Deliberately loose: PCN premises numbers aren't a single published
+  // format, so we only catch obvious typos (too short, stray characters)
+  // rather than rejecting a valid number we haven't seen.
+  const pcnError =
+    form.pcnLicenseNumber.trim().length > 0 && form.pcnLicenseNumber.trim().length < 4
+      ? 'That looks too short — copy it exactly as printed on your certificate'
+      : /[^A-Za-z0-9/\- ]/.test(form.pcnLicenseNumber)
+        ? 'Use only letters, numbers, spaces, / and -'
+        : ''
+
+  const detailsComplete =
+    form.pharmacyName.trim().length >= 2 &&
+    Boolean(selectedState) &&
+    Boolean(selectedLga) &&
+    form.address.trim().length >= 5 &&
+    form.phone.trim().length >= 7 &&
+    form.pcnLicenseNumber.trim().length >= 4 &&
+    !pcnError
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -107,15 +130,13 @@ export default function PharmacyRegisterPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedState) {
-      setError('Please select which state your pharmacy is in')
-      return
-    }
-    if (!selectedLga) {
-      setError('Please select your Local Government Area (LGA)')
+    if (!selectedState || !selectedLga) {
+      setStep(0)
+      setError('Please select your state and LGA')
       return
     }
     if (!pinConfirmed) {
+      setStep(1)
       setError('Please confirm the map pin is on your pharmacy before submitting')
       return
     }
@@ -217,120 +238,227 @@ export default function PharmacyRegisterPage() {
         <>
       <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
         <IconShieldCheck width={18} height={18} className="mt-0.5 shrink-0" />
-        <p>
-          After you register, our team verifies your PCN license before your pharmacy appears in
-          search results. You&apos;ll see your approval status on your dashboard.
-        </p>
+        <div>
+          <p className="font-semibold">Before you start</p>
+          <p className="mt-1">
+            You&apos;ll need your <strong>PCN premises registration number</strong> and your exact
+            shop location. We verify the licence with the PCN register before your pharmacy shows up
+            in patient searches — that usually takes <strong>2–3 working days</strong>, and you can
+            track the status on your dashboard.
+          </p>
+        </div>
       </div>
 
-      <Card className="mt-6">
-        <form onSubmit={submit} className="space-y-4">
-          <Field label="Pharmacy name" htmlFor="pharmacyName">
-            <Input id="pharmacyName" value={form.pharmacyName} onChange={(e) => set('pharmacyName', e.target.value)} required />
-          </Field>
-
-          <Field label="State" htmlFor="state">
-            <Select
-              id="state"
-              value={selectedState}
-              onChange={(e) => pickState(e.target.value as NigerianStateValue)}
-              required
+      <div className="mt-6">
+        <div className="flex items-center justify-between text-xs font-medium">
+          {STEPS.map((label, i) => (
+            <span
+              key={label}
+              className={
+                i === step
+                  ? 'font-bold text-emerald-700 dark:text-emerald-400'
+                  : i < step
+                    ? 'text-emerald-700/70 dark:text-emerald-400/70'
+                    : 'text-gray-400 dark:text-gray-500'
+              }
             >
-              <option value="" disabled>
-                Select the state your pharmacy is in
-              </option>
-              {NIGERIAN_STATES.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
+              {i < step ? '✓ ' : `${i + 1}. `}
+              {label}
+            </span>
+          ))}
+        </div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+          <div
+            className="h-full rounded-full bg-emerald-600 transition-all duration-300 dark:bg-emerald-500"
+            style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+          />
+        </div>
+      </div>
 
-          {selectedState && (
-            <Field label="Local Government Area (LGA)" htmlFor="lga">
-              <Select id="lga" value={selectedLga} onChange={(e) => setSelectedLga(e.target.value)} required>
-                <option value="" disabled>
-                  Select your LGA in {stateLabel(selectedState)}
-                </option>
-                {lgasForState(selectedState).map((lga) => (
-                  <option key={lga} value={lga}>
-                    {lga}
+      <Card className="mt-4">
+        <form onSubmit={submit} className="space-y-4">
+          {step === 0 && (
+            <>
+              <Field label="Pharmacy name" htmlFor="pharmacyName">
+                <Input id="pharmacyName" value={form.pharmacyName} onChange={(e) => set('pharmacyName', e.target.value)} required />
+              </Field>
+
+              <Field label="State" htmlFor="state">
+                <Select
+                  id="state"
+                  value={selectedState}
+                  onChange={(e) => pickState(e.target.value as NigerianStateValue)}
+                  required
+                >
+                  <option value="" disabled>
+                    Select the state your pharmacy is in
                   </option>
-                ))}
-              </Select>
-            </Field>
+                  {NIGERIAN_STATES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+
+              {selectedState && (
+                <Field label="Local Government Area (LGA)" htmlFor="lga">
+                  <Select id="lga" value={selectedLga} onChange={(e) => setSelectedLga(e.target.value)} required>
+                    <option value="" disabled>
+                      Select your LGA in {stateLabel(selectedState)}
+                    </option>
+                    {lgasForState(selectedState).map((lga) => (
+                      <option key={lga} value={lga}>
+                        {lga}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+
+              <Field label="Street address" htmlFor="address">
+                <Input
+                  id="address"
+                  value={form.address}
+                  onChange={(e) => set('address', e.target.value)}
+                  required
+                  placeholder="e.g. 25 Aka Road"
+                />
+              </Field>
+
+              <Field label="Pharmacy phone" htmlFor="phone">
+                <Input
+                  id="phone"
+                  value={form.phone}
+                  onChange={(e) => set('phone', e.target.value)}
+                  required
+                  placeholder="e.g. 0803 123 4567"
+                  inputMode="tel"
+                />
+              </Field>
+
+              <Field
+                label="PCN premises registration number"
+                hint="(as printed on your certificate)"
+                htmlFor="pcnLicenseNumber"
+              >
+                <Input
+                  id="pcnLicenseNumber"
+                  value={form.pcnLicenseNumber}
+                  onChange={(e) => set('pcnLicenseNumber', e.target.value)}
+                  onBlur={() => setTouchedPcn(true)}
+                  aria-invalid={Boolean(touchedPcn && pcnError)}
+                  required
+                />
+                {touchedPcn && pcnError ? (
+                  <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{pcnError}</p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Copy it exactly — we check it against the PCN register.
+                  </p>
+                )}
+              </Field>
+
+              <Button
+                type="button"
+                className="w-full"
+                size="lg"
+                disabled={!detailsComplete}
+                onClick={() => {
+                  setError('')
+                  setStep(1)
+                }}
+              >
+                Continue to location
+              </Button>
+              {!detailsComplete && (
+                <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                  Fill in every field above to continue.
+                </p>
+              )}
+            </>
           )}
 
-          <Field label="Street address" htmlFor="address">
-            <Input
-              id="address"
-              value={form.address}
-              onChange={(e) => set('address', e.target.value)}
-              required
-              placeholder="e.g. 25 Aka Road"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={geocodeAddress}
-              loading={geocoding}
-              className="mt-2"
-            >
-              {geocoding ? 'Searching…' : 'Find address on map'}
-            </Button>
-            {geocodeNote && <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{geocodeNote}</p>}
-          </Field>
+          {step === 1 && (
+            <>
+              <div>
+                <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Pin your exact location{' '}
+                  <span className="font-normal text-gray-500 dark:text-gray-400">(drag the pin or tap the map)</span>
+                </p>
+                <Button type="button" variant="outline" size="sm" onClick={geocodeAddress} loading={geocoding} className="mb-2">
+                  {geocoding ? 'Searching…' : 'Find my address on the map'}
+                </Button>
+                {geocodeNote && <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">{geocodeNote}</p>}
+                <div className="map-tiles h-72 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700">
+                  <LocationPicker position={position} onChange={(p) => { setPosition(p); setPinConfirmed(true) }} />
+                </div>
+                <label className="mt-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={pinConfirmed}
+                    onChange={(e) => setPinConfirmed(e.target.checked)}
+                    className="h-4 w-4 accent-emerald-600"
+                  />
+                  The pin is on my pharmacy
+                </label>
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  Patients get walking and driving directions to this exact point.
+                </p>
+              </div>
 
-          <div>
-            <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Pin your exact location{' '}
-              <span className="font-normal text-gray-500 dark:text-gray-400">(drag the pin or tap the map)</span>
-            </p>
-            <div className="map-tiles h-72 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700">
-              <LocationPicker position={position} onChange={(p) => { setPosition(p); setPinConfirmed(true) }} />
-            </div>
-            <label className="mt-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                type="checkbox"
-                checked={pinConfirmed}
-                onChange={(e) => setPinConfirmed(e.target.checked)}
-                className="h-4 w-4 accent-emerald-600"
-              />
-              The pin is on my pharmacy
-            </label>
-          </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(0)}>
+                  Back
+                </Button>
+                <Button type="button" className="flex-1" disabled={!pinConfirmed} onClick={() => setStep(2)}>
+                  Continue
+                </Button>
+              </div>
+            </>
+          )}
 
-          <Field label="Pharmacy phone" htmlFor="phone">
-            <Input
-              id="phone"
-              value={form.phone}
-              onChange={(e) => set('phone', e.target.value)}
-              required
-              placeholder="e.g. 0803 123 4567"
-              inputMode="tel"
-            />
-          </Field>
+          {step === 2 && (
+            <>
+              <dl className="divide-y divide-gray-100 rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+                {[
+                  ['Pharmacy', form.pharmacyName],
+                  ['Area', selectedState ? `${selectedLga}, ${stateLabel(selectedState)}` : ''],
+                  ['Address', form.address],
+                  ['Phone', form.phone],
+                  ['PCN number', form.pcnLicenseNumber],
+                  ['Map pin', `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-start justify-between gap-3 px-3.5 py-2.5">
+                    <dt className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      {label}
+                    </dt>
+                    <dd className="min-w-0 break-words text-right text-sm text-gray-900 dark:text-gray-100">{value}</dd>
+                  </div>
+                ))}
+              </dl>
 
-          <Field label="PCN license number" htmlFor="pcnLicenseNumber">
-            <Input id="pcnLicenseNumber" value={form.pcnLicenseNumber} onChange={(e) => set('pcnLicenseNumber', e.target.value)} required />
-          </Field>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Managed from{' '}
+                <span className="font-medium text-gray-900 dark:text-gray-100">
+                  {me.displayName ?? me.email ?? 'your account'}
+                </span>
+                {me.email && me.displayName ? ` (${me.email})` : ''}. We&apos;ll email you when
+                verification finishes — usually 2–3 working days.
+              </p>
 
-          <hr className="border-gray-200 dark:border-gray-800" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            The outlet will be managed from{' '}
-            <span className="font-medium text-gray-900 dark:text-gray-100">
-              {me.displayName ?? me.email ?? 'your account'}
-            </span>
-            {me.email && me.displayName ? ` (${me.email})` : ''}.
-          </p>
+              {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 
-          {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
-
-          <Button type="submit" loading={busy} className="w-full" size="lg">
-            {busy ? 'Submitting…' : 'Add pharmacy outlet'}
-          </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
+                  Back
+                </Button>
+                <Button type="submit" loading={busy} className="flex-1" size="lg">
+                  {busy ? 'Submitting…' : 'Submit for verification'}
+                </Button>
+              </div>
+            </>
+          )}
         </form>
       </Card>
         </>

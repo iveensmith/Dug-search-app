@@ -49,6 +49,19 @@ export async function GET(req: NextRequest) {
     ? await findPharmaciesWithDrug({ drugId, state, lga, lat: searchLat, lng: searchLng })
     : []
 
+  // Nothing in the chosen LGA — widen to the whole state so the empty
+  // state can still say "the nearest one that has it is X km away".
+  let elsewhere: typeof results = []
+  if (drugId && lga && results.length === 0) {
+    elsewhere = await findPharmaciesWithDrug({
+      drugId,
+      state,
+      lat: searchLat,
+      lng: searchLng,
+      limit: 3,
+    })
+  }
+
   // Zero results for a real drug (not free-text) — check whether nearby
   // pharmacies stock a different strength/form of the same generic before
   // giving up entirely.
@@ -79,5 +92,5 @@ export async function GET(req: NextRequest) {
     },
   })
 
-  return NextResponse.json({ results, substitutes })
+  return NextResponse.json({ results, substitutes, elsewhere })
 }
