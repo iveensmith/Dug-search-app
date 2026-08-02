@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -10,7 +10,9 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
-import { IconShieldCheck } from '@/components/ui/icons'
+import { IconShieldCheck, IconUser } from '@/components/ui/icons'
+
+type Me = { id: string; email: string | null; displayName: string | null; role: string }
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
@@ -26,13 +28,13 @@ const NIGERIA_CENTER = { lat: 9.082, lng: 8.6753 }
 
 export default function PharmacyRegisterPage() {
   const router = useRouter()
+  // undefined = still checking, null = signed out
+  const [me, setMe] = useState<Me | null | undefined>(undefined)
   const [form, setForm] = useState({
     pharmacyName: '',
     address: '',
     phone: '',
     pcnLicenseNumber: '',
-    ownerEmail: '',
-    password: '',
   })
   const [selectedState, setSelectedState] = useState<NigerianStateValue | ''>('')
   const [position, setPosition] = useState(NIGERIA_CENTER)
@@ -41,6 +43,21 @@ export default function PharmacyRegisterPage() {
   const [geocodeNote, setGeocodeNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setMe(data.user ?? null)
+      })
+      .catch(() => {
+        if (!cancelled) setMe(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -108,6 +125,10 @@ export default function PharmacyRegisterPage() {
           longitude: position.lng,
         }),
       })
+      if (res.status === 401) {
+        router.push('/login?next=/pharmacy/register')
+        return
+      }
       const data = await res.json()
       if (!res.ok) {
         setError(data.error ?? 'Registration failed')
@@ -130,6 +151,34 @@ export default function PharmacyRegisterPage() {
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
       </header>
 
+      {me === undefined && (
+        <p className="py-12 text-center text-gray-500 dark:text-gray-400">Checking your account…</p>
+      )}
+
+      {me === null && (
+        <Card className="mx-auto max-w-md text-center">
+          <IconUser width={28} height={28} className="mx-auto text-gray-400 dark:text-gray-500" />
+          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">Sign in to add your outlet</p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            You need to be signed in before you can register a pharmacy outlet.
+          </p>
+          <Button className="mt-4 w-full" onClick={() => router.push('/login?next=/pharmacy/register')}>
+            Log in
+          </Button>
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register?next=/pharmacy/register"
+              className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            >
+              Create one
+            </Link>
+          </p>
+        </Card>
+      )}
+
+      {me && (
+        <>
       <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
         <IconShieldCheck width={18} height={18} className="mt-0.5 shrink-0" />
         <p>
@@ -218,29 +267,23 @@ export default function PharmacyRegisterPage() {
           </Field>
 
           <hr className="border-gray-200 dark:border-gray-800" />
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Owner account (for logging in)</p>
-
-          <Field label="Email" htmlFor="ownerEmail">
-            <Input id="ownerEmail" type="email" value={form.ownerEmail} onChange={(e) => set('ownerEmail', e.target.value)} required autoComplete="email" />
-          </Field>
-          <Field label="Password" hint="(min 8 characters)" htmlFor="ownerPassword">
-            <Input id="ownerPassword" type="password" value={form.password} onChange={(e) => set('password', e.target.value)} required minLength={8} autoComplete="new-password" />
-          </Field>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            The outlet will be managed from{' '}
+            <span className="font-medium text-gray-900 dark:text-gray-100">
+              {me.displayName ?? me.email ?? 'your account'}
+            </span>
+            {me.email && me.displayName ? ` (${me.email})` : ''}.
+          </p>
 
           {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
 
           <Button type="submit" loading={busy} className="w-full" size="lg">
             {busy ? 'Submitting…' : 'Add pharmacy outlet'}
           </Button>
-
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            Already registered?{' '}
-            <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
-              Log in
-            </Link>
-          </p>
         </form>
       </Card>
+        </>
+      )}
       </div>
       <SiteFooter />
     </div>
