@@ -73,6 +73,15 @@ export function IconUpload(props: IconProps) {
   )
 }
 
+export function IconDownload(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 4v12M6 10l6 6 6-6" />
+      <path d="M4 20h16" />
+    </svg>
+  )
+}
+
 export function IconSend(props: IconProps) {
   return (
     <svg {...base} {...props}>

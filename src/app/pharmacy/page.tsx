@@ -12,7 +12,7 @@ import Badge from '@/components/ui/Badge'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import { Field, Input, Select } from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
-import { IconAlertCircle, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
+import { IconAlertCircle, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
   id: string
@@ -175,10 +175,34 @@ type BulkResult = { created: number; updated: number; errors: { row: number; mes
 
 // Columns match POST /api/inventory/bulk exactly — see that route for the
 // per-column parsing rules (only genericName/strength/form required).
-function BulkUploadPanel({ onImported }: { onImported: () => void }) {
+function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; itemCount: number }) {
   const [busy, setBusy] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState('')
   const [result, setResult] = useState<BulkResult | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function downloadStock() {
+    setExporting(true)
+    setExportError('')
+    try {
+      const res = await fetch('/api/inventory/export')
+      if (!res.ok) {
+        setExportError('Could not export your stock — try again.')
+        return
+      }
+      const url = URL.createObjectURL(await res.blob())
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `pharmafinder-stock-${new Date().toISOString().slice(0, 10)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setExportError('Could not export your stock — try again.')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   function downloadTemplate() {
     const csv =
@@ -213,6 +237,22 @@ function BulkUploadPanel({ onImported }: { onImported: () => void }) {
   }
 
   return (
+    <>
+      <Card className="mb-4">
+        <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Download your stock</p>
+        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+          Export your current inventory ({itemCount} {itemCount === 1 ? 'drug' : 'drugs'}) as a CSV
+          file — edit it offline and re-upload it below to update in bulk.
+        </p>
+        <Button variant="outline" size="sm" type="button" onClick={downloadStock} loading={exporting}>
+          <IconDownload width={15} height={15} />
+          {exporting ? 'Preparing…' : 'Download stock CSV'}
+        </Button>
+        {exportError && (
+          <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{exportError}</p>
+        )}
+      </Card>
+
     <Card>
       <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Bulk upload from CSV</p>
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
@@ -254,6 +294,7 @@ function BulkUploadPanel({ onImported }: { onImported: () => void }) {
         </div>
       )}
     </Card>
+    </>
   )
 }
 
@@ -509,7 +550,7 @@ export default function PharmacyDashboard() {
               [
                 ['inventory', `Inventory (${items.length})`],
                 ['searches', 'Local searches'],
-                ['bulk', 'Bulk upload'],
+                ['bulk', 'CSV import/export'],
               ] as const
             ).map(([key, label]) => (
               <button
@@ -806,7 +847,7 @@ export default function PharmacyDashboard() {
             </div>
           )}
 
-          {tab === 'bulk' && <BulkUploadPanel onImported={load} />}
+          {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={items.length} />}
         </>
       )}
     </div>
