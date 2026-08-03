@@ -23,6 +23,7 @@ import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import NotifyMeForm from '@/components/NotifyMeForm'
+import OwnerHome from '@/components/OwnerHome'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -33,7 +34,6 @@ import {
   IconRoute,
   IconSearch,
   IconShieldCheck,
-  IconStore,
   IconX,
 } from '@/components/ui/icons'
 
@@ -135,6 +135,7 @@ export default function Home() {
   // Viewer's role — hides the "Add Your Pharmacy Outlet" card from accounts
   // that can't register one (patients, pharmacists, admins).
   const [viewerRole, setViewerRole] = useState<string | null>(null)
+  const [viewerName, setViewerName] = useState<string | null>(null)
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
   const [selectedLga, setSelectedLga] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false) // full state/LGA dropdowns vs the compact chip
@@ -198,7 +199,9 @@ export default function Home() {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) setViewerRole(data.user?.role ?? null)
+        if (cancelled) return
+        setViewerRole(data.user?.role ?? null)
+        setViewerName(data.user?.displayName ?? null)
       })
       .catch(() => {})
     return () => {
@@ -532,24 +535,7 @@ export default function Home() {
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
       {viewerRole === 'PHARMACY_OWNER' ? (
-        <Card className="animate-fade-up mx-auto mb-10 w-full max-w-md text-center">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-            <IconStore width={22} height={22} />
-          </span>
-          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
-            You&apos;re signed in as a pharmacy owner
-          </p>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Drug search is for patients. Manage your outlet&apos;s inventory and see local demand from
-            your dashboard.
-          </p>
-          <Link
-            href="/pharmacy"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
-          >
-            Go to your dashboard
-          </Link>
-        </Card>
+        <OwnerHome displayName={viewerName} />
       ) : (
         <>
       {state.kind === 'idle' && (

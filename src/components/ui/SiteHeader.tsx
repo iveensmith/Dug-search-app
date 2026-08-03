@@ -24,7 +24,7 @@ const NAV_LINKS: { href: string; label: string }[] = [
 ]
 
 type Role = 'PATIENT' | 'PHARMACY_OWNER' | 'PHARMACIST' | 'ADMIN'
-type Me = { displayName: string | null; role: Role } | null
+type Me = { displayName: string | null; role: Role; hasPharmacy?: boolean } | null
 
 export default function SiteHeader() {
   const pathname = usePathname()
@@ -65,13 +65,16 @@ export default function SiteHeader() {
     router.refresh()
   }
 
-  // Role-scoped nav: "Add your pharmacy outlet" is for visitors and pharmacy
-  // owners; "Find medicine" (patient search) is for everyone else.
-  const navLinks = NAV_LINKS.filter((link) => {
-    if (link.href === '/pharmacy/register') return !me || me.role === 'PHARMACY_OWNER'
-    if (link.href === '/') return me?.role !== 'PHARMACY_OWNER'
-    return true
-  })
+  // Owners get a shop-keeping nav (their own dashboard, and the outlet
+  // form only until they have one); everyone else gets the patient nav.
+  const navLinks: { href: string; label: string }[] =
+    me?.role === 'PHARMACY_OWNER'
+      ? [
+          { href: '/', label: 'Overview' },
+          { href: '/pharmacy', label: 'My inventory' },
+          ...(me.hasPharmacy ? [] : [{ href: '/pharmacy/register', label: 'Add your pharmacy outlet' }]),
+        ]
+      : NAV_LINKS.filter((link) => link.href !== '/pharmacy/register' || !me)
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
