@@ -9,6 +9,14 @@ import WelcomeToast from '@/components/ui/WelcomeToast'
 import { DASHBOARD_HREF, DASHBOARD_LABEL } from '@/lib/roles'
 import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
 
+/**
+ * Clicking the logo (or "Find medicine") while already on "/" is a no-op as
+ * far as the router is concerned, so the home page would keep showing search
+ * results. The header fires this instead and the page resets itself to the
+ * hero — cheaper and less jarring than a full reload.
+ */
+export const HOME_RESET_EVENT = 'mediquest:reset-home'
+
 const NAV_LINKS: { href: string; label: string }[] = [
   { href: '/', label: 'Find medicine' },
   { href: '/prescriptions', label: 'Ask a pharmacist' },
@@ -41,6 +49,14 @@ export default function SiteHeader() {
     }
   }, [pathname])
 
+  function handleHomeClick(e: React.MouseEvent) {
+    if (pathname !== '/') return // ordinary navigation from another page
+    e.preventDefault()
+    setOpen(false)
+    window.dispatchEvent(new CustomEvent(HOME_RESET_EVENT))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' })
     setMe(null)
@@ -61,7 +77,11 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
       <WelcomeToast />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
+        <Link
+          href="/"
+          onClick={handleHomeClick}
+          className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
+        >
           <LogoMark size="sm" />
           <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-50">MediQuest</span>
         </Link>
@@ -73,6 +93,7 @@ export default function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={link.href === '/' ? handleHomeClick : undefined}
                 className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
                   active
                     ? 'text-emerald-700 dark:text-emerald-400'
@@ -147,7 +168,10 @@ export default function SiteHeader() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => {
+                    if (link.href === '/') handleHomeClick(e)
+                    setOpen(false)
+                  }}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-semibold uppercase tracking-wide ${
                     pathname === link.href
                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'

@@ -15,7 +15,7 @@ import {
 } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 import { lgasForState } from '@/lib/lgas'
-import SiteHeader from '@/components/ui/SiteHeader'
+import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
 import Card from '@/components/ui/Card'
@@ -374,6 +374,19 @@ export default function Home() {
       setRouteBusyId(null)
     }
   }
+
+  // The header can't navigate to "/" when we're already there, so it asks
+  // the page to clear the search and show the hero again.
+  useEffect(() => {
+    function reset() {
+      setState({ kind: 'idle' })
+      setRoute(null)
+      setRouteError('')
+      lastDrugRef.current = null
+    }
+    window.addEventListener(HOME_RESET_EVENT, reset)
+    return () => window.removeEventListener(HOME_RESET_EVENT, reset)
+  }, [])
 
   // In the empty state the map renders below the "elsewhere" list, so bring
   // it into view once a route resolves.
