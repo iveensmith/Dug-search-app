@@ -16,6 +16,8 @@ export type PharmacyStockResult = {
   open24h: boolean
   opensAt: string | null
   closesAt: string | null
+  ratingAvg: number | null // mean of the four rated dimensions, null when unrated
+  ratingCount: number
 }
 
 /**
@@ -49,6 +51,8 @@ export async function findPharmaciesWithDrug(opts: {
       p."opensAt",
       p."closesAt",
       i."updatedAt" AS "stockUpdatedAt",
+      COALESCE(r."ratingCount", 0)::int AS "ratingCount",
+      r."ratingAvg",
       2 * 6371 * asin(
         sqrt(
           power(sin(radians((p."latitude" - ${lat}) / 2)), 2) +
@@ -58,6 +62,14 @@ export async function findPharmaciesWithDrug(opts: {
       ) AS "distanceKm"
     FROM "Pharmacy" p
     JOIN "PharmacyInventory" i ON i."pharmacyId" = p."id"
+    LEFT JOIN (
+      SELECT
+        "pharmacyId",
+        COUNT(*) AS "ratingCount",
+        AVG(("availability" + "service" + "pricing" + "honesty") / 4.0) AS "ratingAvg"
+      FROM "PharmacyRating"
+      GROUP BY "pharmacyId"
+    ) r ON r."pharmacyId" = p."id"
     WHERE
       i."drugId" = ${drugId}
       AND i."inStock" = true

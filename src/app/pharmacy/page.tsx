@@ -13,6 +13,7 @@ import Badge from '@/components/ui/Badge'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import { Field, Input, Select } from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
+import OwnerRatingCard from '@/components/OwnerRatingCard'
 import { IconAlertCircle, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
@@ -618,6 +619,7 @@ export default function PharmacyDashboard() {
 
       {pharmacy.verificationStatus === 'APPROVED' && (
         <>
+          <OwnerRatingCard pharmacyId={pharmacy.id} />
           <LgaCard
             pharmacy={pharmacy}
             onSaved={(lga) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, lga } } : d))}

@@ -22,6 +22,8 @@ export type PharmacyResult = {
   open24h: boolean
   opensAt: string | null
   closesAt: string | null
+  ratingAvg: number | null
+  ratingCount: number
 }
 
 export type SubstituteGroup = {

@@ -24,6 +24,8 @@ import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import NotifyMeForm from '@/components/NotifyMeForm'
 import OwnerHome from '@/components/OwnerHome'
+import RatingStars from '@/components/RatingStars'
+import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -151,6 +153,7 @@ export default function Home() {
   const [routeBusyId, setRouteBusyId] = useState<string | null>(null)
   const [routeError, setRouteError] = useState('')
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null)
+  const [rating, setRating] = useState<{ id: string; name: string } | null>(null)
 
   const userPosRef = useRef<Pos | null>(null)
   const lastDrugRef = useRef<DrugSuggestion | null>(null)
@@ -1006,6 +1009,9 @@ export default function Home() {
                         </div>
                       </div>
                       <p className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
+                      <p className="mt-0.5">
+                        <RatingStars value={r.ratingAvg} count={r.ratingCount} />
+                      </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {r.address}
                         {r.lga && (
@@ -1038,6 +1044,12 @@ export default function Home() {
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
                       </div>
+                      <button
+                        onClick={() => setRating({ id: r.id, name: r.name })}
+                        className="mt-2 w-full cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-50 hover:text-emerald-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-emerald-400"
+                      >
+                        Been here? Rate this pharmacy
+                      </button>
                     </div>
                   </li>
                 ))}
@@ -1061,6 +1073,28 @@ export default function Home() {
         </>
       )}
       </div>
+
+      {rating && (
+        <RatePharmacyDialog
+          pharmacyId={rating.id}
+          pharmacyName={rating.name}
+          onClose={() => setRating(null)}
+          onSaved={(summary) =>
+            setState((prev) =>
+              prev.kind === 'results'
+                ? {
+                    ...prev,
+                    results: prev.results.map((p) =>
+                      p.id === rating.id
+                        ? { ...p, ratingAvg: summary.overall, ratingCount: summary.count }
+                        : p,
+                    ),
+                  }
+                : prev,
+            )
+          }
+        />
+      )}
 
       <SiteFooter />
     </div>
