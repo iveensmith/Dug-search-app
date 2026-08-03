@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 
-// Local demand signal: recent patient searches in this pharmacy's own
-// state, flagged against the pharmacy's own inventory so they can see what
-// nearby patients are looking for — stocked or not.
+// Local demand signal: recent patient searches in this pharmacy's own LGA,
+// flagged against its inventory so the owner sees what patients nearby are
+// looking for — stocked or not. Falls back to the whole state only when the
+// pharmacy hasn't set an LGA yet.
 export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['PHARMACY_OWNER'])
   if (session instanceof NextResponse) return session
@@ -14,7 +15,9 @@ export async function GET(req: NextRequest) {
 
   const [logs, inventoryDrugIds] = await Promise.all([
     prisma.searchLog.findMany({
-      where: { state: pharmacy.state },
+      where: pharmacy.lga
+        ? { state: pharmacy.state, lga: pharmacy.lga }
+        : { state: pharmacy.state },
       orderBy: { createdAt: 'desc' },
       take: 50,
       include: { drug: true },
@@ -28,6 +31,8 @@ export async function GET(req: NextRequest) {
   const stockedIds = new Set(inventoryDrugIds.map((i) => i.drugId))
 
   return NextResponse.json({
+    // Tells the UI whether to say "in Uyo" or "in Akwa Ibom"
+    scope: pharmacy.lga ? { kind: 'lga', label: pharmacy.lga } : { kind: 'state', label: pharmacy.state },
     searches: logs.map((l) => ({
       id: l.id,
       queryText: l.queryText,

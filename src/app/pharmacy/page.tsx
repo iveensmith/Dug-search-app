@@ -403,6 +403,7 @@ export default function PharmacyDashboard() {
 
   // recent searches tab
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
+  const [searchScope, setSearchScope] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const res = await fetch('/api/inventory')
@@ -430,7 +431,12 @@ export default function PharmacyDashboard() {
     if (tab !== 'searches' || searches !== null) return
     fetch('/api/pharmacy/recent-searches')
       .then((res) => res.json())
-      .then((json) => setSearches(json.searches ?? []))
+      .then((json) => {
+        setSearches(json.searches ?? [])
+        setSearchScope(
+          json.scope?.kind === 'lga' ? `${json.scope.label} LGA` : stateLabel(json.scope?.label ?? ''),
+        )
+      })
       .catch(() => setSearches([]))
   }, [tab, searches])
 
@@ -897,13 +903,14 @@ export default function PharmacyDashboard() {
           {tab === 'searches' && (
             <div>
               <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-                Recent patient searches in {stateLabel(pharmacy.state)} — see what&apos;s in local demand.
+                Recent patient searches in {searchScope ?? (pharmacy.lga ? `${pharmacy.lga} LGA` : stateLabel(pharmacy.state))}{' '}
+                — see what&apos;s in local demand.
               </p>
               {!searches ? (
                 <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
               ) : searches.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                  No searches logged in your state yet.
+                  No searches logged in your area yet.
                 </p>
               ) : (
                 <ul className="stagger space-y-2">

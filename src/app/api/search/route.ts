@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
       userId: session?.userId ?? null,
       queryText: q,
       state,
+      lga, // null when the caller didn't scope to one
       latitude: lat ?? null, // log only real user locations, not the fallback
       longitude: lng ?? null,
       hadResults: results.length > 0,

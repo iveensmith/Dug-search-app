@@ -28,18 +28,21 @@ type Item = { id: string; inStock: boolean; drug: DrugSuggestion }
 
 type RecentSearch = { id: string; drug: DrugSuggestion | null; youStock: boolean }
 
+type Scope = { kind: 'lga' | 'state'; label: string }
+
 type Gap = { drug: DrugSuggestion; count: number }
 
 /**
  * The home page for a signed-in pharmacy owner. Patients get the search
  * hero; owners get their own shop at a glance — stock counts, verification
- * state, and the drugs patients in their state searched for that they
+ * state, and the drugs patients in their own LGA searched for that they
  * don't stock. Built entirely from the existing dashboard endpoints.
  */
 export default function OwnerHome({ displayName }: { displayName: string | null }) {
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null)
   const [items, setItems] = useState<Item[] | null>(null)
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
+  const [scope, setScope] = useState<Scope | null>(null)
   const [noPharmacy, setNoPharmacy] = useState(false)
 
   useEffect(() => {
@@ -61,7 +64,9 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
     fetch('/api/pharmacy/recent-searches')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!cancelled && data) setSearches(data.searches ?? [])
+        if (cancelled || !data) return
+        setSearches(data.searches ?? [])
+        setScope(data.scope ?? null)
       })
       .catch(() => {})
     return () => {
@@ -194,8 +199,10 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           Local demand you&apos;re missing
         </h2>
         <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
-          {pharmacy
-            ? `Recently searched by patients in ${stateLabel(pharmacy.state)} — and not in your stock list.`
+          {scope
+            ? `Recently searched by patients in ${
+                scope.kind === 'lga' ? `${scope.label} LGA` : stateLabel(scope.label)
+              } — and not in your stock list.`
             : 'Recently searched by patients near you.'}
         </p>
 

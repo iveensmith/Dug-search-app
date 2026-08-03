@@ -206,6 +206,7 @@ model SearchLog {
   userId     String? // set when the searcher was logged in — powers per-user search history
   queryText  String
   state      NigerianState? // nullable: not recorded before this field existed
+  lga        String? // LGA the search was scoped to — null for rows logged before LGA scoping
   latitude   Float?
   longitude  Float?
   hadResults Boolean
@@ -216,7 +217,8 @@ model SearchLog {
 
   @@index([hadResults, createdAt]) // coverage-gap analytics
   @@index([userId, createdAt]) // per-user search history
-  @@index([state, createdAt]) // pharmacy-scoped local search demand
+  @@index([state, createdAt]) // state-level demand analytics
+  @@index([state, lga, createdAt]) // a pharmacy's own LGA demand feed
 }
 
 // A patient's "email me when this is in stock" request against a
