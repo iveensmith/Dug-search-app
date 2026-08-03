@@ -154,6 +154,7 @@ export default function Home() {
   const userPosRef = useRef<Pos | null>(null)
   const lastDrugRef = useRef<DrugSuggestion | null>(null)
   const resortedRef = useRef(false)
+  const emptyRouteRef = useRef<HTMLDivElement>(null)
 
   function applyPosition(pos: Pos | null): Pos | null {
     if (pos) {
@@ -373,6 +374,13 @@ export default function Home() {
       setRouteBusyId(null)
     }
   }
+
+  // In the empty state the map renders below the "elsewhere" list, so bring
+  // it into view once a route resolves.
+  useEffect(() => {
+    if (!route || !emptyRouteRef.current) return
+    emptyRouteRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [route])
 
   // If permission is granted late (after a search already ran from the
   // fallback), re-run that search once so distances sort from the real spot.
@@ -789,14 +797,13 @@ export default function Home() {
                           >
                             {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                           </a>
-                          <a
-                            href={directionsUrl(r.latitude, r.longitude)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-emerald-700 sm:flex-none dark:bg-emerald-500 dark:text-emerald-950"
+                          <button
+                            onClick={() => showRoute(r)}
+                            disabled={routeBusyId === r.id}
+                            className="flex-1 cursor-pointer rounded-lg bg-emerald-600 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60 sm:flex-none dark:bg-emerald-500 dark:text-emerald-950"
                           >
-                            Directions
-                          </a>
+                            {routeBusyId === r.id ? 'Loading…' : 'Directions'}
+                          </button>
                         </div>
                       </Card>
                     </li>
@@ -805,6 +812,52 @@ export default function Home() {
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   Call ahead before travelling — these are outside {selectedLga}.
                 </p>
+              </div>
+            )}
+
+            {routeError && (
+              <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                {routeError}
+              </p>
+            )}
+
+            {route && (
+              <div ref={emptyRouteRef} className="mt-4 scroll-mt-24">
+                <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-emerald-900 dark:text-emerald-300">
+                      {route.pharmacyName}
+                    </p>
+                    <p className="text-xs text-emerald-800 dark:text-emerald-400">
+                      {route.distanceKm.toFixed(1)} km · ~{route.durationMin} min drive
+                      {!userPos ? ` from ${selectedLabel}'s capital` : ' from your location'}
+                    </p>
+                    <a
+                      href={directionsUrl(route.toLat, route.toLng)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                    >
+                      Voice navigation (opens Google Maps)
+                    </a>
+                  </div>
+                  <button
+                    onClick={() => setRoute(null)}
+                    aria-label="Clear route"
+                    className="shrink-0 cursor-pointer rounded-full p-1.5 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
+                  >
+                    <IconX width={16} height={16} />
+                  </button>
+                </div>
+                <div className="map-tiles h-[55dvh] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+                  <ResultsMap
+                    results={state.elsewhere}
+                    userPos={userPos}
+                    center={mapCenter}
+                    route={route}
+                    onRoute={showRoute}
+                  />
+                </div>
               </div>
             )}
 
