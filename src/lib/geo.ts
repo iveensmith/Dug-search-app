@@ -66,7 +66,9 @@ export async function findPharmaciesWithDrug(opts: {
       SELECT
         "pharmacyId",
         COUNT(*) AS "ratingCount",
-        AVG(("availability" + "service" + "pricing" + "honesty") / 4.0) AS "ratingAvg"
+        -- ::float8 matters: an uncast AVG() is numeric, which Prisma hands
+        -- back as a Decimal and JSON-encodes as a string, not a number.
+        AVG(("availability" + "service" + "pricing" + "honesty") / 4.0)::float8 AS "ratingAvg"
       FROM "PharmacyRating"
       GROUP BY "pharmacyId"
     ) r ON r."pharmacyId" = p."id"

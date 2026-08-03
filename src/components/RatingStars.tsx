@@ -35,18 +35,23 @@ export default function RatingStars({
   size?: number
   className?: string
 }) {
-  const label = value === null ? 'Not yet rated' : `${value.toFixed(1)} out of 5`
+  // Coerce defensively — this renders inside the search results, so a
+  // surprising value (a numeric string from SQL, say) must degrade to
+  // "unrated" rather than throw and blank the page.
+  const numeric = typeof value === 'number' ? value : Number(value)
+  const score = Number.isFinite(numeric) ? numeric : null
+  const label = score === null ? 'Not yet rated' : `${score.toFixed(1)} out of 5`
   return (
     <span className={`inline-flex items-center gap-1 ${className}`} title={label}>
       <span className="inline-flex text-amber-500 dark:text-amber-400" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((i) => (
-          <Star key={i} width={size} height={size} filled={Math.min(1, Math.max(0, (value ?? 0) - i))} />
+          <Star key={i} width={size} height={size} filled={Math.min(1, Math.max(0, (score ?? 0) - i))} />
         ))}
       </span>
       <span className="sr-only">{label}</span>
-      {value !== null && (
+      {score !== null && (
         <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-          {value.toFixed(1)}
+          {score.toFixed(1)}
         </span>
       )}
       {count !== undefined && (
