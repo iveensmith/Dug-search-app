@@ -74,7 +74,13 @@ export default function SiteHeader() {
           { href: '/pharmacy', label: 'My inventory' },
           ...(me.hasPharmacy ? [] : [{ href: '/pharmacy/register', label: 'Add your pharmacy outlet' }]),
         ]
-      : NAV_LINKS.filter((link) => link.href !== '/pharmacy/register' || !me)
+      : [
+          ...NAV_LINKS.filter((link) => link.href !== '/pharmacy/register' || !me),
+          // Only for signed-in patients — reservations are tied to an
+          // account, so the page would just bounce a signed-out visitor
+          // to the login form.
+          ...(me?.role === 'PATIENT' ? [{ href: '/reservations', label: 'My reservations' }] : []),
+        ]
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">

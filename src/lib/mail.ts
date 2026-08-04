@@ -51,3 +51,36 @@ export async function sendStockAvailableEmail(to: string, drugLabel: string, pha
     `stock-available notice for ${to}: ${drugLabel} at ${pharmacyName}`,
   )
 }
+
+/**
+ * Tells a pharmacy owner someone has asked them to hold stock. Without
+ * this the request just sits in a dashboard nobody has open, and the
+ * patient is waiting on a pharmacy that has no idea.
+ */
+export async function sendReservationRequestEmail(
+  to: string,
+  drugLabel: string,
+  patientName: string,
+  quantity: number | null,
+  note: string | null,
+  contactPhone: string | null,
+): Promise<void> {
+  const details = [
+    quantity ? `<p>Quantity asked for: <strong>${quantity}</strong></p>` : '',
+    contactPhone ? `<p>Callback number: <strong>${contactPhone}</strong></p>` : '',
+    note ? `<p>Their note: “${note}”</p>` : '',
+  ].join('')
+
+  await sendEmail(
+    to,
+    `${patientName} asked you to hold ${drugLabel}`,
+    `
+      <p><strong>${patientName}</strong> has asked you to hold <strong>${drugLabel}</strong>.</p>
+      ${details}
+      <p>Open the Reservations tab in your MediQuest dashboard to set it aside,
+      mark it collected, or decline if you can't hold it.</p>
+      <p>Nothing has been paid and you are not committed to anything by this request.</p>
+    `,
+    `reservation request for ${to}: ${drugLabel} for ${patientName}`,
+  )
+}

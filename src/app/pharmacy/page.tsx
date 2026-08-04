@@ -15,6 +15,8 @@ import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import { Field, Input, Select } from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
 import OwnerRatingCard from '@/components/OwnerRatingCard'
+import OwnerReservations, { type OwnerReservation } from '@/components/OwnerReservations'
+import { isOpen } from '@/lib/reservations'
 import { IconAlertCircle, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
@@ -382,7 +384,7 @@ export default function PharmacyDashboard() {
   const router = useRouter()
   const [data, setData] = useState<Dashboard | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [tab, setTab] = useState<'inventory' | 'searches' | 'bulk'>('inventory')
+  const [tab, setTab] = useState<'inventory' | 'reservations' | 'searches' | 'bulk'>('inventory')
 
   // add-drug panel
   const [formOpen, setFormOpen] = useState(false)
@@ -407,6 +409,19 @@ export default function PharmacyDashboard() {
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
   const [searchScope, setSearchScope] = useState<string | null>(null)
 
+  // Loaded with the dashboard rather than on tab open, so the tab itself
+  // can show how many people are waiting on an answer.
+  const [reservations, setReservations] = useState<OwnerReservation[] | null>(null)
+
+  const loadReservations = useCallback(async () => {
+    try {
+      const res = await fetch('/api/pharmacy/reservations')
+      setReservations(res.ok ? ((await res.json()).reservations ?? []) : [])
+    } catch {
+      setReservations([])
+    }
+  }, [])
+
   const load = useCallback(async () => {
     const res = await fetch('/api/inventory')
     if (res.status === 401) {
@@ -428,6 +443,13 @@ export default function PharmacyDashboard() {
     const timer = setTimeout(load, 0)
     return () => clearTimeout(timer)
   }, [load])
+
+  useEffect(() => {
+    const timer = setTimeout(loadReservations, 0)
+    return () => clearTimeout(timer)
+  }, [loadReservations])
+
+  const openReservations = (reservations ?? []).filter((r) => isOpen(r.status)).length
 
   useEffect(() => {
     if (tab !== 'searches' || searches !== null) return
@@ -639,10 +661,11 @@ export default function PharmacyDashboard() {
             onSaved={(hours) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, ...hours } } : d))}
           />
 
-          <nav className="mb-4 flex gap-1 rounded-xl bg-gray-100 p-1 dark:bg-white/5">
+          <nav className="mb-4 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
             {(
               [
                 ['inventory', `Inventory (${items.length})`],
+                ['reservations', openReservations ? `Reservations (${openReservations})` : 'Reservations'],
                 ['searches', 'Local searches'],
                 ['bulk', 'CSV import/export'],
               ] as const
@@ -958,6 +981,10 @@ export default function PharmacyDashboard() {
                 </ul>
               )}
             </div>
+          )}
+
+          {tab === 'reservations' && (
+            <OwnerReservations reservations={reservations} onChanged={loadReservations} />
           )}
 
           {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={items.length} />}

@@ -40,6 +40,17 @@ enum DrugForm {
   OTHER
 }
 
+// A reservation is a request to hold stock, never a purchase or a
+// guarantee — nothing is paid and the pharmacy is free to decline. The
+// wording everywhere the patient sees it has to keep saying so.
+enum ReservationStatus {
+  PENDING // patient asked; the pharmacy hasn't answered yet
+  READY // pharmacy has set it aside
+  COLLECTED // patient picked it up
+  CANCELLED // patient changed their mind
+  DECLINED // pharmacy can't hold it after all
+}
+
 enum PrescriptionStatus {
   PENDING
   CLAIMED
@@ -109,6 +120,7 @@ model User {
   sentMessages   PrescriptionMessage[]
   searchLogs     SearchLog[]
   ratings        PharmacyRating[]
+  reservations   Reservation[]
 
   @@unique([email, role])
   @@unique([phone, role])
@@ -127,6 +139,7 @@ model Drug {
   inventory      PharmacyInventory[]
   searchLogs     SearchLog[]
   notifyRequests StockNotifyRequest[]
+  reservations   Reservation[]
 
   @@unique([genericName, strength, form])
   @@index([category])
@@ -152,9 +165,10 @@ model Pharmacy {
   closesAt           String?
   createdAt          DateTime           @default(now())
 
-  owner     User                @relation(fields: [ownerUserId], references: [id])
-  inventory PharmacyInventory[]
-  ratings   PharmacyRating[]
+  owner        User                @relation(fields: [ownerUserId], references: [id])
+  inventory    PharmacyInventory[]
+  ratings      PharmacyRating[]
+  reservations Reservation[]
 
   @@index([verificationStatus])
   @@index([state])
@@ -223,6 +237,39 @@ model SearchLog {
   @@index([userId, createdAt]) // per-user search history
   @@index([state, createdAt]) // state-level demand analytics
   @@index([state, lga, createdAt]) // a pharmacy's own LGA demand feed
+}
+
+// A patient asking a pharmacy to hold a drug until they get there, and the
+// record of whether they actually collected it.
+//
+// There is deliberately no price, no payment and no expiry job: the app
+// doesn't handle money, and a reservation silently expiring would be worse
+// than one that sits there until somebody closes it. Staleness is shown in
+// the UI from createdAt instead.
+//
+// No unique constraint on (user, pharmacy, drug) — the same patient can
+// reserve the same drug at the same pharmacy again months later. Reserving
+// twice while one is still open is prevented in the API instead, which
+// returns the open reservation rather than making a second one.
+model Reservation {
+  id          String            @id @default(cuid())
+  userId      String
+  pharmacyId  String
+  drugId      String
+  quantity    Int? // how many packs/units, if the patient said
+  note        String? // e.g. "coming after 5pm" — free text, patient's words
+  contactPhone String? // so the counter can call back; copied from the account or typed in
+  status      ReservationStatus @default(PENDING)
+  collectedAt DateTime? // set when it reaches COLLECTED, whoever marked it
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  drug     Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt]) // the patient's own list
+  @@index([pharmacyId, status, createdAt]) // the counter's queue
 }
 
 // A patient's "email me when this is in stock" request against a

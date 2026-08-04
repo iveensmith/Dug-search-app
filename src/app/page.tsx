@@ -35,9 +35,11 @@ import ResultFilters, {
   type Filters,
 } from '@/components/ResultFilters'
 import RatePharmacyDialog from '@/components/RatePharmacyDialog'
+import ReserveDialog from '@/components/ReserveDialog'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
+  IconBookmark,
   IconCheck,
   IconChevronDown,
   IconChevronRight,
@@ -194,6 +196,12 @@ export default function Home() {
   const [routeError, setRouteError] = useState('')
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null)
   const [rating, setRating] = useState<{ id: string; name: string } | null>(null)
+  // Open reservations the signed-in patient already has for the drug on
+  // screen, keyed by pharmacy — so a card shows "Reserved" instead of
+  // offering to reserve the same thing twice.
+  const [reserved, setReserved] = useState<Record<string, { id: string; status: string }>>({})
+  const [reserving, setReserving] = useState<{ id: string; name: string } | null>(null)
+  const [collectingId, setCollectingId] = useState<string | null>(null)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -332,8 +340,56 @@ export default function Home() {
         substitutes: data.substitutes ?? [],
         elsewhere: data.elsewhere ?? [],
       })
+      void loadReservations(drug.id)
     } catch {
       setState({ kind: 'results', label, drugId: drug.id, results: [], substitutes: [], elsewhere: [] })
+    }
+  }
+
+  /**
+   * Reloads which pharmacies this patient already has an open reservation
+   * with for the drug on screen. Runs after every search; a 401 (signed
+   * out, or not a patient account) just means no reservations to show.
+   */
+  async function loadReservations(drugId: string) {
+    setReserved({})
+    try {
+      const res = await fetch('/api/reservations')
+      if (!res.ok) return
+      const data = await res.json()
+      const open: Record<string, { id: string; status: string }> = {}
+      for (const r of data.reservations ?? []) {
+        if (r.drug?.id === drugId && (r.status === 'PENDING' || r.status === 'READY')) {
+          open[r.pharmacy.id] = { id: r.id, status: r.status }
+        }
+      }
+      setReserved(open)
+    } catch {
+      /* leave the buttons in their default state */
+    }
+  }
+
+  /** Patient confirming at the card that they walked out with the drug. */
+  async function markObtained(pharmacyId: string) {
+    const entry = reserved[pharmacyId]
+    if (!entry) return
+    setCollectingId(entry.id)
+    try {
+      const res = await fetch(`/api/reservations/${entry.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'COLLECTED' }),
+      })
+      if (!res.ok) return
+      setReserved((prev) => {
+        const next = { ...prev }
+        delete next[pharmacyId]
+        return next
+      })
+    } catch {
+      /* the reservations page is the fallback place to close it */
+    } finally {
+      setCollectingId(null)
     }
   }
 
@@ -1249,6 +1305,40 @@ export default function Home() {
                         {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
                       </Button>
                     </div>
+
+                    {/* Reserve sits below the travel actions: calling and
+                        getting there are what most people want, and this is
+                        the follow-up for the ones who don't want to lose the
+                        last pack while they travel. */}
+                    {reserved[r.id] ? (
+                      <div className="mt-2.5 rounded-xl bg-emerald-50 p-3 dark:bg-emerald-500/10">
+                        <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                          {reserved[r.id].status === 'READY'
+                            ? 'Held for you'
+                            : 'Reservation sent — waiting on the pharmacy'}
+                        </p>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="mt-2 w-full"
+                          loading={collectingId === reserved[r.id].id}
+                          onClick={() => markObtained(r.id)}
+                        >
+                          <IconCheck width={15} height={15} />
+                          Medicine obtained
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="md"
+                        className="mt-2.5 w-full"
+                        onClick={() => setReserving({ id: r.id, name: r.name })}
+                      >
+                        <IconBookmark width={16} height={16} />
+                        Reserve
+                      </Button>
+                    )}
                   </li>
                 ))}
                 <li className="flex items-start gap-3 rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/30">
@@ -1315,6 +1405,19 @@ export default function Home() {
                   }
                 : prev,
             )
+          }
+        />
+      )}
+
+      {reserving && state.kind === 'results' && (
+        <ReserveDialog
+          pharmacyId={reserving.id}
+          pharmacyName={reserving.name}
+          drugId={state.drugId}
+          drugLabel={state.label}
+          onClose={() => setReserving(null)}
+          onReserved={(r) =>
+            setReserved((prev) => ({ ...prev, [reserving.id]: { id: r.id, status: r.status } }))
           }
         />
       )}

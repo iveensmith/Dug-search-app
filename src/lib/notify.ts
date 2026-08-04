@@ -1,5 +1,5 @@
 import { prisma } from './db'
-import { sendStockAvailableEmail } from './mail'
+import { sendReservationRequestEmail, sendStockAvailableEmail } from './mail'
 import { drugLabel } from './types'
 
 /**
@@ -34,5 +34,36 @@ export async function notifyStockAvailable(drugId: string, pharmacyId: string): 
       await sendStockAvailableEmail(req.email, label, pharmacy.name)
       await prisma.stockNotifyRequest.update({ where: { id: req.id }, data: { notifiedAt: new Date() } })
     }),
+  )
+}
+
+/**
+ * Emails the pharmacy owner that a patient wants stock held. Best-effort:
+ * an owner with no email on file simply doesn't get one, and the
+ * reservation still shows in their dashboard. Never throws into the
+ * request — the reservation itself is already saved by this point.
+ */
+export async function notifyReservationRequested(reservationId: string): Promise<void> {
+  const reservation = await prisma.reservation.findUnique({
+    where: { id: reservationId },
+    select: {
+      quantity: true,
+      note: true,
+      contactPhone: true,
+      user: { select: { displayName: true } },
+      drug: true,
+      pharmacy: { select: { owner: { select: { email: true } } } },
+    },
+  })
+  const to = reservation?.pharmacy.owner.email
+  if (!reservation || !to) return
+
+  await sendReservationRequestEmail(
+    to,
+    drugLabel(reservation.drug),
+    reservation.user.displayName ?? 'A patient',
+    reservation.quantity,
+    reservation.note,
+    reservation.contactPhone,
   )
 }
