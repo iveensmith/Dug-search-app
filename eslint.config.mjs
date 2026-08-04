@@ -19,6 +19,9 @@ const eslintConfig = defineConfig([
     "src/generated/**",
     // Prescription image uploads
     "storage/**",
+    // Standalone design prototypes — reference mock-ups kept for their
+    // layout and copy, not wired into the app or built by Next.
+    "design/**",
   ]),
 ]);
 
