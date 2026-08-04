@@ -41,6 +41,17 @@ export default function RatingStars({
   // unrated pharmacy must not read as a score of 0.0.
   const numeric = value === null || value === undefined ? NaN : Number(value)
   const score = Number.isFinite(numeric) ? numeric : null
+
+  // Rated, but not enough times to publish a score: say so plainly rather
+  // than showing empty stars, which reads as a bad rating.
+  if (score === null && (count ?? 0) > 0) {
+    return (
+      <span className={`text-xs text-gray-500 dark:text-gray-400 ${className}`}>
+        {count} {count === 1 ? 'rating' : 'ratings'} so far — too few to score
+      </span>
+    )
+  }
+
   const label = score === null ? 'Not yet rated' : `${score.toFixed(1)} out of 5`
   return (
     <span className={`inline-flex items-center gap-1 ${className}`} title={label}>

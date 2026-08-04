@@ -66,9 +66,13 @@ export async function findPharmaciesWithDrug(opts: {
       SELECT
         "pharmacyId",
         COUNT(*) AS "ratingCount",
-        -- ::float8 matters: an uncast AVG() is numeric, which Prisma hands
-        -- back as a Decimal and JSON-encodes as a string, not a number.
-        AVG(("availability" + "service" + "pricing" + "honesty") / 4.0)::float8 AS "ratingAvg"
+        -- Withheld until MIN_RATINGS_TO_SCORE ratings exist — see
+        -- lib/ratings.ts. ::float8 matters: an uncast AVG() is numeric,
+        -- which Prisma hands back as a Decimal and JSON-encodes as a
+        -- string, not a number.
+        CASE WHEN COUNT(*) >= 3
+          THEN AVG(("availability" + "service" + "pricing" + "honesty") / 4.0)::float8
+        END AS "ratingAvg"
       FROM "PharmacyRating"
       GROUP BY "pharmacyId"
     ) r ON r."pharmacyId" = p."id"

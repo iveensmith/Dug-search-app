@@ -33,7 +33,14 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       where: { pharmacyId: id, comment: { not: null } },
       orderBy: { createdAt: 'desc' },
       take: 5,
-      select: { id: true, comment: true, createdAt: true, user: { select: { displayName: true } } },
+      select: {
+        id: true,
+        comment: true,
+        createdAt: true,
+        ownerReply: true,
+        ownerRepliedAt: true,
+        user: { select: { displayName: true } },
+      },
     }),
   ])
 
@@ -58,6 +65,8 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       id: r.id,
       comment: r.comment,
       createdAt: r.createdAt,
+      ownerReply: r.ownerReply,
+      ownerRepliedAt: r.ownerRepliedAt,
       // First name only — ratings are public, full names are not needed
       author: r.user.displayName?.split(' ')[0] ?? 'A patient',
     })),

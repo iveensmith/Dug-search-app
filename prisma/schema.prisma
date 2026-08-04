@@ -192,6 +192,8 @@ model PharmacyRating {
   pricing      Int // fair pricing
   honesty      Int // genuine drugs, honest advice
   comment      String? // optional free text, shown to other patients
+  ownerReply   String? // the pharmacy's public response to that comment
+  ownerRepliedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

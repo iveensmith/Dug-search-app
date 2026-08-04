@@ -13,7 +13,7 @@ import StockPulse from '@/components/StockPulse'
 import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import { drugLabel, directionsUrl, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
-import { RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
+import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
 import { IconMapPin, IconPhone, IconRoute, IconShieldCheck, IconStore } from '@/components/ui/icons'
 
 type Pharmacy = {
@@ -32,7 +32,21 @@ type Pharmacy = {
 
 type StockItem = { id: string; brand: string | null; stockUpdatedAt: string; drug: DrugSuggestion }
 
-type Payload = { pharmacy: Pharmacy; itemCount: number; ratings: RatingSummary; items: StockItem[] }
+type Comment = {
+  id: string
+  comment: string
+  createdAt: string
+  author: string
+  ownerReply: string | null
+}
+
+type Payload = {
+  pharmacy: Pharmacy
+  itemCount: number
+  ratings: RatingSummary
+  items: StockItem[]
+  comments: Comment[]
+}
 
 export default function PharmacyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -96,7 +110,7 @@ export default function PharmacyDetailPage({ params }: { params: Promise<{ id: s
 }
 
 function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
-  const { pharmacy: p, ratings, items, itemCount } = data
+  const { pharmacy: p, ratings, items, itemCount, comments } = data
   const [copied, setCopied] = useState(false)
 
   function call(e: React.MouseEvent) {
@@ -160,12 +174,18 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
             What patients say
           </p>
-          <RatingStars value={ratings.overall} count={ratings.count} size={16} />
+          <RatingStars value={ratings.scored ? ratings.overall : null} count={ratings.count} size={16} />
         </div>
 
         {ratings.count === 0 ? (
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
             No ratings yet — be the first to say how this pharmacy did.
+          </p>
+        ) : !ratings.scored ? (
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+            {ratings.count} {ratings.count === 1 ? 'patient has' : 'patients have'} rated this
+            pharmacy. We publish a score once there are {MIN_RATINGS_TO_SCORE}, so one visit
+            doesn&apos;t define a shop.
           </p>
         ) : (
           <dl className="mt-4 space-y-3">
@@ -187,6 +207,32 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               )
             })}
           </dl>
+        )}
+
+        {comments.length > 0 && (
+          <ul className="mt-5 space-y-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+            {comments.map((c) => (
+              <li key={c.id}>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{c.author}</span>{' '}
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </span>
+                </p>
+                <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                  &ldquo;{c.comment}&rdquo;
+                </p>
+                {c.ownerReply && (
+                  <p className="mt-2 rounded-xl bg-emerald-50 p-3 text-sm text-gray-700 dark:bg-emerald-500/10 dark:text-gray-300">
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                      {p.name} replied:
+                    </span>{' '}
+                    {c.ownerReply}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
 
         <Button variant="secondary" size="sm" className="mt-4 w-full" onClick={onRate}>

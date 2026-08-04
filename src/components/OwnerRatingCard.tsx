@@ -2,16 +2,88 @@
 
 import { useEffect, useState } from 'react'
 import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import { Textarea } from '@/components/ui/Field'
 import RatingStars from '@/components/RatingStars'
-import { RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
+import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
 import { IconAlertCircle } from '@/components/ui/icons'
 
-type Comment = { id: string; comment: string; createdAt: string; author: string }
+type Comment = {
+  id: string
+  comment: string
+  createdAt: string
+  author: string
+  ownerReply: string | null
+}
 
 /**
  * Owner-facing view of their own rating: the score patients see, broken
  * down by dimension, plus the note explaining what they're judged on.
  */
+function ReplyBox({
+  pharmacyId,
+  comment,
+  onSaved,
+}: {
+  pharmacyId: string
+  comment: Comment
+  onSaved: (reply: string | null) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState(comment.ownerReply ?? '')
+  const [busy, setBusy] = useState(false)
+
+  async function save() {
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/pharmacies/${pharmacyId}/ratings/${comment.id}/reply`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply: text }),
+      })
+      if (res.ok) {
+        onSaved(text.trim() || null)
+        setOpen(false)
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-1.5 cursor-pointer text-xs font-semibold text-emerald-700 dark:text-emerald-400"
+      >
+        {comment.ownerReply ? 'Edit your reply' : 'Reply publicly'}
+      </button>
+    )
+  }
+
+  return (
+    <div className="mt-2">
+      <Textarea
+        rows={2}
+        maxLength={500}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Answer the patient — this shows publicly under their comment"
+        className="text-sm"
+        aria-label="Your public reply"
+      />
+      <div className="mt-2 flex gap-2">
+        <Button size="sm" onClick={save} loading={busy}>
+          {busy ? 'Saving…' : 'Post reply'}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export default function OwnerRatingCard({ pharmacyId }: { pharmacyId: string }) {
   const [summary, setSummary] = useState<RatingSummary | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
@@ -37,7 +109,7 @@ export default function OwnerRatingCard({ pharmacyId }: { pharmacyId: string }) 
     <Card className="mb-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-semibold text-gray-900 dark:text-gray-100">Your rating</p>
-        {rated && <RatingStars value={summary.overall} count={summary.count} size={16} />}
+        {rated && <RatingStars value={summary.scored ? summary.overall : null} count={summary.count} size={16} />}
       </div>
 
       <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-relaxed text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200">
@@ -56,6 +128,12 @@ export default function OwnerRatingCard({ pharmacyId }: { pharmacyId: string }) 
         </p>
       ) : (
         <>
+          {!summary.scored && (
+            <p className="mt-3 rounded-xl bg-gray-50 p-3 text-sm text-gray-600 dark:bg-white/5 dark:text-gray-400">
+              Only you can see this so far. Patients see a score once you have{' '}
+              {MIN_RATINGS_TO_SCORE} ratings — until then one bad visit can&apos;t define your shop.
+            </p>
+          )}
           <dl className="mt-4 space-y-2.5">
             {RATING_DIMENSIONS.map(({ key, label }) => {
               const value = summary.averages![key]
@@ -86,6 +164,23 @@ export default function OwnerRatingCard({ pharmacyId }: { pharmacyId: string }) 
                   <li key={c.id} className="text-sm text-gray-700 dark:text-gray-300">
                     <span className="text-gray-400 dark:text-gray-500">{c.author}:</span> &ldquo;
                     {c.comment}&rdquo;
+                    {c.ownerReply && (
+                      <span className="mt-1.5 block border-l-2 border-emerald-500 pl-2.5 text-xs text-gray-600 dark:text-gray-400">
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                          Your reply:
+                        </span>{' '}
+                        {c.ownerReply}
+                      </span>
+                    )}
+                    <ReplyBox
+                      pharmacyId={pharmacyId}
+                      comment={c}
+                      onSaved={(reply) =>
+                        setComments((list) =>
+                          list.map((x) => (x.id === c.id ? { ...x, ownerReply: reply } : x)),
+                        )
+                      }
+                    />
                   </li>
                 ))}
               </ul>
