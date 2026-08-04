@@ -33,6 +33,10 @@ export async function GET(req: NextRequest) {
       address: pharmacy.address,
       state: pharmacy.state,
       lga: pharmacy.lga,
+      // Read-only in the dashboard — shown so an owner can check what was
+      // registered without being able to edit it (see api/pharmacy/route.ts)
+      pcnLicenseNumber: pharmacy.pcnLicenseNumber,
+      phone: pharmacy.phone,
       verificationStatus: pharmacy.verificationStatus,
       open24h: pharmacy.open24h,
       opensAt: pharmacy.opensAt,

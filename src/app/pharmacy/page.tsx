@@ -36,6 +36,8 @@ type Dashboard = {
     address: string
     state: string
     lga: string | null
+    pcnLicenseNumber: string
+    phone: string
     verificationStatus: string
     open24h: boolean
     opensAt: string | null
@@ -160,32 +162,155 @@ function LgaCard({
 
   return (
     <Card className="mb-4">
-      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Local Government Area</p>
+      <p className="font-semibold text-gray-900 dark:text-gray-100">As registered</p>
+      <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+        What an admin checked against your PCN licence. Fixed once approved — correcting any of it
+        means deleting this outlet and registering again.
+      </p>
+
+      <dl className="mt-3.5 space-y-2.5 text-sm">
+        {(
+          [
+            ['Pharmacy name', pharmacy.name],
+            ['Address', pharmacy.address],
+            ['State', stateLabel(pharmacy.state)],
+            ...(pharmacy.lga ? [['LGA', pharmacy.lga]] : []),
+            ['Phone', pharmacy.phone],
+            ['PCN premises number', pharmacy.pcnLicenseNumber],
+          ] as [string, string][]
+        ).map(([label, value]) => (
+          <div
+            key={label}
+            className="flex items-baseline justify-between gap-4 border-b border-gray-100 pb-2.5 last:border-0 last:pb-0 dark:border-gray-800"
+          >
+            <dt className="shrink-0 text-gray-500 dark:text-gray-400">{label}</dt>
+            <dd className="min-w-0 text-right font-medium text-gray-900 dark:text-gray-100">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {/* The only writable field here, and only while it is empty: outlets
+          registered before LGAs existed have none, and searches filter by
+          LGA — without this they would be invisible to patients for good. */}
       {!pharmacy.lga && (
-        <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-          <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0" />
-          <p>
-            Required — patients search by LGA, so your pharmacy won&apos;t appear in their results
-            until this is set.
-          </p>
+        <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+          <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+            <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0" />
+            <p>
+              Required — patients search by LGA, so your pharmacy won&apos;t appear in their
+              results until this is set. You can only set it once.
+            </p>
+          </div>
+          <Field label={`Your LGA in ${stateLabel(pharmacy.state)}`} htmlFor="pharmacy-lga">
+            <Select id="pharmacy-lga" value={lga} onChange={(e) => setLga(e.target.value)} required>
+              <option value="" disabled>
+                Select your LGA
+              </option>
+              {lgasForState(pharmacy.state).map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          <Button size="sm" className="mt-3" onClick={save} loading={saving}>
+            {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save LGA'}
+          </Button>
         </div>
       )}
-      <Field label={`Your LGA in ${stateLabel(pharmacy.state)}`} htmlFor="pharmacy-lga">
-        <Select id="pharmacy-lga" value={lga} onChange={(e) => setLga(e.target.value)} required>
-          <option value="" disabled>
-            Select your LGA
-          </option>
-          {lgasForState(pharmacy.state).map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
-      <Button size="sm" className="mt-3" onClick={save} loading={saving}>
-        {saved ? 'Saved \u2713' : saving ? 'Saving\u2026' : 'Save LGA'}
-      </Button>
+    </Card>
+  )
+}
+
+/**
+ * The escape hatch for everything locked above. Deliberately unglamorous
+ * and behind a typed confirmation — it destroys the shop's ratings and
+ * history, and there is no undo.
+ */
+function DeleteOutletCard({ pharmacy }: { pharmacy: Dashboard['pharmacy'] }) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [confirmName, setConfirmName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function remove() {
+    setBusy(true)
+    setError('')
+    try {
+      const res = await fetch('/api/pharmacy', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmName }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error ?? 'Could not delete this outlet')
+        return
+      }
+      router.push('/pharmacy/register')
+    } catch {
+      setError('Network problem — try again')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card className="mt-6 border-red-200 dark:border-red-900/60">
+      <p className="font-semibold text-gray-900 dark:text-gray-100">Delete this outlet</p>
+      <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+        The way to correct anything registered above. Your login stays, so you can register the
+        corrected outlet straight after — it goes back through approval as a new listing.
+      </p>
+
+      {!open ? (
+        <Button variant="destructive" size="sm" className="mt-3" onClick={() => setOpen(true)}>
+          <IconTrash width={15} height={15} />
+          Delete outlet
+        </Button>
+      ) : (
+        <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3.5 dark:border-red-900/60 dark:bg-red-950/30">
+          <p className="text-sm font-semibold text-red-800 dark:text-red-300">
+            This cannot be undone.
+          </p>
+          <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+            Your stock list, every patient rating and your reservation history are deleted with it.
+            Ratings do not carry over to a new listing.
+          </p>
+          <div className="mt-3">
+            <Field label={`Type "${pharmacy.name}" to confirm`} htmlFor="confirm-delete">
+              <Input
+                id="confirm-delete"
+                value={confirmName}
+                onChange={(e) => setConfirmName(e.target.value)}
+                autoComplete="off"
+              />
+            </Field>
+          </div>
+          {error && (
+            <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
+          )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              loading={busy}
+              disabled={confirmName.trim().toLowerCase() !== pharmacy.name.toLowerCase()}
+              onClick={remove}
+            >
+              <IconTrash width={15} height={15} />
+              Permanently delete
+            </Button>
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => setOpen(false)}>
+              Keep it
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
@@ -988,6 +1113,8 @@ export default function PharmacyDashboard() {
           )}
 
           {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={items.length} />}
+
+          <DeleteOutletCard pharmacy={pharmacy} />
         </>
       )}
     </div>
