@@ -37,8 +37,9 @@ export default function RatingStars({
 }) {
   // Coerce defensively — this renders inside the search results, so a
   // surprising value (a numeric string from SQL, say) must degrade to
-  // "unrated" rather than throw and blank the page.
-  const numeric = typeof value === 'number' ? value : Number(value)
+  // "unrated" rather than throw and blank the page. Null stays null: an
+  // unrated pharmacy must not read as a score of 0.0.
+  const numeric = value === null || value === undefined ? NaN : Number(value)
   const score = Number.isFinite(numeric) ? numeric : null
   const label = score === null ? 'Not yet rated' : `${score.toFixed(1)} out of 5`
   return (

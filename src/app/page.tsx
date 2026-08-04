@@ -12,6 +12,7 @@ import {
   drugLabel,
   directionsUrl,
   relativeTime,
+  stockFreshness,
 } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 import { lgasForState } from '@/lib/lgas'
@@ -25,6 +26,7 @@ import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import NotifyMeForm from '@/components/NotifyMeForm'
 import OwnerHome from '@/components/OwnerHome'
 import RatingStars from '@/components/RatingStars'
+import StockPulse from '@/components/StockPulse'
 import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import { Field, Select } from '@/components/ui/Field'
 import {
@@ -36,6 +38,7 @@ import {
   IconRoute,
   IconSearch,
   IconShieldCheck,
+  IconStore,
   IconX,
 } from '@/components/ui/icons'
 
@@ -148,7 +151,7 @@ export default function Home() {
   const [locationHint, setLocationHint] = useState('')
   const [locating, setLocating] = useState(false)
   const [view, setView] = useState<'list' | 'map'>('list')
-  const [sortBy, setSortBy] = useState<'distance' | 'name'>('distance')
+  const [sortBy, setSortBy] = useState<'fresh' | 'distance' | 'rating'>('fresh')
   const [route, setRoute] = useState<ActiveRoute | null>(null)
   const [routeBusyId, setRouteBusyId] = useState<string | null>(null)
   const [routeError, setRouteError] = useState('')
@@ -427,7 +430,14 @@ export default function Home() {
   const results = useMemo(() => (state.kind === 'results' ? state.results : []), [state])
   const sortedResults = useMemo(() => {
     const sorted = [...results]
-    if (sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name))
+    if (sortBy === 'rating') sorted.sort((a, b) => (b.ratingAvg ?? 0) - (a.ratingAvg ?? 0))
+    else if (sortBy === 'fresh')
+      // Freshest confirmation wins; distance breaks ties
+      sorted.sort(
+        (a, b) =>
+          new Date(b.stockUpdatedAt).getTime() - new Date(a.stockUpdatedAt).getTime() ||
+          a.distanceKm - b.distanceKm,
+      )
     else sorted.sort((a, b) => a.distanceKm - b.distanceKm)
     return sorted
   }, [results, sortBy])
@@ -927,15 +937,6 @@ export default function Home() {
                 {selectedLabel}
               </p>
               <div className="flex shrink-0 items-center gap-2">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'distance' | 'name')}
-                  aria-label="Sort results by"
-                  className="cursor-pointer rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 outline-none focus:border-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                >
-                  <option value="distance">Nearest first</option>
-                  <option value="name">Name (A–Z)</option>
-                </select>
                 <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
                   <button
                     onClick={() => setView('list')}
@@ -951,6 +952,29 @@ export default function Home() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {(
+                [
+                  ['fresh', 'Freshest stock'],
+                  ['distance', 'Nearest'],
+                  ['rating', 'Best rated'],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setSortBy(key)}
+                  aria-pressed={sortBy === key}
+                  className={`shrink-0 cursor-pointer rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+                    sortBy === key
+                      ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {routeError && (
@@ -991,68 +1015,81 @@ export default function Home() {
             <div className="md:grid md:grid-cols-2 md:gap-4">
               <ul className={`stagger space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
                 {sortedResults.map((r) => (
-                  <li key={r.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
-                    <div className="relative flex h-24 items-center justify-center border-b border-transparent bg-gradient-to-br from-emerald-500 to-emerald-700 dark:border-emerald-900/40 dark:from-emerald-950/80 dark:to-emerald-900/40">
-                      <IconMapPin width={36} height={36} className="text-white/90 dark:text-emerald-400/70" />
-                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-emerald-700 shadow-sm dark:bg-gray-950/90 dark:text-emerald-400">
-                        {r.distanceKm.toFixed(1)} km away
+                  <li
+                    key={r.id}
+                    className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-800"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                        <IconStore width={24} height={24} />
                       </span>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                          Pharmacy
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="truncate font-bold text-gray-900 dark:text-gray-50">{r.name}</h3>
+                          <span className="shrink-0 text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">
+                            {r.distanceKm.toFixed(1)} km
+                          </span>
+                        </div>
+                        <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                          {r.address}
+                          {r.lga ? ` · ${r.lga}` : ''}
                         </p>
-                        <div className="flex items-center gap-1.5">
-                          <OpenStatusBadge open24h={r.open24h} opensAt={r.opensAt} closesAt={r.closesAt} />
+                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                          <StockPulse stockUpdatedAt={r.stockUpdatedAt} />
                           <VerifiedBadge />
+                          <OpenStatusBadge open24h={r.open24h} opensAt={r.opensAt} closesAt={r.closesAt} />
                         </div>
                       </div>
-                      <p className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100">{r.name}</p>
-                      <p className="mt-0.5">
-                        <RatingStars value={r.ratingAvg} count={r.ratingCount} />
+                    </div>
+
+                    <button
+                      onClick={() => setRating({ id: r.id, name: r.name })}
+                      className="mt-3.5 flex cursor-pointer items-center gap-2.5"
+                    >
+                      <RatingStars value={r.ratingAvg} count={r.ratingCount} />
+                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Rate</span>
+                    </button>
+
+                    {stockFreshness(r.stockUpdatedAt).tone === 'stale' && (
+                      <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+                        Not confirmed in over a day — worth calling first.
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {r.address}
-                        {r.lga && (
-                          <span className="text-gray-400 dark:text-gray-500"> · {r.lga} LGA</span>
-                        )}
-                      </p>
-                      <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-500">
-                        <IconPhone width={12} height={12} /> {r.phone}
-                      </p>
-                      <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
-                        Stock updated {relativeTime(r.stockUpdatedAt)} by the pharmacy
-                      </p>
-                      <div className="mt-3 flex gap-2">
-                        <Button
-                          variant="primary"
-                          size="md"
-                          onClick={() => showRoute(r)}
-                          loading={routeBusyId === r.id}
-                          className="flex-1"
-                        >
-                          <IconRoute width={16} height={16} />
-                          {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
-                        </Button>
+                    )}
+
+                    <div className="mt-4 flex gap-2.5">
                       <a
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
                         onClick={(e) => handleCall(e, r.phone)}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-600/60 px-3 py-2.5 text-center text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 active:bg-emerald-100 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
+                        aria-label={`Call ${r.name}`}
+                        className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
                       >
                         <IconPhone width={16} height={16} />
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
-                      </div>
-                      <button
-                        onClick={() => setRating({ id: r.id, name: r.name })}
-                        className="mt-2 w-full cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-50 hover:text-emerald-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-emerald-400"
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={() => showRoute(r)}
+                        loading={routeBusyId === r.id}
+                        className="flex-1"
                       >
-                        Been here? Rate this pharmacy
-                      </button>
+                        <IconRoute width={16} height={16} />
+                        {routeBusyId === r.id ? 'Loading route…' : 'Directions'}
+                      </Button>
                     </div>
                   </li>
                 ))}
+                <li className="flex items-start gap-3 rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/30">
+                  <IconAlertCircle
+                    width={18}
+                    height={18}
+                    className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400"
+                  />
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    Pharmacies keep their own stock and hours up to date. Call ahead if a listing
+                    hasn&apos;t been confirmed today.
+                  </p>
+                </li>
               </ul>
 
               <div

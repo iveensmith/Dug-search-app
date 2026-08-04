@@ -64,3 +64,17 @@ export function relativeTime(iso: string | Date): string {
   const months = Math.round(days / 30)
   return `${months} ${months === 1 ? 'month' : 'months'} ago`
 }
+
+export type StockTone = 'fresh' | 'aging' | 'stale'
+
+/**
+ * Availability is only worth something if you know how fresh it is, so
+ * stockUpdatedAt is graded rather than just printed: under an hour is
+ * "fresh", under a day "aging", older than that "stale" and worth a call.
+ */
+export function stockFreshness(iso: string | Date): { tone: StockTone; live: boolean; label: string } {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
+  if (mins < 60) return { tone: 'fresh', live: true, label: `Confirmed ${relativeTime(iso)}` }
+  if (mins < 1440) return { tone: 'aging', live: true, label: `Confirmed ${relativeTime(iso)}` }
+  return { tone: 'stale', live: false, label: `Last confirmed ${relativeTime(iso)}` }
+}
