@@ -1100,10 +1100,10 @@ export default function Home() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
-                    Is there another option?
+                    Not sure what to do next?
                   </p>
                   <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
-                    A licensed pharmacist can tell you what else treats the same thing.
+                    Speak to a licensed pharmacist for drug advice.
                   </p>
                   <Link
                     href="/prescriptions"
