@@ -337,11 +337,21 @@ function PharmacistsTab({
   )
 }
 
+function chipClass(on: boolean) {
+  return `cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+    on
+      ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+      : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+  }`
+}
+
 function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => void }) {
   const [form, setForm] = useState({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'unclassified' | string>('all')
+  const [query, setQuery] = useState('')
 
   function startEdit(d: AdminDrug) {
     setEditingId(d.id)
@@ -384,6 +394,18 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       setBusy(false)
     }
   }
+
+  const unclassifiedCount = drugs.filter((d) => !d.category).length
+  const needle = query.trim().toLowerCase()
+  const visible = drugs.filter((d) => {
+    if (filter === 'unclassified' && d.category) return false
+    if (filter !== 'all' && filter !== 'unclassified' && d.category !== filter) return false
+    if (!needle) return true
+    return (
+      d.genericName.toLowerCase().includes(needle) ||
+      d.brandNames.some((b) => b.toLowerCase().includes(needle))
+    )
+  })
 
   return (
     <div>
@@ -440,8 +462,61 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
         </form>
       </Card>
 
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setFilter('all')}
+          className={chipClass(filter === 'all')}
+        >
+          All ({drugs.length})
+        </button>
+        <button
+          onClick={() => setFilter('unclassified')}
+          className={chipClass(filter === 'unclassified')}
+        >
+          Unclassified ({unclassifiedCount})
+        </button>
+        <Select
+          aria-label="Filter by class"
+          value={filter === 'all' || filter === 'unclassified' ? '' : filter}
+          onChange={(e) => setFilter(e.target.value || 'all')}
+          className="!w-auto"
+        >
+          <option value="">Any class…</option>
+          {DRUG_CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </Select>
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Find a drug…"
+          aria-label="Find a drug by name"
+          className="!w-48"
+        />
+      </div>
+
+      {unclassifiedCount > 0 && filter !== 'unclassified' && (
+        <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+          {unclassifiedCount} {unclassifiedCount === 1 ? 'drug has' : 'drugs have'} no class yet —{' '}
+          <button
+            onClick={() => setFilter('unclassified')}
+            className="cursor-pointer font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+          >
+            work through them
+          </button>
+          .
+        </p>
+      )}
+
+      {visible.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+          {filter === 'unclassified'
+            ? 'Every drug has a class. Nothing to do here.'
+            : 'No drug matches that.'}
+        </p>
+      ) : (
       <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
-        {drugs.map((d) => (
+        {visible.map((d) => (
           <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
               <p className="truncate font-medium text-gray-900 dark:text-gray-100">
@@ -449,8 +524,17 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
                 <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{d.form.toLowerCase()}</span>
               </p>
               <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                {d.category ?? 'Unclassified'} ·{' '}
-                {d.brandNames.length > 0 ? d.brandNames.join(', ') : 'no brands listed'} · stocked by {d.stockedByCount}
+                <span
+                  className={
+                    d.category
+                      ? 'font-medium text-gray-600 dark:text-gray-300'
+                      : 'font-medium text-amber-700 dark:text-amber-400'
+                  }
+                >
+                  {d.category ?? 'Unclassified'}
+                </span>{' '}
+                · {d.brandNames.length > 0 ? d.brandNames.join(', ') : 'no brands listed'} · stocked by{' '}
+                {d.stockedByCount}
               </p>
             </div>
             <button onClick={() => startEdit(d)} className="shrink-0 cursor-pointer text-sm font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
@@ -459,6 +543,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
           </li>
         ))}
       </ul>
+      )}
     </div>
   )
 }
