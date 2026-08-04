@@ -41,9 +41,18 @@ export async function POST(req: NextRequest) {
     setSessionCookie(res, await signSession({ userId: user.id, role: user.role }))
     return res
   } catch (e) {
+    // The unique constraint is [email, role], so this only fires when an
+    // account of *this* type already exists. Say which, so someone whose
+    // email is already a patient account isn't told to go and log in when
+    // what they actually just did was create their pharmacy account.
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       return NextResponse.json(
-        { error: 'An account with that email already exists' },
+        {
+          error:
+            accountType === 'pharmacy'
+              ? 'A pharmacy account with that email already exists — log in on the pharmacy tab instead.'
+              : 'A patient account with that email already exists — log in instead.',
+        },
         { status: 409 },
       )
     }

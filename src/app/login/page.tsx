@@ -48,16 +48,30 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next')
-  const [portal, setPortal] = useState<Portal>(next?.startsWith('/pharmacy') ? 'pharmacy' : 'patient')
+  const [portal, setPortal] = useState<Portal>(
+    searchParams.get('portal') === 'pharmacy' || next?.startsWith('/pharmacy')
+      ? 'pharmacy'
+      : 'patient',
+  )
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  // Set when the email has no account on this side of the app — turns the
+  // error into a link to the right sign-up form instead of a dead end.
+  const [needsAccount, setNeedsAccount] = useState<Portal | null>(null)
   const [busy, setBusy] = useState(false)
+
+  function switchPortal(to: Portal) {
+    setPortal(to)
+    setError('')
+    setNeedsAccount(null)
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError('')
+    setNeedsAccount(null)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -67,6 +81,9 @@ function LoginForm() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error ?? 'Login failed')
+        if (data.needsAccount === 'patient' || data.needsAccount === 'pharmacy') {
+          setNeedsAccount(data.needsAccount)
+        }
         return
       }
       setWelcomeName(data.user.displayName)
@@ -92,14 +109,14 @@ function LoginForm() {
         <div className="mb-4 flex overflow-hidden rounded-lg border border-gray-300 text-sm dark:border-gray-700">
           <button
             type="button"
-            onClick={() => setPortal('patient')}
+            onClick={() => switchPortal('patient')}
             className={`flex-1 cursor-pointer px-4 py-2 font-medium transition-colors ${portal === 'patient' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
           >
             Patient
           </button>
           <button
             type="button"
-            onClick={() => setPortal('pharmacy')}
+            onClick={() => switchPortal('pharmacy')}
             className={`flex-1 cursor-pointer px-4 py-2 font-medium transition-colors ${portal === 'pharmacy' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
           >
             Pharmacy owner
@@ -136,7 +153,29 @@ function LoginForm() {
               </Link>
             </div>
 
-            {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+            {error && (
+              <div className="rounded-xl bg-red-50 p-3 dark:bg-red-950/40">
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
+                {needsAccount === 'pharmacy' && (
+                  <Link
+                    href={`/register?type=pharmacy&next=${encodeURIComponent(next ?? '/pharmacy')}`}
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-800 underline underline-offset-2 dark:text-red-300"
+                  >
+                    Create a pharmacy account
+                    <IconChevronRight width={15} height={15} />
+                  </Link>
+                )}
+                {needsAccount === 'patient' && (
+                  <Link
+                    href={`/register?next=${encodeURIComponent(next ?? '/')}`}
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-800 underline underline-offset-2 dark:text-red-300"
+                  >
+                    Create a patient account
+                    <IconChevronRight width={15} height={15} />
+                  </Link>
+                )}
+              </div>
+            )}
 
             <Button type="submit" loading={busy} className="w-full" size="lg">
               {busy ? 'Logging in…' : 'Log in'}
@@ -154,7 +193,7 @@ function LoginForm() {
                   subtitle="New here? It's free and takes a minute"
                 />
               </Link>
-              <button type="button" onClick={() => setPortal('pharmacy')} className={actionCardClass}>
+              <button type="button" onClick={() => switchPortal('pharmacy')} className={actionCardClass}>
                 <ActionCardBody
                   icon={<IconStore width={20} height={20} />}
                   title="Own a pharmacy?"
@@ -171,7 +210,7 @@ function LoginForm() {
                   subtitle="New pharmacy? Get discovered by patients"
                 />
               </Link>
-              <button type="button" onClick={() => setPortal('patient')} className={actionCardClass}>
+              <button type="button" onClick={() => switchPortal('patient')} className={actionCardClass}>
                 <ActionCardBody
                   icon={<IconUser width={20} height={20} />}
                   title="Are you a patient?"

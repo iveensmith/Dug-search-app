@@ -119,7 +119,10 @@ function RegisterForm() {
 
         <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+          <Link
+            href={isPharmacy ? '/login?portal=pharmacy' : '/login'}
+            className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+          >
             Log in
           </Link>
         </p>

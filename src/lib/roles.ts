@@ -21,6 +21,25 @@ export const DASHBOARD_LABEL: Record<string, string> = {
   ADMIN: 'Admin panel',
 }
 
+export type Portal = 'patient' | 'pharmacy'
+
+/**
+ * Which roles each login tab can sign in to. The tab is a hard filter, not
+ * a hint: an email registered only as a patient must be rejected on the
+ * pharmacy tab even when the password is right, so that whoever holds that
+ * email has to register a separate pharmacy account (the schema allows it —
+ * User is unique on [email, role], not on email alone).
+ *
+ * Pharmacists and admins sit on the pharmacy side because that tab is the
+ * staff entrance and their accounts are only ever created by an admin,
+ * never self-registered — so there is no patient/staff collision to guard
+ * against, and they'd otherwise have no way in at all.
+ */
+export const PORTAL_ROLES: Record<Portal, readonly string[]> = {
+  patient: ['PATIENT'],
+  pharmacy: ['PHARMACY_OWNER', 'PHARMACIST', 'ADMIN'],
+}
+
 export const ROLE_LABEL: Record<string, string> = {
   PATIENT: 'Patient',
   PHARMACY_OWNER: 'Pharmacy owner',
