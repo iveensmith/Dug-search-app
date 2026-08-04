@@ -39,6 +39,7 @@ import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
   IconCheck,
+  IconChevronDown,
   IconChevronRight,
   IconClipboardList,
   IconMapPin,
@@ -70,6 +71,30 @@ const HOW_IT_WORKS = [
     icon: IconRoute,
     title: 'Go get it',
     text: 'Get turn-by-turn directions or call ahead — no more pharmacy-hopping.',
+  },
+] as const
+
+// Every answer here is a claim about behaviour that actually ships — the
+// freshness sort lives in `sortResults`, the price answer is true because
+// there is no price column at all, and both the approval gate and the LGA
+// scope are in the search query in lib/geo.ts. Check the code before
+// editing the copy.
+const FAQ = [
+  {
+    q: 'How current is the stock information?',
+    a: "Every result shows when its pharmacy last confirmed that item. Anything past 24 hours drops to “last confirmed” and sorts below fresher listings — it's never presented as a guarantee.",
+  },
+  {
+    q: 'Do you show prices?',
+    a: 'No. Pharmacies set their own prices and they move often, so instead patients rate each pharmacy on fair pricing after a visit. Confirm the price at the counter.',
+  },
+  {
+    q: 'Can any shop list on MediQuest?',
+    a: 'No. A premises supplies its PCN licence number at registration and stays invisible to patients until an admin approves it.',
+  },
+  {
+    q: 'Which parts of Nigeria does it cover?',
+    a: 'All 36 states and the FCT. Search is scoped to your state and LGA, so results are always pharmacies you can actually reach.',
   },
 ] as const
 
@@ -150,6 +175,9 @@ export default function Home() {
   // that can't register one (patients, pharmacists, admins).
   const [viewerRole, setViewerRole] = useState<string | null>(null)
   const [viewerName, setViewerName] = useState<string | null>(null)
+  // Distinguishes "signed out" from "not asked yet" — without it the
+  // owner CTA would flash on screen for a signed-in patient and vanish.
+  const [viewerLoaded, setViewerLoaded] = useState(false)
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
   const [selectedLga, setSelectedLga] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false) // full state/LGA dropdowns vs the compact chip
@@ -220,8 +248,11 @@ export default function Home() {
         if (cancelled) return
         setViewerRole(data.user?.role ?? null)
         setViewerName(data.user?.displayName ?? null)
+        setViewerLoaded(true)
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setViewerLoaded(true)
+      })
     return () => {
       cancelled = true
     }
@@ -679,6 +710,69 @@ export default function Home() {
               ))}
             </ol>
           </section>
+
+          {/* Native <details> so the accordion works before hydration and
+              stays keyboard- and screen-reader-correct for free. */}
+          <section className="reveal border-t border-gray-200/80 py-16 md:py-24 dark:border-gray-800/80">
+            <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+              Questions
+            </h2>
+            <div className="mx-auto mt-10 max-w-2xl space-y-3">
+              {FAQ.map(({ q, a }) => (
+                <details
+                  key={q}
+                  className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors open:border-emerald-200 dark:border-gray-800 dark:bg-gray-900 dark:open:border-emerald-800"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-semibold text-gray-900 marker:content-none dark:text-gray-50 [&::-webkit-details-marker]:hidden">
+                    {q}
+                    <IconChevronDown
+                      width={20}
+                      height={20}
+                      className="shrink-0 text-gray-400 transition-transform duration-200 group-open:rotate-180 dark:text-gray-500"
+                    />
+                  </summary>
+                  <p className="px-5 pb-5 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          {/* Owner recruitment — only for signed-out visitors, matching the
+              header: a signed-in patient can't register a premises, so
+              offering them one would be a dead end. */}
+          {viewerLoaded && !viewerRole && (
+            <section className="reveal pb-16 md:pb-24">
+              <div className="rounded-3xl bg-emerald-600 p-8 shadow-lg shadow-emerald-600/20 sm:p-12 dark:bg-emerald-700">
+                <h2 className="max-w-lg text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
+                  Run a pharmacy? Put your shelf on the map.
+                </h2>
+                <p className="mt-3.5 max-w-xl leading-relaxed text-emerald-50">
+                  Free to list. Add your stock once, confirm it in a tap, and get found by patients
+                  already searching for what you have.
+                </p>
+                {/* Colours are written out rather than taken from
+                    buttonClass(): the variants there assume a light page
+                    background, and on emerald their text colours collide
+                    with the overrides. */}
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link
+                    href="/pharmacy/register"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-base font-semibold text-emerald-700 shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-emerald-50 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-600"
+                  >
+                    <IconStore width={18} height={18} />
+                    Register your pharmacy
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold text-white transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-600"
+                  >
+                    Already listed? Sign in
+                    <IconChevronRight width={18} height={18} />
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
         </>
       )}
 
