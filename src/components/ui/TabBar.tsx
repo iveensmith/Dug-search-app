@@ -20,7 +20,7 @@ type Tab = { href: string; label: string; Icon: (p: IconProps) => React.ReactEle
 function tabsFor(me: Me, unread: number): Tab[] {
   if (me?.role === 'PHARMACY_OWNER') {
     return [
-      { href: '/', label: 'Overview', Icon: IconStore },
+      { href: '/pharmacy/overview', label: 'Overview', Icon: IconStore },
       { href: '/pharmacy', label: 'Inventory', Icon: IconClipboardList },
       { href: '/account', label: 'Account', Icon: IconUser },
     ]

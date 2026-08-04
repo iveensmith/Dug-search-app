@@ -804,6 +804,9 @@ export default function PharmacyDashboard() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
     <AppHeader
+      // Straight to the owner's own home rather than "/", which would only
+      // bounce them here through the proxy redirect.
+      backHref="/pharmacy/overview"
       title={
         pharmacy.verificationStatus === 'APPROVED' ? (
           <span className="flex items-center gap-2">

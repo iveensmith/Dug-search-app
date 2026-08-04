@@ -1,10 +1,11 @@
 // Where a freshly authenticated user lands, by role — shared by login and
 // reset-password (both sign the user in directly on success).
 export const HOME_BY_ROLE: Record<string, string> = {
-  // The owner overview at "/", not the inventory list — an owner signing in
-  // wants the state of their shop first, and can reach the stock list from
-  // there in one tap.
-  PHARMACY_OWNER: '/',
+  // The owner overview, not the inventory list — an owner signing in wants
+  // the state of their shop first, and can reach the stock list from there
+  // in one tap. Its own route rather than "/", so the right page renders
+  // straight away instead of the patient hero flashing first.
+  PHARMACY_OWNER: '/pharmacy/overview',
   ADMIN: '/admin',
   PHARMACIST: '/pharmacist',
   PATIENT: '/',

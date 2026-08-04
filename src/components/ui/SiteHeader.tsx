@@ -70,7 +70,7 @@ export default function SiteHeader() {
   const navLinks: { href: string; label: string }[] =
     me?.role === 'PHARMACY_OWNER'
       ? [
-          { href: '/', label: 'Overview' },
+          { href: '/pharmacy/overview', label: 'Overview' },
           { href: '/pharmacy', label: 'My inventory' },
           ...(me.hasPharmacy ? [] : [{ href: '/pharmacy/register', label: 'Add your pharmacy outlet' }]),
         ]

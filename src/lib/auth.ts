@@ -1,17 +1,21 @@
 import bcrypt from 'bcryptjs'
-import { SignJWT, jwtVerify } from 'jose'
+import { SignJWT } from 'jose'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from './db'
 import type { Role } from '../generated/prisma/enums'
+import { SESSION_COOKIE, verifySessionToken, type Session } from './session'
 
-export const SESSION_COOKIE = 'df_session'
+// Re-exported so existing imports from '@/lib/auth' keep working; the
+// cookie name and the verify live in lib/session, which carries no
+// database dependency (see the note there).
+export { SESSION_COOKIE }
+export type { Session }
+
 const SESSION_DAYS = 7
 
 function secretKey() {
   return new TextEncoder().encode(process.env.JWT_SECRET ?? 'dev-only-secret-change-in-production')
 }
-
-export type Session = { userId: string; role: Role }
 
 export function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
@@ -45,15 +49,7 @@ export function clearSessionCookie(res: NextResponse) {
 }
 
 export async function getSession(req: NextRequest): Promise<Session | null> {
-  const token = req.cookies.get(SESSION_COOKIE)?.value
-  if (!token) return null
-  try {
-    const { payload } = await jwtVerify(token, secretKey())
-    if (!payload.sub || typeof payload.role !== 'string') return null
-    return { userId: payload.sub, role: payload.role as Role }
-  } catch {
-    return null
-  }
+  return verifySessionToken(req.cookies.get(SESSION_COOKIE)?.value)
 }
 
 /**
