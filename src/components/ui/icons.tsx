@@ -151,6 +151,15 @@ export function IconMessageCircle(props: IconProps) {
   )
 }
 
+export function IconPill(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M10.5 20.5a5 5 0 01-7-7l6-6a5 5 0 017 7l-6 6z" />
+      <path d="M8.5 8.5l7 7" />
+    </svg>
+  )
+}
+
 export function IconStore(props: IconProps) {
   return (
     <svg {...base} {...props}>

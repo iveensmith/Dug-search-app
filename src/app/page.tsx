@@ -933,8 +933,14 @@ export default function Home() {
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="min-w-0 text-sm text-gray-600 dark:text-gray-400">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{results.length}</span>{' '}
-                {results.length === 1 ? 'pharmacy has' : 'pharmacies have'} {state.label} in{' '}
-                {selectedLabel}
+                {results.length === 1 ? 'pharmacy has' : 'pharmacies have'}{' '}
+                <Link
+                  href={`/drugs/${state.drugId}?state=${selectedState}&lga=${encodeURIComponent(selectedLga)}`}
+                  className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                >
+                  {state.label}
+                </Link>{' '}
+                in {selectedLabel}
               </p>
               <div className="flex shrink-0 items-center gap-2">
                 <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
@@ -1025,7 +1031,12 @@ export default function Home() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="truncate font-bold text-gray-900 dark:text-gray-50">{r.name}</h3>
+                          <Link
+                            href={`/pharmacies/${r.id}`}
+                            className="truncate font-bold text-gray-900 transition-colors hover:text-emerald-700 dark:text-gray-50 dark:hover:text-emerald-400"
+                          >
+                            {r.name}
+                          </Link>
                           <span className="shrink-0 text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">
                             {r.distanceKm.toFixed(1)} km
                           </span>
@@ -1066,6 +1077,12 @@ export default function Home() {
                         <IconPhone width={16} height={16} />
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
+                      <Link
+                        href={`/pharmacies/${r.id}`}
+                        className="flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                      >
+                        Details
+                      </Link>
                       <Button
                         variant="primary"
                         size="md"
