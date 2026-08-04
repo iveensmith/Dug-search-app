@@ -175,7 +175,6 @@ function LgaCard({
             ['Address', pharmacy.address],
             ['State', stateLabel(pharmacy.state)],
             ...(pharmacy.lga ? [['LGA', pharmacy.lga]] : []),
-            ['Phone', pharmacy.phone],
             ['PCN premises number', pharmacy.pcnLicenseNumber],
           ] as [string, string][]
         ).map(([label, value]) => (
@@ -221,6 +220,75 @@ function LgaCard({
           </Button>
         </div>
       )}
+    </Card>
+  )
+}
+
+/**
+ * The one registered detail that stays editable. It's what the Call button
+ * on every search result dials, so a stale number quietly costs the shop
+ * every patient who tries to ring ahead.
+ */
+function PhoneCard({
+  pharmacy,
+  onSaved,
+}: {
+  pharmacy: Dashboard['pharmacy']
+  onSaved: (phone: string) => void
+}) {
+  const [phone, setPhone] = useState(pharmacy.phone)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  async function save() {
+    setSaving(true)
+    setError('')
+    setSaved(false)
+    try {
+      const res = await fetch('/api/pharmacy', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error ?? 'Could not save that number')
+        return
+      }
+      setPhone(data.phone) // show it back normalised
+      onSaved(data.phone)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      setError('Network problem — try again')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Card className="mb-4">
+      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Phone</p>
+      <Field label="Number patients call" htmlFor="pharmacy-phone">
+        <Input
+          id="pharmacy-phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          inputMode="tel"
+          placeholder="e.g. 0803 123 4567"
+        />
+      </Field>
+      {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+      <Button
+        size="sm"
+        className="mt-3"
+        onClick={save}
+        loading={saving}
+        disabled={phone.trim() === pharmacy.phone}
+      >
+        {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save phone'}
+      </Button>
     </Card>
   )
 }
@@ -780,6 +848,10 @@ export default function PharmacyDashboard() {
           <LgaCard
             pharmacy={pharmacy}
             onSaved={(lga) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, lga } } : d))}
+          />
+          <PhoneCard
+            pharmacy={pharmacy}
+            onSaved={(phone) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, phone } } : d))}
           />
           <HoursCard
             pharmacy={pharmacy}

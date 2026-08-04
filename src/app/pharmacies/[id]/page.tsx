@@ -110,7 +110,10 @@ export default function PharmacyDetailPage({ params }: { params: Promise<{ id: s
 }
 
 function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
-  const { pharmacy: p, ratings, items, itemCount, comments } = data
+  // Defaulted, not assumed: this is a public page reached from every search
+  // result, and a field missing from the response should cost a section,
+  // not blank the page with an error screen.
+  const { pharmacy: p, ratings, itemCount, items = [], comments = [] } = data
   const [copied, setCopied] = useState(false)
 
   function call(e: React.MouseEvent) {

@@ -1,9 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { requireSession } from '@/lib/auth'
+import { normalizePhone, requireSession } from '@/lib/auth'
 
 const bodySchema = z.object({ confirmName: z.string().max(200) })
+
+const patchSchema = z.object({
+  phone: z.string().trim().min(7, 'That number looks too short').max(20),
+})
+
+/**
+ * The counter's phone number. Editable, unlike the rest of the registered
+ * details: a pharmacy that changes line or provider still needs patients
+ * to be able to reach it, and a number nobody answers is worse than one
+ * that was never verified. It identifies nothing on its own — the premises
+ * is pinned by its address, coordinates and PCN licence, none of which
+ * move.
+ */
+export async function PATCH(req: NextRequest) {
+  const session = await requireSession(req, ['PHARMACY_OWNER'])
+  if (session instanceof NextResponse) return session
+
+  const parsed = patchSchema.safeParse(await req.json().catch(() => null))
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Enter a valid phone number' },
+      { status: 400 },
+    )
+  }
+
+  const pharmacy = await prisma.pharmacy.findUnique({
+    where: { ownerUserId: session.userId },
+    select: { id: true },
+  })
+  if (!pharmacy) return NextResponse.json({ error: 'No pharmacy for this account' }, { status: 404 })
+
+  const updated = await prisma.pharmacy.update({
+    where: { id: pharmacy.id },
+    // Same normalisation as registration, so "0803…" and "+234803…" don't
+    // end up as two different-looking numbers depending on where they
+    // were typed.
+    data: { phone: normalizePhone(parsed.data.phone) },
+    select: { phone: true },
+  })
+
+  return NextResponse.json({ phone: updated.phone })
+}
 
 /**
  * Deletes the caller's own outlet. This is the only way to change anything
