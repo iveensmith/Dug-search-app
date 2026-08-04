@@ -13,6 +13,7 @@ import {
   isStale,
   type ReservationStatusValue,
 } from '@/lib/reservations'
+import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import { IconBookmark, IconCheck, IconPhone, IconX } from '@/components/ui/icons'
 
 type Reservation = {
@@ -31,6 +32,7 @@ export default function ReservationsPage() {
   const [rows, setRows] = useState<Reservation[] | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [ratingPrompt, setRatingPrompt] = useState<{ id: string; name: string } | null>(null)
 
   const load = useCallback(async () => {
     const res = await fetch('/api/reservations')
@@ -46,7 +48,11 @@ export default function ReservationsPage() {
     return () => clearTimeout(timer)
   }, [load])
 
-  async function setStatus(id: string, status: 'COLLECTED' | 'CANCELLED') {
+  async function setStatus(
+    id: string,
+    status: 'COLLECTED' | 'CANCELLED',
+    pharmacy?: { id: string; name: string },
+  ) {
     setBusyId(id)
     setError('')
     try {
@@ -61,6 +67,10 @@ export default function ReservationsPage() {
         return
       }
       await load()
+      // Only after collecting — cancelling means they never went, so there
+      // is nothing to rate. The dialog drops itself if they've rated this
+      // pharmacy before.
+      if (status === 'COLLECTED' && pharmacy) setRatingPrompt(pharmacy)
     } catch {
       setError('Network problem — try again')
     } finally {
@@ -113,7 +123,9 @@ export default function ReservationsPage() {
                     key={r.id}
                     r={r}
                     busy={busyId === r.id}
-                    onCollected={() => setStatus(r.id, 'COLLECTED')}
+                    onCollected={() =>
+                      setStatus(r.id, 'COLLECTED', { id: r.pharmacy.id, name: r.pharmacy.name })
+                    }
                     onCancel={() => setStatus(r.id, 'CANCELLED')}
                   />
                 ))}
@@ -135,6 +147,17 @@ export default function ReservationsPage() {
           </>
         )}
       </div>
+
+      {ratingPrompt && (
+        <RatePharmacyDialog
+          pharmacyId={ratingPrompt.id}
+          pharmacyName={ratingPrompt.name}
+          intro="You got your medicine — how was it?"
+          skipIfRated
+          onClose={() => setRatingPrompt(null)}
+        />
+      )}
+
       <SiteFooter />
     </div>
   )

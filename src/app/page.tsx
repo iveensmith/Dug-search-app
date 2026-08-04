@@ -201,6 +201,9 @@ export default function Home() {
   // offering to reserve the same thing twice.
   const [reserved, setReserved] = useState<Record<string, { id: string; status: string }>>({})
   const [reserving, setReserving] = useState<{ id: string; name: string } | null>(null)
+  // Same dialog as `rating`, but opened by us rather than tapped — kept
+  // separate so the two can't collide mid-flow.
+  const [ratingPrompt, setRatingPrompt] = useState<{ id: string; name: string } | null>(null)
   const [collectingId, setCollectingId] = useState<string | null>(null)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
@@ -370,7 +373,7 @@ export default function Home() {
   }
 
   /** Patient confirming at the card that they walked out with the drug. */
-  async function markObtained(pharmacyId: string) {
+  async function markObtained(pharmacyId: string, pharmacyName: string) {
     const entry = reserved[pharmacyId]
     if (!entry) return
     setCollectingId(entry.id)
@@ -386,6 +389,10 @@ export default function Home() {
         delete next[pharmacyId]
         return next
       })
+      // Just back from the counter is the one moment they can actually
+      // answer all four questions. The dialog drops itself if they've
+      // already rated this pharmacy.
+      setRatingPrompt({ id: pharmacyId, name: pharmacyName })
     } catch {
       /* the reservations page is the fallback place to close it */
     } finally {
@@ -1322,7 +1329,7 @@ export default function Home() {
                           size="sm"
                           className="mt-2 w-full"
                           loading={collectingId === reserved[r.id].id}
-                          onClick={() => markObtained(r.id)}
+                          onClick={() => markObtained(r.id, r.name)}
                         >
                           <IconCheck width={15} height={15} />
                           Medicine obtained
@@ -1399,6 +1406,30 @@ export default function Home() {
                     ...prev,
                     results: prev.results.map((p) =>
                       p.id === rating.id
+                        ? { ...p, ratingAvg: summary.overall, ratingCount: summary.count }
+                        : p,
+                    ),
+                  }
+                : prev,
+            )
+          }
+        />
+      )}
+
+      {ratingPrompt && (
+        <RatePharmacyDialog
+          pharmacyId={ratingPrompt.id}
+          pharmacyName={ratingPrompt.name}
+          intro="You got your medicine — how was it?"
+          skipIfRated
+          onClose={() => setRatingPrompt(null)}
+          onSaved={(summary) =>
+            setState((prev) =>
+              prev.kind === 'results'
+                ? {
+                    ...prev,
+                    results: prev.results.map((p) =>
+                      p.id === ratingPrompt.id
                         ? { ...p, ratingAvg: summary.overall, ratingCount: summary.count }
                         : p,
                     ),

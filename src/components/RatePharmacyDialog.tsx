@@ -17,11 +17,22 @@ type Existing = Record<RatingKey, number> & { comment: string | null }
 export default function RatePharmacyDialog({
   pharmacyId,
   pharmacyName,
+  intro,
+  skipIfRated,
   onClose,
   onSaved,
 }: {
   pharmacyId: string
   pharmacyName: string
+  /** Extra line above the scores, for context the user didn't ask for the dialog. */
+  intro?: string
+  /**
+   * For prompts the user didn't open themselves (after collecting a
+   * reservation). Someone who has already rated this pharmacy gets nothing
+   * at all rather than an unsolicited "update your rating" — and nothing is
+   * drawn until that's known, so there's no modal flashing open and shut.
+   */
+  skipIfRated?: boolean
   onClose: () => void
   onSaved?: (summary: RatingSummary) => void
 }) {
@@ -40,6 +51,10 @@ export default function RatePharmacyDialog({
         if (cancelled) return
         const mine: Existing | null = data.mine
         if (mine) {
+          if (skipIfRated) {
+            onClose()
+            return
+          }
           setScores({
             availability: mine.availability,
             service: mine.service,
@@ -57,7 +72,10 @@ export default function RatePharmacyDialog({
     return () => {
       cancelled = true
     }
-  }, [pharmacyId])
+    // onClose is a fresh closure each render; re-running this would refetch
+    // on every parent render. The pharmacy is what the fetch depends on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pharmacyId, skipIfRated])
 
   // Escape closes, like any dialog
   useEffect(() => {
@@ -69,6 +87,9 @@ export default function RatePharmacyDialog({
   }, [onClose])
 
   const complete = RATING_DIMENSIONS.every(({ key }) => scores[key])
+
+  // After every hook, so the early exit can't change the hook order.
+  if (loading && skipIfRated) return null
 
   async function submit() {
     if (!complete) {
@@ -115,7 +136,7 @@ export default function RatePharmacyDialog({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-bold text-gray-900 dark:text-gray-50">
-              {editing ? 'Update your rating' : 'Rate this pharmacy'}
+              {editing ? 'Update your rating' : (intro ?? 'Rate this pharmacy')}
             </p>
             <p className="truncate text-sm text-gray-600 dark:text-gray-400">{pharmacyName}</p>
           </div>
@@ -182,6 +203,17 @@ export default function RatePharmacyDialog({
             <Button onClick={submit} loading={busy} disabled={!complete} className="mt-4 w-full" size="lg">
               {busy ? 'Saving…' : editing ? 'Update rating' : 'Submit rating'}
             </Button>
+            {/* Nobody asked for this dialog when it's a prompt, so give it a
+                plain way out rather than only the X in the corner. */}
+            {skipIfRated && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-2 w-full cursor-pointer py-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                Not now
+              </button>
+            )}
             <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
               Your rating is public and shown with your first name.
             </p>
