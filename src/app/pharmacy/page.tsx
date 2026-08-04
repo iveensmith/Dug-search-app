@@ -7,6 +7,7 @@ import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
 import { lgasForState } from '@/lib/lgas'
 import { DRUG_FORMS, formUsesPackSize, type DrugFormValue } from '@/lib/drugForms'
+import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import AppHeader from '@/components/ui/AppHeader'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -285,8 +286,8 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
 
   function downloadTemplate() {
     const csv =
-      'genericName,strength,form,packSize,brand,quantity,expiryDate,inStock\n' +
-      'Paracetamol,500 mg,TABLET,,Panadol,100,2027-06-30,true\n'
+      'genericName,strength,form,packSize,category,brand,quantity,expiryDate,inStock\n' +
+      'Paracetamol,500 mg,TABLET,,Pain relief,Panadol,100,2027-06-30,true\n'
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
     const a = document.createElement('a')
     a.href = url
@@ -335,8 +336,8 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
     <Card>
       <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Bulk upload from CSV</p>
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-        Columns: genericName, strength, form, packSize, brand, quantity, expiryDate, inStock — only
-        the first three are required.
+        Columns: genericName, strength, form, packSize, category, brand, quantity, expiryDate,
+        inStock — only the first three are required.
       </p>
       <Button variant="outline" size="sm" type="button" onClick={downloadTemplate}>
         Download template CSV
@@ -400,6 +401,7 @@ export default function PharmacyDashboard() {
   const [newForm, setNewForm] = useState<DrugFormValue>('TABLET')
   const [newStrength, setNewStrength] = useState('')
   const [newPackSize, setNewPackSize] = useState('')
+  const [newCategory, setNewCategory] = useState('')
 
   // recent searches tab
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
@@ -487,6 +489,7 @@ export default function PharmacyDashboard() {
     setNewForm('TABLET')
     setNewStrength('')
     setNewPackSize('')
+    setNewCategory('')
   }
 
   async function submitAdd(e: React.FormEvent) {
@@ -507,6 +510,7 @@ export default function PharmacyDashboard() {
                   strength: newStrength,
                   form: newForm,
                   packSize: newPackSize,
+                  category: newCategory,
                   brand,
                 },
               }),
@@ -813,6 +817,24 @@ export default function PharmacyDashboard() {
                           placeholder="e.g. 30 g tube"
                           autoComplete="off"
                         />
+                      </Field>
+
+                      <Field label="What is it for?" hint="(optional)" htmlFor="newCategory">
+                        <Select
+                          id="newCategory"
+                          value={newCategory}
+                          onChange={(e) => setNewCategory(e.target.value)}
+                        >
+                          <option value="">Not sure — leave blank</option>
+                          {DRUG_CATEGORIES.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </Select>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Helps patients recognise the drug. Only set this if you&apos;re sure.
+                        </p>
                       </Field>
 
                       <AddOnFields

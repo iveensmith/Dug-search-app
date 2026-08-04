@@ -120,6 +120,7 @@ model Drug {
   brandNames  String[] // Postgres text[] — fine for a curated list; promote to a table if it grows
   strength    String // e.g. "500 mg"
   form        DrugForm
+  category    String? // therapeutic class, from src/lib/drugCategories.ts — always set by a person, never inferred
   packSize    String? // pack/container size for non-tablet forms, e.g. "30 g tube", "100 ml bottle"
   createdAt   DateTime @default(now())
 
@@ -128,6 +129,7 @@ model Drug {
   notifyRequests StockNotifyRequest[]
 
   @@unique([genericName, strength, form])
+  @@index([category])
 }
 
 model Pharmacy {

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { stateLabel } from '@/lib/states'
 import AppHeader from '@/components/ui/AppHeader'
 import Card from '@/components/ui/Card'
+import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -32,6 +33,7 @@ type AdminDrug = {
   brandNames: string[]
   strength: string
   form: string
+  category: string | null
   stockedByCount: number
 }
 
@@ -336,7 +338,7 @@ function PharmacistsTab({
 }
 
 function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => void }) {
-  const [form, setForm] = useState({ genericName: '', brandNames: '', strength: '', form: 'TABLET' })
+  const [form, setForm] = useState({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -348,6 +350,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       brandNames: d.brandNames.join(', '),
       strength: d.strength,
       form: d.form,
+      category: d.category ?? '',
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -361,6 +364,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       brandNames: form.brandNames.split(',').map((b) => b.trim()).filter(Boolean),
       strength: form.strength.trim(),
       form: form.form,
+      category: form.category,
     }
     try {
       const res = await fetch(editingId ? `/api/admin/drugs/${editingId}` : '/api/admin/drugs', {
@@ -373,7 +377,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
         setError(data.error ?? 'Save failed')
         return
       }
-      setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET' })
+      setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' })
       setEditingId(null)
       onChanged()
     } finally {
@@ -398,6 +402,18 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
             <Field label="Brand names" hint="(comma-separated)" htmlFor="drug-brands">
               <Input id="drug-brands" value={form.brandNames} onChange={(e) => setForm((f) => ({ ...f, brandNames: e.target.value }))} />
             </Field>
+            <Field label="Class" hint="(what it treats)" htmlFor="drug-category">
+              <Select
+                id="drug-category"
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              >
+                <option value="">Unclassified</option>
+                {DRUG_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </Select>
+            </Field>
             <Field label="Form" htmlFor="drug-form">
               <Select id="drug-form" value={form.form} onChange={(e) => setForm((f) => ({ ...f, form: e.target.value }))}>
                 {FORMS.map((f) => (
@@ -415,7 +431,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => { setEditingId(null); setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET' }) }}
+                onClick={() => { setEditingId(null); setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' }) }}
               >
                 Cancel
               </Button>
@@ -433,6 +449,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
                 <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{d.form.toLowerCase()}</span>
               </p>
               <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                {d.category ?? 'Unclassified'} ·{' '}
                 {d.brandNames.length > 0 ? d.brandNames.join(', ') : 'no brands listed'} · stocked by {d.stockedByCount}
               </p>
             </div>

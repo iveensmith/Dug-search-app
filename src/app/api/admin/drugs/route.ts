@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { Prisma } from '@/generated/prisma/client'
+import { isValidCategory } from '@/lib/drugCategories'
 
 const FORMS = [
   'TABLET', 'CAPSULE', 'SYRUP', 'SUSPENSION', 'INJECTION', 'CREAM',
@@ -24,6 +25,7 @@ export async function GET(req: NextRequest) {
       brandNames: d.brandNames,
       strength: d.strength,
       form: d.form,
+      category: d.category,
       stockedByCount: d._count.inventory,
     })),
   })
@@ -34,6 +36,11 @@ const createSchema = z.object({
   brandNames: z.array(z.string().min(1).max(80)).max(20),
   strength: z.string().min(1).max(60),
   form: z.enum(FORMS),
+  category: z
+    .string()
+    .refine((v) => v === '' || isValidCategory(v), { message: 'Unknown drug category' })
+    .optional()
+    .transform((v) => (v ? v : null)),
 })
 
 export async function POST(req: NextRequest) {

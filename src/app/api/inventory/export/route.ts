@@ -25,12 +25,25 @@ export async function GET(req: NextRequest) {
       strength: i.drug.strength,
       form: i.drug.form,
       packSize: i.drug.packSize ?? '',
+      category: i.drug.category ?? '',
       brand: i.brand ?? '',
       quantity: i.quantity ?? '',
       expiryDate: i.expiryDate ? i.expiryDate.toISOString().slice(0, 10) : '',
       inStock: i.inStock ? 'true' : 'false',
     })),
-    { columns: ['genericName', 'strength', 'form', 'packSize', 'brand', 'quantity', 'expiryDate', 'inStock'] },
+    {
+      columns: [
+        'genericName',
+        'strength',
+        'form',
+        'packSize',
+        'category',
+        'brand',
+        'quantity',
+        'expiryDate',
+        'inStock',
+      ],
+    },
   )
 
   const date = new Date().toISOString().slice(0, 10)

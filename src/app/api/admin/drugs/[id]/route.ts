@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { Prisma } from '@/generated/prisma/client'
+import { isValidCategory } from '@/lib/drugCategories'
 
 const FORMS = [
   'TABLET', 'CAPSULE', 'SYRUP', 'SUSPENSION', 'INJECTION', 'CREAM',
@@ -14,6 +15,11 @@ const patchSchema = z.object({
   brandNames: z.array(z.string().min(1).max(80)).max(20).optional(),
   strength: z.string().min(1).max(60).optional(),
   form: z.enum(FORMS).optional(),
+  category: z
+    .string()
+    .refine((v) => v === '' || isValidCategory(v), { message: 'Unknown drug category' })
+    .optional()
+    .transform((v) => (v ? v : null)),
 })
 
 export async function PATCH(

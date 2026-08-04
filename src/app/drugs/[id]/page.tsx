@@ -99,7 +99,12 @@ function DrugBody({ id }: { id: string }) {
         <div className="grid h-32 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
           <IconPill width={48} height={48} />
         </div>
-        <h1 className="mt-5 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+        {drug.category && (
+          <span className="mt-5 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+            {drug.category}
+          </span>
+        )}
+        <h1 className={`text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50 ${drug.category ? 'mt-2.5' : 'mt-5'}`}>
           {drug.genericName}
         </h1>
         {drug.brandNames.length > 0 && (

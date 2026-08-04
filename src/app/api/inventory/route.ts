@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { optionalBrand, optionalDate, optionalQuantity } from '@/lib/inventoryFields'
 import { DRUG_FORMS } from '@/lib/drugForms'
+import { isValidCategory } from '@/lib/drugCategories'
 import { upsertDrug, DuplicateDrugError } from '@/lib/upsertDrug'
 import { notifyStockAvailable } from '@/lib/notify'
 
@@ -51,6 +52,7 @@ export async function GET(req: NextRequest) {
         strength: i.drug.strength,
         form: i.drug.form,
         packSize: i.drug.packSize,
+        category: i.drug.category,
       },
     })),
   })
@@ -70,6 +72,11 @@ const newDrugSchema = z.object({
     .max(80)
     .optional()
     .transform((v) => (v?.trim() ? v.trim() : undefined)),
+  category: z
+    .string()
+    .refine((v) => v === '' || isValidCategory(v), { message: 'Unknown drug category' })
+    .optional()
+    .transform((v) => (v ? v : null)),
 })
 
 const addSchema = z

@@ -7,6 +7,7 @@ export type DrugSuggestion = {
   strength: string
   form: string
   packSize?: string | null
+  category?: string | null
 }
 
 export type PharmacyResult = {

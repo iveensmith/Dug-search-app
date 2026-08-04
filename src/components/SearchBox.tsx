@@ -241,6 +241,11 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
                     </span>
                   )}
                 </span>
+                {d.category && (
+                  <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-white/10 dark:text-gray-300">
+                    {d.category}
+                  </span>
+                )}
               </button>
             </li>
           ))}

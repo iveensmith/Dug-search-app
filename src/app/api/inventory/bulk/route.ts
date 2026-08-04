@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { DRUG_FORMS } from '@/lib/drugForms'
 import { upsertDrug, DuplicateDrugError } from '@/lib/upsertDrug'
+import { matchCategory } from '@/lib/drugCategories'
 import { notifyStockAvailable } from '@/lib/notify'
 
 const bodySchema = z.object({ csv: z.string().min(1) })
@@ -28,8 +29,8 @@ function parseExpiryDate(raw: string | undefined): Date | null {
   return Number.isNaN(d.getTime()) ? null : d
 }
 
-// Columns: genericName, strength, form, packSize, brand, quantity,
-// expiryDate, inStock. Only genericName/strength/form are required. Bad
+// Columns: genericName, strength, form, packSize, category, brand,
+// quantity, expiryDate, inStock. Only genericName/strength/form are required. Bad
 // rows are collected as errors, not fatal — the rest of the file still
 // imports. Reuses upsertDrug (same compound-key logic as the single "add a
 // new drug" flow) so a drug added via CSV by one pharmacy is the same Drug
@@ -85,6 +86,8 @@ export async function POST(req: NextRequest) {
         form: formRaw as (typeof DRUG_FORMS)[number],
         packSize: row.packSize?.trim() || null,
         brand: row.brand?.trim() || undefined,
+        // Unrecognised class names are dropped rather than guessed at
+        category: matchCategory(row.category),
       })
 
       const existing = await prisma.pharmacyInventory.findUnique({
