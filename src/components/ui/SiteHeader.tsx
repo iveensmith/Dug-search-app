@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { LogoMark } from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import WelcomeToast from '@/components/ui/WelcomeToast'
 import { DASHBOARD_HREF, DASHBOARD_LABEL } from '@/lib/roles'
+import { logout } from '@/lib/logout'
 import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
 
 /**
@@ -28,7 +29,6 @@ type Me = { displayName: string | null; role: Role; hasPharmacy?: boolean } | nu
 
 export default function SiteHeader() {
   const pathname = usePathname()
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [me, setMe] = useState<Me>(null)
   const [checked, setChecked] = useState(false)
@@ -57,12 +57,9 @@ export default function SiteHeader() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    setMe(null)
+  async function signOut() {
     setOpen(false)
-    router.push('/')
-    router.refresh()
+    await logout()
   }
 
   // Owners get a shop-keeping nav (their own dashboard, and the outlet
@@ -132,7 +129,7 @@ export default function SiteHeader() {
                 {me.displayName ? `Hi, ${me.displayName.split(' ')[0]}` : DASHBOARD_LABEL[me.role]}
               </Link>
               <button
-                onClick={logout}
+                onClick={signOut}
                 className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-gray-500 transition-colors hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
               >
                 <IconLogOut width={16} height={16} />
@@ -209,7 +206,7 @@ export default function SiteHeader() {
                 </li>
                 <li>
                   <button
-                    onClick={logout}
+                    onClick={signOut}
                     className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 dark:text-red-400"
                   >
                     <IconLogOut width={16} height={16} />

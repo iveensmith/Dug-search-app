@@ -9,6 +9,7 @@ import { lgasForState } from '@/lib/lgas'
 import { DRUG_FORMS, formUsesPackSize, type DrugFormValue } from '@/lib/drugForms'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import AppHeader from '@/components/ui/AppHeader'
+import { logout } from '@/lib/logout'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -776,11 +777,6 @@ export default function PharmacyDashboard() {
     if (!confirm(`Remove ${drugLabel(item.drug)} from your inventory list?`)) return
     await fetch(`/api/inventory/${item.id}`, { method: 'DELETE' })
     load()
-  }
-
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/')
   }
 
   if (loadError) {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { stateLabel } from '@/lib/states'
 import AppHeader from '@/components/ui/AppHeader'
+import { logout } from '@/lib/logout'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
@@ -104,11 +105,6 @@ export default function AdminPage() {
       body: JSON.stringify({ verificationStatus }),
     })
     load()
-  }
-
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/')
   }
 
   if (denied) {

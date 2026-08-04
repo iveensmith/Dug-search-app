@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AppHeader from '@/components/ui/AppHeader'
+import { logout } from '@/lib/logout'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 
@@ -42,11 +43,6 @@ export default function PharmacistPage() {
       clearInterval(poll)
     }
   }, [load])
-
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/')
-  }
 
   if (denied) {
     return (
