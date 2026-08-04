@@ -1,7 +1,7 @@
 'use client'
 
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -17,21 +17,94 @@ const pinIcon = L.divIcon({
 
 type Pos = { lat: number; lng: number }
 
-function ClickToMove({ onChange }: { onChange: (p: Pos) => void }) {
-  useMapEvents({
-    click(e) {
-      onChange({ lat: e.latlng.lat, lng: e.latlng.lng })
-    },
-  })
-  return null
+/**
+ * A button floating over the map. Leaflet treats a click anywhere in the
+ * map container as a map click, which here would move the pin — so the
+ * container has to swallow its own events before they reach the map.
+ */
+function MapButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (ref.current) L.DomEvent.disableClickPropagation(ref.current)
+  }, [])
+  return (
+    <div ref={ref} className="absolute bottom-3 left-1/2 z-[1000] -translate-x-1/2">
+      <button
+        type="button"
+        onClick={onClick}
+        className="cursor-pointer rounded-full bg-white/95 px-3.5 py-2 text-xs font-semibold text-gray-800 shadow-md ring-1 ring-black/10 backdrop-blur-sm hover:bg-white"
+      >
+        {children}
+      </button>
+    </div>
+  )
 }
 
-function PanTo({ position }: { position: Pos }) {
+function MapWiring({ position, onChange }: { position: Pos; onChange: (p: Pos) => void }) {
   const map = useMap()
-  useEffect(() => {
-    map.panTo([position.lat, position.lng])
+  const [pinInView, setPinInView] = useState(true)
+
+  // Marks a position change as one the user made on the map — by dragging
+  // the pin or clicking. Those must NOT recentre the view: recentring after
+  // a pin drag slides the map the opposite way and snaps the pin back to
+  // the middle, which is indistinguishable from the map refusing to pan.
+  // And since the pin used to be pinned to the centre, the middle of the
+  // map — where you naturally grab to pan — was always on top of it.
+  const fromMap = useRef(false)
+  const report = useCallback(
+    (p: Pos) => {
+      fromMap.current = true
+      onChange(p)
+    },
+    [onChange],
+  )
+
+  const checkPinInView = useCallback(() => {
+    setPinInView(map.getBounds().contains([position.lat, position.lng]))
   }, [map, position.lat, position.lng])
-  return null
+
+  useMapEvents({
+    click: (e) => report({ lat: e.latlng.lat, lng: e.latlng.lng }),
+    moveend: checkPinInView,
+    zoomend: checkPinInView,
+  })
+
+  // Only positions set from outside the map — the state picker, the address
+  // search — move the view.
+  useEffect(() => {
+    if (fromMap.current) {
+      fromMap.current = false
+      return
+    }
+    map.setView([position.lat, position.lng], map.getZoom())
+    setPinInView(true)
+  }, [map, position.lat, position.lng])
+
+  return (
+    <>
+      <Marker
+        position={[position.lat, position.lng]}
+        icon={pinIcon}
+        draggable
+        eventHandlers={{
+          dragend: (e) => {
+            const ll = (e.target as L.Marker).getLatLng()
+            report({ lat: ll.lat, lng: ll.lng })
+          },
+        }}
+      />
+      {!pinInView && (
+        <MapButton
+          onClick={() => {
+            map.setView([position.lat, position.lng], map.getZoom())
+            setPinInView(true)
+          }}
+        >
+          Back to my pin
+        </MapButton>
+      )}
+    </>
+  )
 }
 
 type Props = {
@@ -53,19 +126,7 @@ export default function LocationPicker({ position, onChange }: Props) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <ClickToMove onChange={onChange} />
-      <PanTo position={position} />
-      <Marker
-        position={[position.lat, position.lng]}
-        icon={pinIcon}
-        draggable
-        eventHandlers={{
-          dragend: (e) => {
-            const ll = (e.target as L.Marker).getLatLng()
-            onChange({ lat: ll.lat, lng: ll.lng })
-          },
-        }}
-      />
+      <MapWiring position={position} onChange={onChange} />
     </MapContainer>
   )
 }
