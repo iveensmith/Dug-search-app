@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AppHeader from '@/components/ui/AppHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 
 type UploadRow = {
@@ -61,12 +62,14 @@ export default function PharmacistPage() {
   const mine = uploads.filter((u) => u.status !== 'PENDING')
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <AppHeader
-        title="Pharmacist desk"
-        subtitle="Patients' prescription questions — explain, don't prescribe"
-        onLogout={logout}
-      />
+    <div className="flex min-h-dvh w-full flex-col">
+    <AppHeader
+      title="Pharmacist desk"
+      subtitle="Patients' prescription questions — explain, don't prescribe"
+      onLogout={logout}
+      width="max-w-2xl"
+    />
+    <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
 
       <section>
         <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">
@@ -127,6 +130,8 @@ export default function PharmacistPage() {
           </ul>
         )}
       </section>
+      </div>
+      <SiteFooter />
     </div>
   )
 }

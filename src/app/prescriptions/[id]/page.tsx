@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import PrescriptionDisclaimer from '@/components/PrescriptionDisclaimer'
 import Card from '@/components/ui/Card'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Button from '@/components/ui/Button'
 import { IconSend } from '@/components/ui/icons'
 
@@ -118,7 +119,8 @@ export default function PrescriptionThreadPage() {
   const backHref = upload.isMine ? '/prescriptions' : '/pharmacist'
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 pb-4">
+    <div className="flex min-h-dvh w-full flex-col">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-4">
       <header className="flex items-center justify-between gap-3 py-4">
         <div className="min-w-0">
           <h1 className="truncate font-bold text-gray-900 dark:text-gray-50">
@@ -221,6 +223,8 @@ export default function PrescriptionThreadPage() {
           This conversation is closed.
         </p>
       ) : null}
+      </div>
+      <SiteFooter />
     </div>
   )
 }

@@ -354,7 +354,8 @@ export default function PharmacyRegisterPage() {
                   <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{pcnError}</p>
                 ) : (
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Copy it exactly — we check it against the PCN register.
+                    Input the correct registration number — confirmation will be done via the PCN
+                    register.
                   </p>
                 )}
               </Field>

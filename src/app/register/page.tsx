@@ -14,7 +14,7 @@ function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isPharmacy = searchParams.get('type') === 'pharmacy'
-  const [form, setForm] = useState({ displayName: '', email: '', password: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' })
   const [homeState, setHomeState] = useState<NigerianStateValue | ''>('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -28,7 +28,9 @@ function RegisterForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          displayName: form.displayName || undefined,
+          // The API and the whole app store one displayName; the split is
+          // for the form only, because "Your name" got half-filled.
+          displayName: [form.firstName, form.lastName].map((v) => v.trim()).filter(Boolean).join(' ') || undefined,
           email: form.email,
           password: form.password,
           state: homeState || undefined,
@@ -63,13 +65,24 @@ function RegisterForm() {
 
       <Card>
         <form onSubmit={submit} className="space-y-4">
-          <Field label="Your name" htmlFor="displayName">
-            <Input
-              id="displayName"
-              value={form.displayName}
-              onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
-            />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="First name" htmlFor="firstName">
+              <Input
+                id="firstName"
+                value={form.firstName}
+                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                autoComplete="given-name"
+              />
+            </Field>
+            <Field label="Last name" htmlFor="lastName">
+              <Input
+                id="lastName"
+                value={form.lastName}
+                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                autoComplete="family-name"
+              />
+            </Field>
+          </div>
           <Field label="Email" htmlFor="email">
             <Input
               id="email"

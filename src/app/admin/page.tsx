@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { stateLabel } from '@/lib/states'
 import AppHeader from '@/components/ui/AppHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
@@ -124,12 +125,14 @@ export default function AdminPage() {
   const pending = pharmacies.filter((p) => p.verificationStatus === 'PENDING')
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-16">
-      <AppHeader
-        title="Admin — MediQuest"
-        subtitle={`${pending.length} pending registration${pending.length === 1 ? '' : 's'}`}
-        onLogout={logout}
-      />
+    <div className="flex min-h-dvh w-full flex-col">
+    <AppHeader
+      title="Admin — MediQuest"
+      subtitle={`${pending.length} pending registration${pending.length === 1 ? '' : 's'}`}
+      onLogout={logout}
+      width="max-w-4xl"
+    />
+    <div className="mx-auto w-full max-w-4xl flex-1 px-4 pb-16">
 
       <nav className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
         {(
@@ -162,6 +165,8 @@ export default function AdminPage() {
       )}
       {tab === 'drugs' && drugs && <DrugsTab drugs={drugs} onChanged={load} />}
       {tab === 'gaps' && <GapsTab analytics={analytics} />}
+      </div>
+      <SiteFooter />
     </div>
   )
 }

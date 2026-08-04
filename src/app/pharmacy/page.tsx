@@ -9,6 +9,7 @@ import { lgasForState } from '@/lib/lgas'
 import { DRUG_FORMS, formUsesPackSize, type DrugFormValue } from '@/lib/drugForms'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import AppHeader from '@/components/ui/AppHeader'
+import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
@@ -801,21 +802,23 @@ export default function PharmacyDashboard() {
   const inStockCount = items.filter((i) => i.inStock).length
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-16">
-      <AppHeader
-        title={
-          pharmacy.verificationStatus === 'APPROVED' ? (
-            <span className="flex items-center gap-2">
-              {pharmacy.name}
-              <VerifiedBadge />
-            </span>
-          ) : (
-            pharmacy.name
-          )
-        }
-        subtitle={pharmacy.address}
-        onLogout={logout}
-      />
+    <div className="flex min-h-dvh w-full flex-col">
+    <AppHeader
+      title={
+        pharmacy.verificationStatus === 'APPROVED' ? (
+          <span className="flex items-center gap-2">
+            {pharmacy.name}
+            <VerifiedBadge />
+          </span>
+        ) : (
+          pharmacy.name
+        )
+      }
+      subtitle={pharmacy.address}
+      onLogout={logout}
+      width="max-w-2xl"
+    />
+    <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
 
       {pharmacy.verificationStatus === 'PENDING' && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
@@ -844,7 +847,6 @@ export default function PharmacyDashboard() {
 
       {pharmacy.verificationStatus === 'APPROVED' && (
         <>
-          <OwnerRatingCard pharmacyId={pharmacy.id} />
           <LgaCard
             pharmacy={pharmacy}
             onSaved={(lga) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, lga } } : d))}
@@ -1186,9 +1188,18 @@ export default function PharmacyDashboard() {
 
           {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={items.length} />}
 
+          {/* Below the working area — the stock list is what an owner opens
+              this page to do; their score is something to check on, not to
+              be met by every time. */}
+          <div className="mt-8">
+            <OwnerRatingCard pharmacyId={pharmacy.id} />
+          </div>
+
           <DeleteOutletCard pharmacy={pharmacy} />
         </>
       )}
+      </div>
+      <SiteFooter />
     </div>
   )
 }

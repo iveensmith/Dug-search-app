@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import { drugLabel, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
@@ -224,6 +223,12 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         ) : (
           <ul className="stagger mt-4 space-y-2">
             {gaps.map(({ drug, count }) => (
+              // No one-tap add here on purpose: this is a list of what
+              // patients asked for, not a list of what the shop has. Adding
+              // from it would put a drug in the stock list without anyone
+              // checking the shelf, and a false "in stock" sends a patient
+              // on a wasted trip. They add it themselves from the inventory
+              // page, with the brand and expiry they actually hold.
               <li key={drug.id}>
                 <Card className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -235,11 +240,6 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
                       recently · you don&apos;t stock this
                     </p>
                   </div>
-                  <Link href="/pharmacy" className="shrink-0">
-                    <Button size="sm" variant="outline">
-                      Add
-                    </Button>
-                  </Link>
                 </Card>
               </li>
             ))}

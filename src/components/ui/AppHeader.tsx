@@ -10,13 +10,32 @@ type Props = {
   subtitle?: ReactNode
   onLogout?: () => void
   backHref?: string
+  /** Tailwind max-width of the page it sits above, so the bar's contents
+   *  line up with the content column while the bar itself spans the
+   *  viewport. */
+  width?: string
 }
 
-/** Compact top bar for logged-in app screens (pharmacy/admin/pharmacist dashboards). */
-export default function AppHeader({ title, subtitle, onLogout, backHref = '/' }: Props) {
+/**
+ * Compact top bar for logged-in app screens (pharmacy/admin/pharmacist
+ * dashboards). Sticky, like SiteHeader — these are long scrolling lists,
+ * and losing the logo and log-out on the way down was inconsistent with
+ * every other page.
+ *
+ * It must be rendered outside the page's content column so the bar spans
+ * the viewport; `width` then lines its contents back up with that column.
+ */
+export default function AppHeader({
+  title,
+  subtitle,
+  onLogout,
+  backHref = '/',
+  width = 'max-w-2xl',
+}: Props) {
   return (
-    <header className="flex items-center justify-between gap-3 py-6">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
       <WelcomeToast />
+      <div className={`mx-auto flex w-full ${width} items-center justify-between gap-3 px-4 py-4`}>
       <div className="flex min-w-0 items-center gap-3">
         <Link href={backHref} className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
           <LogoMark size="sm" />
@@ -37,6 +56,7 @@ export default function AppHeader({ title, subtitle, onLogout, backHref = '/' }:
             Log out
           </button>
         )}
+        </div>
       </div>
     </header>
   )
