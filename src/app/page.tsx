@@ -27,6 +27,12 @@ import NotifyMeForm from '@/components/NotifyMeForm'
 import OwnerHome from '@/components/OwnerHome'
 import RatingStars from '@/components/RatingStars'
 import StockPulse from '@/components/StockPulse'
+import ResultFilters, {
+  NO_FILTERS,
+  activeFilterCount,
+  applyFilters,
+  type Filters,
+} from '@/components/ResultFilters'
 import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import { Field, Select } from '@/components/ui/Field'
 import {
@@ -157,6 +163,9 @@ export default function Home() {
   const [routeError, setRouteError] = useState('')
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null)
   const [rating, setRating] = useState<{ id: string; name: string } | null>(null)
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS)
+  const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const userPosRef = useRef<Pos | null>(null)
   const lastDrugRef = useRef<DrugSuggestion | null>(null)
@@ -427,7 +436,8 @@ export default function Home() {
     setTimeout(() => setCopiedPhone(null), 2500)
   }
 
-  const results = useMemo(() => (state.kind === 'results' ? state.results : []), [state])
+  const allResults = useMemo(() => (state.kind === 'results' ? state.results : []), [state])
+  const results = useMemo(() => applyFilters(allResults, filters), [allResults, filters])
   const sortedResults = useMemo(() => {
     const sorted = [...results]
     if (sortBy === 'rating') sorted.sort((a, b) => (b.ratingAvg ?? 0) - (a.ratingAvg ?? 0))
@@ -933,6 +943,7 @@ export default function Home() {
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="min-w-0 text-sm text-gray-600 dark:text-gray-400">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{results.length}</span>{' '}
+                {activeFilterCount(filters) > 0 ? ` of ${allResults.length} ` : ' '}
                 {results.length === 1 ? 'pharmacy has' : 'pharmacies have'}{' '}
                 <Link
                   href={`/drugs/${state.drugId}?state=${selectedState}&lga=${encodeURIComponent(selectedLga)}`}
@@ -943,6 +954,20 @@ export default function Home() {
                 in {selectedLabel}
               </p>
               <div className="flex shrink-0 items-center gap-2">
+                <button
+                  onClick={() => {
+                    setFilterDraft(filters)
+                    setFiltersOpen(true)
+                  }}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                >
+                  Filters
+                  {activeFilterCount(filters) > 0 && (
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-600 px-1 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                      {activeFilterCount(filters)}
+                    </span>
+                  )}
+                </button>
                 <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
                   <button
                     onClick={() => setView('list')}
@@ -1018,6 +1043,20 @@ export default function Home() {
               </div>
             )}
 
+            {results.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
+                <p className="font-semibold text-gray-900 dark:text-gray-100">
+                  No pharmacy matches those filters
+                </p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  {allResults.length} {allResults.length === 1 ? 'pharmacy has' : 'pharmacies have'}{' '}
+                  this in {selectedLga} without them.
+                </p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setFilters(NO_FILTERS)}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : (
             <div className="md:grid md:grid-cols-2 md:gap-4">
               <ul className={`stagger space-y-4 ${view === 'map' ? 'hidden md:block' : ''}`}>
                 {sortedResults.map((r) => (
@@ -1121,12 +1160,26 @@ export default function Home() {
                 />
               </div>
             </div>
+            )}
           </>
         )}
       </main>
         </>
       )}
       </div>
+
+      {filtersOpen && (
+        <ResultFilters
+          draft={filterDraft}
+          setDraft={setFilterDraft}
+          matchCount={applyFilters(allResults, filterDraft).length}
+          onApply={() => {
+            setFilters(filterDraft)
+            setFiltersOpen(false)
+          }}
+          onClose={() => setFiltersOpen(false)}
+        />
+      )}
 
       {rating && (
         <RatePharmacyDialog
