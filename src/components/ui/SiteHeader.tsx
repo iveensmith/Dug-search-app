@@ -82,12 +82,16 @@ export default function SiteHeader() {
           ...(me?.role === 'PATIENT' ? [{ href: '/reservations', label: 'My reservations' }] : []),
         ]
 
+  // Owners have their own home; pointing the logo there avoids a pointless
+  // hop through "/" and its redirect.
+  const homeHref = me?.role === 'PHARMACY_OWNER' ? '/pharmacy/overview' : '/'
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
       <WelcomeToast />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link
-          href="/"
+          href={homeHref}
           onClick={handleHomeClick}
           className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
         >
