@@ -27,6 +27,7 @@ import NotifyMeForm from '@/components/NotifyMeForm'
 import OwnerHome from '@/components/OwnerHome'
 import RatingStars from '@/components/RatingStars'
 import StockPulse from '@/components/StockPulse'
+import RecentSearches from '@/components/RecentSearches'
 import ResultFilters, {
   NO_FILTERS,
   activeFilterCount,
@@ -38,6 +39,8 @@ import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
   IconCheck,
+  IconChevronRight,
+  IconClipboardList,
   IconMapPin,
   IconMessageCircle,
   IconPhone,
@@ -521,6 +524,13 @@ export default function Home() {
 
         <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!areaChosen} />
 
+        <RecentSearches
+          onPick={(drug) => {
+            if (selectedState && selectedLgaRef.current) runSearch(drug, selectedState)
+          }}
+          disabled={!areaChosen}
+        />
+
         <div className="pt-1">
           <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
             Popular searches
@@ -611,15 +621,27 @@ export default function Home() {
             <div className="md:col-start-1 md:row-start-2">
               {searchPanel}
 
-              <p className="mt-6 text-sm text-gray-600 dark:text-gray-400">
-                Not sure what you need?{' '}
-                <Link
-                  href="/prescriptions"
-                  className="font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
-                >
-                  Ask a pharmacist
-                </Link>
-              </p>
+              <Link
+                href="/prescriptions"
+                className="group mt-5 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-800"
+              >
+                <span className="flex shrink-0 items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                  <IconClipboardList width={20} height={20} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-gray-900 dark:text-gray-50">
+                    Not sure what you need?
+                  </span>
+                  <span className="block text-sm text-gray-500 dark:text-gray-400">
+                    Send a prescription photo to a pharmacist
+                  </span>
+                </span>
+                <IconChevronRight
+                  width={20}
+                  height={20}
+                  className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 dark:text-gray-600"
+                />
+              </Link>
 
               <ul className="mt-8 grid max-w-md grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
                 {TRUST_BADGES.map((t) => (

@@ -35,3 +35,14 @@ export async function GET(req: NextRequest) {
     })),
   })
 }
+
+/** Clears the caller's own search history. Their rows only — a search log
+ *  with a null userId (logged-out searches) is anonymous analytics and
+ *  isn't the caller's to delete. */
+export async function DELETE(req: NextRequest) {
+  const session = await requireSession(req)
+  if (session instanceof NextResponse) return session
+
+  const { count } = await prisma.searchLog.deleteMany({ where: { userId: session.userId } })
+  return NextResponse.json({ cleared: count })
+}

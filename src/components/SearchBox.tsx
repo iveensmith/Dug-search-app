@@ -1,9 +1,31 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import Button from '@/components/ui/Button'
-import { IconSearch } from '@/components/ui/icons'
+import { IconMic, IconPill, IconSearch, IconX } from '@/components/ui/icons'
+
+type SpeechRecognitionLike = {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  start: () => void
+  stop: () => void
+  abort: () => void
+  onresult: ((e: { results: { [i: number]: { [j: number]: { transcript: string } } } }) => void) | null
+  onend: (() => void) | null
+  onerror: (() => void) | null
+}
+
+/** Chrome/Android expose this prefixed; Firefox and older Safari not at all. */
+function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
+  if (typeof window === 'undefined') return null
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionLike
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike
+  }
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null
+}
 
 type Props = {
   onSelect: (drug: DrugSuggestion) => void
@@ -16,8 +38,45 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
+  const [listening, setListening] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const lastPickedRef = useRef<DrugSuggestion | null>(null)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+
+  // Typing a drug name on a phone keyboard is the slowest part of the whole
+  // flow, so offer dictation where the browser supports it. Read through
+  // useSyncExternalStore so the server renders "unsupported" and the client
+  // corrects it on hydration — no mismatch, no setState in an effect.
+  const voiceSupported = useSyncExternalStore(
+    () => () => {},
+    () => Boolean(getSpeechRecognition()),
+    () => false,
+  )
+
+  // Stop any in-flight dictation if the box unmounts mid-listen
+  useEffect(() => () => recognitionRef.current?.abort(), [])
+
+  function toggleVoice() {
+    if (listening) {
+      recognitionRef.current?.stop()
+      return
+    }
+    const Recognition = getSpeechRecognition()
+    if (!Recognition) return
+    const recognition = new Recognition()
+    recognitionRef.current = recognition
+    recognition.lang = 'en-NG'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    recognition.onresult = (event) => {
+      const said = event.results?.[0]?.[0]?.transcript?.trim()
+      if (said) setQuery(said)
+    }
+    recognition.onend = () => setListening(false)
+    recognition.onerror = () => setListening(false)
+    setListening(true)
+    recognition.start()
+  }
 
   useEffect(() => {
     const q = query.trim()
@@ -115,11 +174,45 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
             autoComplete="off"
             disabled={disabled}
           />
+          {query && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setQuery('')}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-white/10"
+            >
+              <IconX width={16} height={16} />
+            </button>
+          )}
         </div>
+        {voiceSupported && (
+          <button
+            type="button"
+            onClick={toggleVoice}
+            disabled={disabled}
+            aria-label={listening ? 'Stop listening' : 'Search by voice'}
+            aria-pressed={listening}
+            className={`flex min-h-[52px] shrink-0 items-center justify-center rounded-xl border px-4 transition-colors disabled:opacity-50 ${
+              listening
+                ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                : 'border-gray-300 text-gray-500 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-emerald-700 dark:hover:text-emerald-400'
+            }`}
+          >
+            <IconMic width={20} height={20} />
+          </button>
+        )}
         <Button onClick={submit} disabled={disabled} size="lg" className="w-full shrink-0 min-[420px]:w-auto">
           Search
         </Button>
       </div>
+
+      {listening && (
+        <p className="animate-fade-in mt-2 flex items-center gap-2 rounded-xl border border-emerald-500 bg-emerald-50 px-3.5 py-2.5 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <span className="pulse-dot h-2 w-2 shrink-0 rounded-full bg-emerald-500" data-live="true" />
+          Listening — say the medicine name
+        </p>
+      )}
 
       {open && suggestions.length > 0 && (
         <ul className="absolute z-[1000] mt-1.5 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
@@ -131,16 +224,23 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
                   pick(d)
                 }}
                 onMouseEnter={() => setHighlighted(i)}
-                className={`block w-full cursor-pointer px-4 py-3 text-left transition-colors ${
+                className={`flex w-full cursor-pointer items-center gap-3.5 px-4 py-3 text-left transition-colors ${
                   i === highlighted ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-white dark:bg-gray-900'
                 }`}
               >
-                <span className="font-medium text-gray-900 dark:text-gray-100">{drugLabel(d)}</span>
-                {d.brandNames.length > 0 && (
-                  <span className="block text-sm text-gray-500 dark:text-gray-400">
-                    Brands: {d.brandNames.join(', ')}
+                <span className="flex shrink-0 items-center justify-center rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
+                  <IconPill width={18} height={18} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-gray-900 dark:text-gray-100">
+                    {drugLabel(d)}
                   </span>
-                )}
+                  {d.brandNames.length > 0 && (
+                    <span className="block truncate text-sm text-gray-500 dark:text-gray-400">
+                      {d.brandNames.join(', ')}
+                    </span>
+                  )}
+                </span>
               </button>
             </li>
           ))}

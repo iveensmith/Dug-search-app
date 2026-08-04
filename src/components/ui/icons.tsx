@@ -151,6 +151,24 @@ export function IconMessageCircle(props: IconProps) {
   )
 }
 
+export function IconMic(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 11a7 7 0 0014 0M12 18v3" />
+    </svg>
+  )
+}
+
+export function IconClock(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.5 2" />
+    </svg>
+  )
+}
+
 export function IconPill(props: IconProps) {
   return (
     <svg {...base} {...props}>
