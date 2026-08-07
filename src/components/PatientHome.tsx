@@ -358,14 +358,15 @@ export default function PatientHome() {
   async function loadReservations(drugId: string) {
     setReserved({})
     try {
-      const res = await fetch('/api/reservations')
+      // Ask only about the drug on screen. This used to pull the patient's
+      // reservations and filter client-side, which quietly stopped finding
+      // older open ones once the endpoint started paging.
+      const res = await fetch(`/api/reservations?drugId=${encodeURIComponent(drugId)}&open=true`)
       if (!res.ok) return
       const data = await res.json()
       const open: Record<string, { id: string; status: string }> = {}
       for (const r of data.reservations ?? []) {
-        if (r.drug?.id === drugId && (r.status === 'PENDING' || r.status === 'READY')) {
-          open[r.pharmacy.id] = { id: r.id, status: r.status }
-        }
+        open[r.pharmacy.id] = { id: r.id, status: r.status }
       }
       setReserved(open)
     } catch {

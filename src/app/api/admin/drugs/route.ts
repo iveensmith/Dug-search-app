@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { Prisma } from '@/generated/prisma/client'
 import { isValidCategory } from '@/lib/drugCategories'
+import { offsetPage, offsetResult } from '@/lib/pagination'
 
 const FORMS = [
   'TABLET', 'CAPSULE', 'SYRUP', 'SUSPENSION', 'INJECTION', 'CREAM',
@@ -14,11 +15,21 @@ export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['ADMIN'])
   if (session instanceof NextResponse) return session
 
-  const drugs = await prisma.drug.findMany({
-    include: { _count: { select: { inventory: true } } },
-    orderBy: [{ genericName: 'asc' }, { strength: 'asc' }],
-  })
+  // The whole catalogue used to come back in one response — thousands of
+  // rows for a table showing twenty. Offset paging: this is browsed, and
+  // the total is worth showing.
+  const { take, skip, page } = offsetPage(req.nextUrl.searchParams)
+  const [total, drugs] = await Promise.all([
+    prisma.drug.count(),
+    prisma.drug.findMany({
+      include: { _count: { select: { inventory: true } } },
+      orderBy: [{ genericName: 'asc' }, { strength: 'asc' }],
+      take,
+      skip,
+    }),
+  ])
   return NextResponse.json({
+    ...offsetResult([], total, { take, page }),
     drugs: drugs.map((d) => ({
       id: d.id,
       genericName: d.genericName,

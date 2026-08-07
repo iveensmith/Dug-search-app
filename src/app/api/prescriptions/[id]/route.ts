@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
+import { cursorPage, cursorResult } from '@/lib/pagination'
 import { canViewUpload, canMessageUpload } from '@/lib/prescriptions'
 
 // Thread details + messages. Fetching as a participant marks the other
@@ -33,11 +34,19 @@ export async function GET(
     })
   }
 
-  const messages = await prisma.prescriptionMessage.findMany({
+  // A thread is read newest-last, but paged newest-first: fetch the most
+  // recent page in descending order, then flip it so the conversation still
+  // reads top to bottom. "olderCursor" walks backwards into the history.
+  const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
+  const rows = await prisma.prescriptionMessage.findMany({
     where: { prescriptionUploadId: id },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'desc' },
+    take: take + 1,
+    ...cursorArgs,
     include: { sender: { select: { id: true, displayName: true, role: true } } },
   })
+  const { items: newestFirst, nextCursor: olderCursor } = cursorResult(rows, take)
+  const messages = [...newestFirst].reverse()
 
   return NextResponse.json({
     upload: {
@@ -51,6 +60,7 @@ export async function GET(
       canClaim: session.role === 'PHARMACIST' && upload.status === 'PENDING',
       createdAt: upload.createdAt,
     },
+    olderCursor,
     messages: messages.map((m) => ({
       id: m.id,
       text: m.messageText,

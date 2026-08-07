@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
+import { cursorPage, cursorResult } from '@/lib/pagination'
 
 /**
  * The counter's queue: every reservation against the signed-in owner's
@@ -18,10 +19,12 @@ export async function GET(req: NextRequest) {
   })
   if (!pharmacy) return NextResponse.json({ error: 'No pharmacy for this account' }, { status: 404 })
 
+  const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
   const rows = await prisma.reservation.findMany({
     where: { pharmacyId: pharmacy.id },
     orderBy: { createdAt: 'desc' },
-    take: 100,
+    take: take + 1,
+    ...cursorArgs,
     select: {
       id: true,
       quantity: true,
@@ -44,8 +47,11 @@ export async function GET(req: NextRequest) {
     },
   })
 
+  const { items, nextCursor } = cursorResult(rows, take)
+
   return NextResponse.json({
-    reservations: rows.map((r) => ({
+    nextCursor,
+    reservations: items.map((r) => ({
       ...r,
       patientName: r.user.displayName ?? 'A patient',
       user: undefined,

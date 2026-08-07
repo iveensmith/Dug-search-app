@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { summarise, type RatingScores } from '@/lib/ratings'
+import { summariseAggregate } from '@/lib/ratings'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -34,16 +34,17 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: 'Pharmacy not found' }, { status: 404 })
   }
 
-  const [items, ratingRows, itemCount, commentRows] = await Promise.all([
+  const [items, ratingAgg, itemCount, commentRows] = await Promise.all([
     prisma.pharmacyInventory.findMany({
       where: { pharmacyId: id, inStock: true },
       orderBy: { updatedAt: 'desc' },
       take: 60,
       include: { drug: true },
     }),
-    prisma.pharmacyRating.findMany({
+    prisma.pharmacyRating.aggregate({
       where: { pharmacyId: id },
-      select: { availability: true, service: true, pricing: true, honesty: true },
+      _count: { _all: true },
+      _avg: { availability: true, service: true, pricing: true, honesty: true },
     }),
     prisma.pharmacyInventory.count({ where: { pharmacyId: id, inStock: true } }),
     prisma.pharmacyRating.findMany({
@@ -63,7 +64,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   return NextResponse.json({
     pharmacy,
     itemCount,
-    ratings: summarise(ratingRows as RatingScores[]),
+    ratings: summariseAggregate(ratingAgg._count._all, ratingAgg._avg),
     // The page renders these unconditionally — it read `comments` off this
     // response from the day it was written, and the field was never here,
     // so every pharmacy page threw on `comments.length`.

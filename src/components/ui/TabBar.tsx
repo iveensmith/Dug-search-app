@@ -65,12 +65,9 @@ export default function TabBar() {
             .then((r) => (r.ok ? r.json() : null))
             .then((json) => {
               if (cancelled || !json) return
-              type Row = { unreadCount?: number }
-              const total = (json.uploads ?? []).reduce(
-                (sum: number, u: Row) => sum + (u.unreadCount ?? 0),
-                0,
-              )
-              setUnread(total)
+              // Comes from the server as a count over every thread; the
+              // uploads array is only the first page.
+              setUnread(json.unreadTotal ?? 0)
             })
             .catch(() => {})
         }

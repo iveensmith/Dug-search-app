@@ -26,8 +26,6 @@ type Pharmacy = {
   verificationStatus: string
 }
 
-type Item = { id: string; inStock: boolean; drug: DrugSuggestion }
-
 type RecentSearch = { id: string; drug: DrugSuggestion | null; youStock: boolean }
 
 type Scope = { kind: 'lga' | 'state'; label: string }
@@ -57,7 +55,9 @@ const QUICK_ACTIONS: {
  */
 export default function OwnerHome({ displayName }: { displayName: string | null }) {
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null)
-  const [items, setItems] = useState<Item[] | null>(null)
+  // Counts, not rows: /api/inventory returns one page of items now, so
+  // measuring its length would report twenty for a shop with hundreds.
+  const [counts, setCounts] = useState<{ total: number; inStock: number } | null>(null)
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
   const [scope, setScope] = useState<Scope | null>(null)
   const [noPharmacy, setNoPharmacy] = useState(false)
@@ -75,7 +75,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       .then((data) => {
         if (cancelled || !data) return
         setPharmacy(data.pharmacy)
-        setItems(data.items)
+        setCounts({ total: data.total ?? 0, inStock: data.inStockCount ?? 0 })
       })
       .catch(() => {})
     fetch('/api/pharmacy/recent-searches')
@@ -129,8 +129,8 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
     )
   }
 
-  const inStock = items?.filter((i) => i.inStock).length ?? 0
-  const outOfStock = (items?.length ?? 0) - inStock
+  const inStock = counts?.inStock ?? 0
+  const outOfStock = (counts?.total ?? 0) - inStock
   const approved = pharmacy?.verificationStatus === 'APPROVED'
 
   return (
@@ -175,7 +175,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
 
       <dl className="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
         {[
-          ['Drugs listed', items?.length],
+          ['Drugs listed', counts?.total],
           ['In stock', inStock],
           ['Out of stock', outOfStock],
         ].map(([label, value]) => (
@@ -184,7 +184,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             className="rounded-2xl border border-gray-200 bg-white p-4 text-center dark:border-gray-800 dark:bg-gray-900 sm:p-5"
           >
             <dd className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-50">
-              {items === null ? '—' : (value as number)}
+              {counts === null ? '—' : (value as number)}
             </dd>
             <dt className="mt-1 text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400">
               {label as string}

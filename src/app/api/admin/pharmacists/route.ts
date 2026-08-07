@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { hashPassword, requireSession } from '@/lib/auth'
+import { offsetPage, offsetResult } from '@/lib/pagination'
 import { Prisma } from '@/generated/prisma/client'
 
 // List pharmacist accounts (there is no self-service sign-up for this role —
@@ -11,20 +12,27 @@ export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['ADMIN'])
   if (session instanceof NextResponse) return session
 
-  const pharmacists = await prisma.user.findMany({
-    where: { role: 'PHARMACIST' },
-    select: {
-      id: true,
-      email: true,
-      phone: true,
-      displayName: true,
-      createdAt: true,
-      _count: { select: { claimedUploads: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+  const { take, skip, page } = offsetPage(req.nextUrl.searchParams)
+  const [total, pharmacists] = await Promise.all([
+    prisma.user.count({ where: { role: 'PHARMACIST' } }),
+    prisma.user.findMany({
+      where: { role: 'PHARMACIST' },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        displayName: true,
+        createdAt: true,
+        _count: { select: { claimedUploads: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take,
+      skip,
+    }),
+  ])
 
   return NextResponse.json({
+    ...offsetResult([], total, { take, page }),
     pharmacists: pharmacists.map((p) => ({
       id: p.id,
       email: p.email,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { getSession, requireSession } from '@/lib/auth'
-import { RATING_DIMENSIONS, summarise, type RatingScores } from '@/lib/ratings'
+import { summariseAggregate } from '@/lib/ratings'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -24,10 +24,11 @@ const bodySchema = z.object({
 export async function GET(req: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params
 
-  const [rows, recent] = await Promise.all([
-    prisma.pharmacyRating.findMany({
+  const [agg, recent] = await Promise.all([
+    prisma.pharmacyRating.aggregate({
       where: { pharmacyId: id },
-      select: { availability: true, service: true, pricing: true, honesty: true },
+      _count: { _all: true },
+      _avg: { availability: true, service: true, pricing: true, honesty: true },
     }),
     prisma.pharmacyRating.findMany({
       where: { pharmacyId: id, comment: { not: null } },
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     : null
 
   return NextResponse.json({
-    summary: summarise(rows as RatingScores[]),
+    summary: summariseAggregate(agg._count._all, agg._avg),
     mine,
     comments: recent.map((r) => ({
       id: r.id,
@@ -102,13 +103,14 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     update: data,
   })
 
-  const rows = await prisma.pharmacyRating.findMany({
+  const agg = await prisma.pharmacyRating.aggregate({
     where: { pharmacyId: id },
-    select: Object.fromEntries(RATING_DIMENSIONS.map((d) => [d.key, true])) as Record<
-      string,
-      true
-    >,
+    _count: { _all: true },
+    _avg: { availability: true, service: true, pricing: true, honesty: true },
   })
 
-  return NextResponse.json({ summary: summarise(rows as unknown as RatingScores[]) }, { status: 201 })
+  return NextResponse.json(
+    { summary: summariseAggregate(agg._count._all, agg._avg) },
+    { status: 201 },
+  )
 }

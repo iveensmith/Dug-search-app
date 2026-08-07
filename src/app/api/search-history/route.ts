@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
+import { cursorPage, cursorResult } from '@/lib/pagination'
 
 // The caller's own recent searches — powers /search-history. Any logged-in
 // role can have search history (nothing stops a pharmacy owner from using
@@ -9,15 +10,20 @@ export async function GET(req: NextRequest) {
   const session = await requireSession(req)
   if (session instanceof NextResponse) return session
 
+  const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
   const logs = await prisma.searchLog.findMany({
     where: { userId: session.userId },
     orderBy: { createdAt: 'desc' },
-    take: 50,
+    take: take + 1,
+    ...cursorArgs,
     include: { drug: true },
   })
 
+  const { items, nextCursor } = cursorResult(logs, take)
+
   return NextResponse.json({
-    searches: logs.map((l) => ({
+    nextCursor,
+    searches: items.map((l) => ({
       id: l.id,
       queryText: l.queryText,
       state: l.state,

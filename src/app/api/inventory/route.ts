@@ -7,6 +7,7 @@ import { DRUG_FORMS } from '@/lib/drugForms'
 import { isValidCategory } from '@/lib/drugCategories'
 import { upsertDrug, DuplicateDrugError } from '@/lib/upsertDrug'
 import { notifyStockAvailable } from '@/lib/notify'
+import { offsetPage, offsetResult } from '@/lib/pagination'
 
 async function ownPharmacy(userId: string) {
   return prisma.pharmacy.findUnique({ where: { ownerUserId: userId } })
@@ -20,13 +21,27 @@ export async function GET(req: NextRequest) {
   const pharmacy = await ownPharmacy(session.userId)
   if (!pharmacy) return NextResponse.json({ error: 'No pharmacy for this account' }, { status: 404 })
 
-  const items = await prisma.pharmacyInventory.findMany({
-    where: { pharmacyId: pharmacy.id },
-    include: { drug: true },
-    orderBy: [{ drug: { genericName: 'asc' } }, { drug: { strength: 'asc' } }],
-  })
+  // A pharmacy with a few thousand lines used to send all of them on every
+  // dashboard load. Offset paging: the list is alphabetical and browsed,
+  // and the owner wants to see how many they have.
+  const { take, skip, page } = offsetPage(req.nextUrl.searchParams)
+  const [total, inStockCount, items] = await Promise.all([
+    prisma.pharmacyInventory.count({ where: { pharmacyId: pharmacy.id } }),
+    prisma.pharmacyInventory.count({ where: { pharmacyId: pharmacy.id, inStock: true } }),
+    prisma.pharmacyInventory.findMany({
+      where: { pharmacyId: pharmacy.id },
+      include: { drug: true },
+      orderBy: [{ drug: { genericName: 'asc' } }, { drug: { strength: 'asc' } }],
+      take,
+      skip,
+    }),
+  ])
 
   return NextResponse.json({
+    ...offsetResult([], total, { take, page }),
+    // Counted in the database, not by measuring the page — the dashboard
+    // header reports the whole shop, not the twenty rows on screen.
+    inStockCount,
     pharmacy: {
       id: pharmacy.id,
       name: pharmacy.name,

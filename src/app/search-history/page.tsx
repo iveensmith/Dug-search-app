@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import { drugLabel, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
+import LoadMore from '@/components/ui/LoadMore'
 import { IconAlertCircle, IconSearch } from '@/components/ui/icons'
 
 type SearchRow = {
@@ -23,18 +24,36 @@ type SearchRow = {
 export default function SearchHistoryPage() {
   const router = useRouter()
   const [searches, setSearches] = useState<SearchRow[] | null>(null)
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
 
-  const load = useCallback(async () => {
-    const res = await fetch('/api/search-history')
-    if (res.status === 401) {
-      router.push('/login?next=/search-history')
-      return
+  // `after` null loads the first page and replaces; a cursor appends.
+  const load = useCallback(
+    async (after: string | null = null) => {
+      const res = await fetch(`/api/search-history${after ? `?cursor=${after}` : ''}`)
+      if (res.status === 401) {
+        router.push('/login?next=/search-history')
+        return
+      }
+      const data = await res.json()
+      setSearches((prev) => (after && prev ? [...prev, ...data.searches] : data.searches))
+      setCursor(data.nextCursor ?? null)
+    },
+    [router],
+  )
+
+  async function loadMore() {
+    if (!cursor) return
+    setLoadingMore(true)
+    try {
+      await load(cursor)
+    } finally {
+      setLoadingMore(false)
     }
-    setSearches((await res.json()).searches)
-  }, [router])
+  }
 
   useEffect(() => {
-    const timer = setTimeout(load, 0)
+    const timer = setTimeout(() => load(), 0)
     return () => clearTimeout(timer)
   }, [load])
 
@@ -85,6 +104,16 @@ export default function SearchHistoryPage() {
               </li>
             ))}
           </ul>
+        )}
+
+        {searches && searches.length > 0 && (
+          <LoadMore
+            shown={searches.length}
+            hasMore={cursor !== null}
+            loading={loadingMore}
+            onLoadMore={loadMore}
+            noun="searches"
+          />
         )}
       </div>
       <SiteFooter />

@@ -14,6 +14,7 @@ import {
   type ReservationStatusValue,
 } from '@/lib/reservations'
 import RatePharmacyDialog from '@/components/RatePharmacyDialog'
+import LoadMore from '@/components/ui/LoadMore'
 import { IconBookmark, IconCheck, IconPhone, IconX } from '@/components/ui/icons'
 
 type Reservation = {
@@ -34,17 +35,35 @@ export default function ReservationsPage() {
   const [error, setError] = useState('')
   const [ratingPrompt, setRatingPrompt] = useState<{ id: string; name: string } | null>(null)
 
-  const load = useCallback(async () => {
-    const res = await fetch('/api/reservations')
-    if (res.status === 401 || res.status === 403) {
-      router.push('/login?next=/reservations')
-      return
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  const load = useCallback(
+    async (after: string | null = null) => {
+      const res = await fetch(`/api/reservations${after ? `?cursor=${after}` : ''}`)
+      if (res.status === 401 || res.status === 403) {
+        router.push('/login?next=/reservations')
+        return
+      }
+      const data = await res.json()
+      setRows((prev) => (after && prev ? [...prev, ...data.reservations] : data.reservations))
+      setCursor(data.nextCursor ?? null)
+    },
+    [router],
+  )
+
+  async function loadMore() {
+    if (!cursor) return
+    setLoadingMore(true)
+    try {
+      await load(cursor)
+    } finally {
+      setLoadingMore(false)
     }
-    setRows((await res.json()).reservations)
-  }, [router])
+  }
 
   useEffect(() => {
-    const timer = setTimeout(load, 0)
+    const timer = setTimeout(() => load(), 0)
     return () => clearTimeout(timer)
   }, [load])
 
@@ -144,6 +163,14 @@ export default function ReservationsPage() {
                 </ul>
               </>
             )}
+
+            <LoadMore
+              shown={rows.length}
+              hasMore={cursor !== null}
+              loading={loadingMore}
+              onLoadMore={loadMore}
+              noun="reservations"
+            />
           </>
         )}
       </div>

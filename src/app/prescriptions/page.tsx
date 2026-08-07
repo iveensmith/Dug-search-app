@@ -7,6 +7,7 @@ import PrescriptionDisclaimer from '@/components/PrescriptionDisclaimer'
 import DataPrivacyNote from '@/components/DataPrivacyNote'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
+import LoadMore from '@/components/ui/LoadMore'
 import Card from '@/components/ui/Card'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -38,21 +39,39 @@ export default function PrescriptionsPage() {
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const load = useCallback(async () => {
-    const res = await fetch('/api/prescriptions')
-    if (res.status === 401) {
-      router.push('/login?next=/prescriptions')
-      return
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  const load = useCallback(
+    async (after: string | null = null) => {
+      const res = await fetch(`/api/prescriptions${after ? `?cursor=${after}` : ''}`)
+      if (res.status === 401) {
+        router.push('/login?next=/prescriptions')
+        return
+      }
+      if (res.status === 403) {
+        router.push('/')
+        return
+      }
+      const data = await res.json()
+      setUploads((prev) => (after && prev ? [...prev, ...data.uploads] : data.uploads))
+      setCursor(data.nextCursor ?? null)
+    },
+    [router],
+  )
+
+  async function loadMore() {
+    if (!cursor) return
+    setLoadingMore(true)
+    try {
+      await load(cursor)
+    } finally {
+      setLoadingMore(false)
     }
-    if (res.status === 403) {
-      router.push('/')
-      return
-    }
-    setUploads((await res.json()).uploads)
-  }, [router])
+  }
 
   useEffect(() => {
-    const timer = setTimeout(load, 0)
+    const timer = setTimeout(() => load(), 0)
     return () => clearTimeout(timer)
   }, [load])
 
@@ -245,6 +264,16 @@ export default function PrescriptionsPage() {
             )
           })}
         </ul>
+      )}
+
+      {uploads && uploads.length > 0 && (
+        <LoadMore
+          shown={uploads.length}
+          hasMore={cursor !== null}
+          loading={loadingMore}
+          onLoadMore={loadMore}
+          noun="requests"
+        />
       )}
       </div>
       <SiteFooter />

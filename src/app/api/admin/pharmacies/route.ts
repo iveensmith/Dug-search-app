@@ -1,21 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
+import { offsetPage, offsetResult } from '@/lib/pagination'
 
 // All pharmacies with owner contact, pending first
 export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['ADMIN'])
   if (session instanceof NextResponse) return session
 
-  const pharmacies = await prisma.pharmacy.findMany({
-    include: {
-      owner: { select: { email: true, phone: true } },
-      _count: { select: { inventory: true } },
-    },
-    orderBy: [{ createdAt: 'desc' }],
-  })
+  const { take, skip, page } = offsetPage(req.nextUrl.searchParams)
+  const [total, pharmacies] = await Promise.all([
+    prisma.pharmacy.count(),
+    prisma.pharmacy.findMany({
+      include: {
+        owner: { select: { email: true, phone: true } },
+        _count: { select: { inventory: true } },
+      },
+      orderBy: [{ createdAt: 'desc' }],
+      take,
+      skip,
+    }),
+  ])
 
   return NextResponse.json({
+    ...offsetResult([], total, { take, page }),
     pharmacies: pharmacies.map((p) => ({
       id: p.id,
       name: p.name,

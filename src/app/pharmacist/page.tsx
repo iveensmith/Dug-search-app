@@ -6,6 +6,7 @@ import Link from 'next/link'
 import AppHeader from '@/components/ui/AppHeader'
 import { logout } from '@/lib/logout'
 import SiteFooter from '@/components/ui/SiteFooter'
+import LoadMore from '@/components/ui/LoadMore'
 import Card from '@/components/ui/Card'
 
 type UploadRow = {
@@ -22,22 +23,41 @@ export default function PharmacistPage() {
   const [uploads, setUploads] = useState<UploadRow[] | null>(null)
   const [denied, setDenied] = useState(false)
 
-  const load = useCallback(async () => {
-    const res = await fetch('/api/prescriptions')
-    if (res.status === 401) {
-      router.push('/login?next=/pharmacist')
-      return
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  const load = useCallback(
+    async (after: string | null = null) => {
+      const res = await fetch(`/api/prescriptions${after ? `?cursor=${after}` : ''}`)
+      if (res.status === 401) {
+        router.push('/login?next=/pharmacist')
+        return
+      }
+      if (res.status === 403) {
+        setDenied(true)
+        return
+      }
+      const data = await res.json()
+      setUploads((prev) => (after && prev ? [...prev, ...data.uploads] : data.uploads))
+      setCursor(data.nextCursor ?? null)
+    },
+    [router],
+  )
+
+  async function loadMore() {
+    if (!cursor) return
+    setLoadingMore(true)
+    try {
+      await load(cursor)
+    } finally {
+      setLoadingMore(false)
     }
-    if (res.status === 403) {
-      setDenied(true)
-      return
-    }
-    setUploads((await res.json()).uploads)
-  }, [router])
+  }
 
   useEffect(() => {
-    const timer = setTimeout(load, 0)
-    const poll = setInterval(load, 15000)
+    const timer = setTimeout(() => load(), 0)
+    // Polling refreshes the first page; it must not append.
+    const poll = setInterval(() => load(), 15000)
     return () => {
       clearTimeout(timer)
       clearInterval(poll)
@@ -126,6 +146,16 @@ export default function PharmacistPage() {
           </ul>
         )}
       </section>
+
+      {uploads && uploads.length > 0 && (
+        <LoadMore
+          shown={uploads.length}
+          hasMore={cursor !== null}
+          loading={loadingMore}
+          onLoadMore={loadMore}
+          noun="requests"
+        />
+      )}
       </div>
       <SiteFooter />
     </div>

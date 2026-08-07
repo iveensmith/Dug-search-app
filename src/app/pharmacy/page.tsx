@@ -17,6 +17,7 @@ import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import { Field, Input, Select } from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
 import OwnerRatingCard from '@/components/OwnerRatingCard'
+import LoadMore from '@/components/ui/LoadMore'
 import OwnerReservations, { type OwnerReservation } from '@/components/OwnerReservations'
 import { isOpen } from '@/lib/reservations'
 import { IconAlertCircle, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
@@ -578,6 +579,11 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
 function PharmacyDashboard() {
   const router = useRouter()
   const [data, setData] = useState<Dashboard | null>(null)
+  // The stock list arrives a page at a time now, so the counts on screen
+  // come from the server rather than from items.length.
+  const [inventoryTotal, setInventoryTotal] = useState(0)
+  const [inventoryPage, setInventoryPage] = useState(1)
+  const [loadingInventory, setLoadingInventory] = useState(false)
   const [loadError, setLoadError] = useState('')
   // Opened straight from the overview's quick actions via "?tab=searches".
   // Read through useSearchParams, not window.location: on a client-side
@@ -623,14 +629,33 @@ function PharmacyDashboard() {
   // drug, say) shouldn't yank the page back up there.
   const scrolledToHours = useRef(false)
 
-  const loadReservations = useCallback(async () => {
+  const [reservationCursor, setReservationCursor] = useState<string | null>(null)
+  const [loadingReservations, setLoadingReservations] = useState(false)
+
+  const loadReservations = useCallback(async (after: string | null = null) => {
     try {
-      const res = await fetch('/api/pharmacy/reservations')
-      setReservations(res.ok ? ((await res.json()).reservations ?? []) : [])
+      const res = await fetch(`/api/pharmacy/reservations${after ? `?cursor=${after}` : ''}`)
+      if (!res.ok) {
+        if (!after) setReservations([])
+        return
+      }
+      const json = await res.json()
+      setReservations((prev) => (after && prev ? [...prev, ...json.reservations] : json.reservations))
+      setReservationCursor(json.nextCursor ?? null)
     } catch {
-      setReservations([])
+      if (!after) setReservations([])
     }
   }, [])
+
+  async function loadMoreReservations() {
+    if (!reservationCursor) return
+    setLoadingReservations(true)
+    try {
+      await loadReservations(reservationCursor)
+    } finally {
+      setLoadingReservations(false)
+    }
+  }
 
   const load = useCallback(async () => {
     const res = await fetch('/api/inventory')
@@ -646,8 +671,26 @@ function PharmacyDashboard() {
       setLoadError('Could not load your dashboard — try refreshing.')
       return
     }
-    setData(await res.json())
+    const json = await res.json()
+    setData(json)
+    setInventoryTotal(json.total ?? 0)
+    setInventoryPage(1)
   }, [router])
+
+  /** Next page of the stock list, appended. */
+  async function loadMoreInventory() {
+    setLoadingInventory(true)
+    try {
+      const next = inventoryPage + 1
+      const res = await fetch(`/api/inventory?page=${next}`)
+      if (!res.ok) return
+      const json = await res.json()
+      setData((d) => (d ? { ...d, items: [...d.items, ...json.items] } : d))
+      setInventoryPage(next)
+    } finally {
+      setLoadingInventory(false)
+    }
+  }
 
   useEffect(() => {
     const timer = setTimeout(load, 0)
@@ -655,7 +698,7 @@ function PharmacyDashboard() {
   }, [load])
 
   useEffect(() => {
-    const timer = setTimeout(loadReservations, 0)
+    const timer = setTimeout(() => loadReservations(), 0)
     return () => clearTimeout(timer)
   }, [loadReservations])
 
@@ -887,7 +930,7 @@ function PharmacyDashboard() {
           <nav className="mb-4 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
             {(
               [
-                ['inventory', `Inventory (${items.length})`],
+                ['inventory', `Inventory (${inventoryTotal})`],
                 ['reservations', openReservations ? `Reservations (${openReservations})` : 'Reservations'],
                 ['searches', 'Local searches'],
                 ['bulk', 'CSV import/export'],
@@ -1102,7 +1145,7 @@ function PharmacyDashboard() {
 
               <div className="mt-6">
                 <div className="mb-2 flex items-baseline justify-between">
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100">Your drugs ({items.length})</h2>
+                  <h2 className="font-semibold text-gray-900 dark:text-gray-100">Your drugs ({inventoryTotal})</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{inStockCount} in stock</p>
                 </div>
 
@@ -1164,6 +1207,15 @@ function PharmacyDashboard() {
                     ))}
                   </ul>
                 )}
+
+                <LoadMore
+                  shown={items.length}
+                  total={inventoryTotal}
+                  hasMore={items.length < inventoryTotal}
+                  loading={loadingInventory}
+                  onLoadMore={loadMoreInventory}
+                  noun="drugs"
+                />
               </div>
             </>
           )}
@@ -1207,10 +1259,21 @@ function PharmacyDashboard() {
           )}
 
           {tab === 'reservations' && (
-            <OwnerReservations reservations={reservations} onChanged={loadReservations} />
+            <>
+              <OwnerReservations reservations={reservations} onChanged={() => loadReservations()} />
+              {reservations && reservations.length > 0 && (
+                <LoadMore
+                  shown={reservations.length}
+                  hasMore={reservationCursor !== null}
+                  loading={loadingReservations}
+                  onLoadMore={loadMoreReservations}
+                  noun="reservations"
+                />
+              )}
+            </>
           )}
 
-          {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={items.length} />}
+          {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={inventoryTotal} />}
 
           {/* Below the working area — the stock list is what an owner opens
               this page to do; their score is something to check on, not to

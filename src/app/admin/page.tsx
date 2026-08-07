@@ -7,6 +7,7 @@ import { stateLabel } from '@/lib/states'
 import AppHeader from '@/components/ui/AppHeader'
 import { logout } from '@/lib/logout'
 import SiteFooter from '@/components/ui/SiteFooter'
+import LoadMore from '@/components/ui/LoadMore'
 import Card from '@/components/ui/Card'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
@@ -72,6 +73,12 @@ export default function AdminPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [denied, setDenied] = useState(false)
 
+  // Offset paging: these tables are browsed rather than followed, and the
+  // totals are worth showing. `page` counts up; each table keeps its own.
+  const [totals, setTotals] = useState({ pharmacies: 0, pharmacists: 0, drugs: 0 })
+  const [pages, setPages] = useState({ pharmacies: 1, pharmacists: 1, drugs: 1 })
+  const [loadingMore, setLoadingMore] = useState('')
+
   const load = useCallback(async () => {
     const res = await fetch('/api/admin/pharmacies')
     if (res.status === 401) {
@@ -82,16 +89,42 @@ export default function AdminPage() {
       setDenied(true)
       return
     }
-    setPharmacies((await res.json()).pharmacies)
+    const first = await res.json()
+    setPharmacies(first.pharmacies)
     const [pharmacistsRes, drugsRes, analyticsRes] = await Promise.all([
       fetch('/api/admin/pharmacists'),
       fetch('/api/admin/drugs'),
       fetch('/api/admin/analytics'),
     ])
-    if (pharmacistsRes.ok) setPharmacists((await pharmacistsRes.json()).pharmacists)
-    if (drugsRes.ok) setDrugs((await drugsRes.json()).drugs)
+    const pharmacistsJson = pharmacistsRes.ok ? await pharmacistsRes.json() : null
+    const drugsJson = drugsRes.ok ? await drugsRes.json() : null
+    if (pharmacistsJson) setPharmacists(pharmacistsJson.pharmacists)
+    if (drugsJson) setDrugs(drugsJson.drugs)
     if (analyticsRes.ok) setAnalytics(await analyticsRes.json())
+    setTotals({
+      pharmacies: first.total ?? 0,
+      pharmacists: pharmacistsJson?.total ?? 0,
+      drugs: drugsJson?.total ?? 0,
+    })
+    setPages({ pharmacies: 1, pharmacists: 1, drugs: 1 })
   }, [router])
+
+  /** Fetches the next page of one table and appends it. */
+  async function loadMore(kind: 'pharmacies' | 'pharmacists' | 'drugs') {
+    setLoadingMore(kind)
+    try {
+      const next = pages[kind] + 1
+      const res = await fetch(`/api/admin/${kind}?page=${next}`)
+      if (!res.ok) return
+      const data = await res.json()
+      if (kind === 'pharmacies') setPharmacies((p) => [...(p ?? []), ...data.pharmacies])
+      if (kind === 'pharmacists') setPharmacists((p) => [...(p ?? []), ...data.pharmacists])
+      if (kind === 'drugs') setDrugs((p) => [...(p ?? []), ...data.drugs])
+      setPages((p) => ({ ...p, [kind]: next }))
+    } finally {
+      setLoadingMore('')
+    }
+  }
 
   useEffect(() => {
     const timer = setTimeout(load, 0)
@@ -160,6 +193,22 @@ export default function AdminPage() {
         <PharmacistsTab pharmacists={pharmacists} onChanged={load} />
       )}
       {tab === 'drugs' && drugs && <DrugsTab drugs={drugs} onChanged={load} />}
+
+      {(['pharmacies', 'pharmacists', 'drugs'] as const).map((kind) => {
+        const rows = kind === 'pharmacies' ? pharmacies : kind === 'pharmacists' ? pharmacists : drugs
+        if (tab !== kind || !rows) return null
+        return (
+          <LoadMore
+            key={kind}
+            shown={rows.length}
+            total={totals[kind]}
+            hasMore={rows.length < totals[kind]}
+            loading={loadingMore === kind}
+            onLoadMore={() => loadMore(kind)}
+            noun={kind}
+          />
+        )
+      })}
       {tab === 'gaps' && <GapsTab analytics={analytics} />}
       </div>
       <SiteFooter />

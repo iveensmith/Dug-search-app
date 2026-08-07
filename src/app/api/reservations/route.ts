@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { notifyReservationRequested } from '@/lib/notify'
+import { cursorPage, cursorResult } from '@/lib/pagination'
 
 const bodySchema = z.object({
   pharmacyId: z.string().min(1),
@@ -46,14 +47,26 @@ export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['PATIENT'])
   if (session instanceof NextResponse) return session
 
-  const reservations = await prisma.reservation.findMany({
-    where: { userId: session.userId },
+  const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
+  // ?drugId= lets the search page ask "do I have an open reservation for
+  // this drug" directly. Without it, it would have to page through the
+  // patient's whole history to be sure.
+  const drugId = req.nextUrl.searchParams.get('drugId')
+  const openOnly = req.nextUrl.searchParams.get('open') === 'true'
+  const rows = await prisma.reservation.findMany({
+    where: {
+      userId: session.userId,
+      ...(drugId ? { drugId } : {}),
+      ...(openOnly ? { status: { in: ['PENDING', 'READY'] as const } } : {}),
+    },
     orderBy: { createdAt: 'desc' },
-    take: 100,
+    take: take + 1,
+    ...cursorArgs,
     select,
   })
+  const { items: reservations, nextCursor } = cursorResult(rows, take)
 
-  return NextResponse.json({ reservations })
+  return NextResponse.json({ reservations, nextCursor })
 }
 
 /**

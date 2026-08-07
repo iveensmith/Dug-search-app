@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
+import { cursorPage, cursorResult } from '@/lib/pagination'
 import { storage, ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from '@/lib/storage'
 
 // POST: patient uploads a prescription photo (multipart: image, note?)
@@ -46,9 +47,14 @@ export async function GET(req: NextRequest) {
       ? { patientUserId: session.userId }
       : { OR: [{ status: 'PENDING' as const }, { pharmacistUserId: session.userId }] }
 
-  const uploads = await prisma.prescriptionUpload.findMany({
+  // Cursor, not offset: a pharmacist's queue gains rows while they read it,
+  // and OFFSET on a moving list repeats or skips items between pages.
+  const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
+  const rows = await prisma.prescriptionUpload.findMany({
     where,
     orderBy: { createdAt: 'desc' },
+    take: take + 1, // the extra row tells us there is another page
+    ...cursorArgs,
     include: {
       patient: { select: { displayName: true } },
       pharmacist: { select: { displayName: true } },
@@ -59,8 +65,24 @@ export async function GET(req: NextRequest) {
       },
     },
   })
+  const { items: uploads, nextCursor } = cursorResult(rows, take)
+
+  // Counted across every thread, not summed from this page — the tab-bar
+  // badge would otherwise stop rising past the first twenty conversations.
+  const unreadTotal = await prisma.prescriptionMessage.count({
+    where: {
+      readAt: null,
+      senderUserId: { not: session.userId },
+      upload:
+        session.role === 'PATIENT'
+          ? { patientUserId: session.userId }
+          : { pharmacistUserId: session.userId },
+    },
+  })
 
   return NextResponse.json({
+    nextCursor,
+    unreadTotal,
     uploads: uploads.map((u) => ({
       id: u.id,
       status: u.status,

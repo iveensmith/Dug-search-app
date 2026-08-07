@@ -32,6 +32,26 @@ export type RatingSummary = {
 }
 
 /** Averages of each dimension plus an overall mean, from raw rating rows. */
+/**
+ * Builds a summary from counts and averages the database already worked
+ * out. Preferred over summarise() for anything a patient can open: a
+ * pharmacy's rating count only grows, and reading every row into the app
+ * to average it is a page load that gets slower for the pharmacies people
+ * use most.
+ */
+export function summariseAggregate(
+  count: number,
+  avg: Partial<Record<RatingKey, number | null>>,
+): RatingSummary {
+  if (count === 0) return { count: 0, overall: null, averages: null, scored: false }
+  const averages = {} as RatingScores
+  for (const { key } of RATING_DIMENSIONS) averages[key] = avg[key] ?? 0
+  const overall =
+    RATING_DIMENSIONS.reduce((sum, { key }) => sum + averages[key], 0) / RATING_DIMENSIONS.length
+  return { count, overall, averages, scored: count >= MIN_RATINGS_TO_SCORE }
+}
+
+/** In-memory version, for callers that already hold the rows. */
 export function summarise(rows: RatingScores[]): RatingSummary {
   if (rows.length === 0) return { count: 0, overall: null, averages: null, scored: false }
   const averages = {} as RatingScores
