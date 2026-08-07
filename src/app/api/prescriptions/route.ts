@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { cursorPage, cursorResult } from '@/lib/pagination'
 import { storage, ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from '@/lib/storage'
+import { normaliseUpload, STORED_IMAGE_TYPE } from '@/lib/images'
 
 // POST: patient uploads a prescription photo (multipart: image, note?)
 export async function POST(req: NextRequest) {
@@ -24,7 +25,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Photo is too large (max 10 MB)' }, { status: 400 })
   }
 
-  const key = await storage.put(Buffer.from(await image.arrayBuffer()), image.type)
+  // Stored as WebP at a readable size rather than as sent. A phone photo
+  // is several megabytes; the pharmacist and the patient each pull it back
+  // down every time they open the thread.
+  let normalised: Buffer
+  try {
+    normalised = await normaliseUpload(Buffer.from(await image.arrayBuffer()))
+  } catch {
+    // A file that says image/jpeg but isn't one lands here.
+    return NextResponse.json({ error: "That file doesn't look like a photo" }, { status: 400 })
+  }
+  const key = await storage.put(normalised, STORED_IMAGE_TYPE)
   const upload = await prisma.prescriptionUpload.create({
     data: {
       patientUserId: session.userId,

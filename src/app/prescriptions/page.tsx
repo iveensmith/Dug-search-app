@@ -158,11 +158,14 @@ export default function PrescriptionsPage() {
           {preview && (
             <div className="animate-fade-in mt-3 flex items-start gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-800">
               {/* Local blob preview — next/image would need a remote loader
-                  and this never leaves the browser. */}
+                  and this never leaves the browser. Not lazy either: it
+                  appears the moment the user picks a file, and the bytes
+                  are already here. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={preview.url}
                 alt="Prescription you selected"
+                decoding="async"
                 className="h-24 w-24 shrink-0 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
               />
               <div className="min-w-0 flex-1">

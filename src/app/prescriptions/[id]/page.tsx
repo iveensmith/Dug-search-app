@@ -152,10 +152,17 @@ export default function PrescriptionThreadPage() {
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Uploaded prescription
         </p>
+        {/* Below the fold — the header, status and note come first. The
+            width/height reserve its space so the conversation underneath
+            doesn't jump down the page when the photo arrives. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/api/prescriptions/${upload.id}/image`}
           alt="Uploaded prescription"
+          loading="lazy"
+          decoding="async"
+          width={1600}
+          height={1600}
           className="max-h-80 w-full rounded-lg object-contain"
         />
         {upload.patientNote && (
