@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useCallback, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
@@ -10,11 +11,13 @@ import Badge from '@/components/ui/Badge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import RatingStars from '@/components/RatingStars'
 import StockPulse from '@/components/StockPulse'
-import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import { drugLabel, directionsUrl, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
 import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
 import { IconMapPin, IconPhone, IconRoute, IconShieldCheck, IconStore } from '@/components/ui/icons'
+
+// Opens only when someone taps "Rate this pharmacy".
+const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog'), { ssr: false })
 
 type Pharmacy = {
   id: string

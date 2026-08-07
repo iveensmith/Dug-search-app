@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
-import { lgasForState } from '@/lib/lgas'
+import { useLgas } from '@/lib/useLgas'
 import { DRUG_FORMS, formUsesPackSize, type DrugFormValue } from '@/lib/drugForms'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
 import AppHeader from '@/components/ui/AppHeader'
@@ -130,6 +130,7 @@ function LgaCard({
   onSaved: (lga: string) => void
 }) {
   const [lga, setLga] = useState(pharmacy.lga ?? '')
+  const lgaOptions = useLgas(pharmacy.state)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -208,9 +209,9 @@ function LgaCard({
           <Field label={`Your LGA in ${stateLabel(pharmacy.state)}`} htmlFor="pharmacy-lga">
             <Select id="pharmacy-lga" value={lga} onChange={(e) => setLga(e.target.value)} required>
               <option value="" disabled>
-                Select your LGA
+                {lgaOptions.length === 0 ? 'Loading areas…' : 'Select your LGA'}
               </option>
-              {lgasForState(pharmacy.state).map((l) => (
+              {lgaOptions.map((l) => (
                 <option key={l} value={l}>
                   {l}
                 </option>

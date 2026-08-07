@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue, stateCenter, stateLabel } from '@/lib/states'
-import { lgasForState } from '@/lib/lgas'
+import { useLgas } from '@/lib/useLgas'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
@@ -40,6 +40,7 @@ export default function PharmacyRegisterPage() {
     pcnLicenseNumber: '',
   })
   const [selectedState, setSelectedState] = useState<NigerianStateValue | ''>('')
+  const lgaOptions = useLgas(selectedState)
   const [selectedLga, setSelectedLga] = useState('')
   const [position, setPosition] = useState(NIGERIA_CENTER)
   const [pinConfirmed, setPinConfirmed] = useState(false)
@@ -305,9 +306,11 @@ export default function PharmacyRegisterPage() {
                 <Field label="Local Government Area (LGA)" htmlFor="lga">
                   <Select id="lga" value={selectedLga} onChange={(e) => setSelectedLga(e.target.value)} required>
                     <option value="" disabled>
-                      Select your LGA in {stateLabel(selectedState)}
+                      {lgaOptions.length === 0
+                        ? 'Loading areas…'
+                        : `Select your LGA in ${stateLabel(selectedState)}`}
                     </option>
-                    {lgasForState(selectedState).map((lga) => (
+                    {lgaOptions.map((lga) => (
                       <option key={lga} value={lga}>
                         {lga}
                       </option>

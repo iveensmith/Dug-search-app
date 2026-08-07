@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import SiteHeader from '@/components/ui/SiteHeader'
@@ -13,9 +14,11 @@ import {
   isStale,
   type ReservationStatusValue,
 } from '@/lib/reservations'
-import RatePharmacyDialog from '@/components/RatePharmacyDialog'
 import LoadMore from '@/components/ui/LoadMore'
 import { IconBookmark, IconCheck, IconPhone, IconX } from '@/components/ui/icons'
+
+// Only appears after "Medicine obtained", so it need not arrive with the list.
+const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog'), { ssr: false })
 
 type Reservation = {
   id: string

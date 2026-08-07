@@ -15,7 +15,7 @@ import {
   stockFreshness,
 } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
-import { lgasForState } from '@/lib/lgas'
+import { loadLgas, useLgas } from '@/lib/useLgas'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
@@ -23,18 +23,10 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
-import NotifyMeForm from '@/components/NotifyMeForm'
 import RatingStars from '@/components/RatingStars'
 import StockPulse from '@/components/StockPulse'
 import RecentSearches from '@/components/RecentSearches'
-import ResultFilters, {
-  NO_FILTERS,
-  activeFilterCount,
-  applyFilters,
-  type Filters,
-} from '@/components/ResultFilters'
-import RatePharmacyDialog from '@/components/RatePharmacyDialog'
-import ReserveDialog from '@/components/ReserveDialog'
+import { NO_FILTERS, activeFilterCount, applyFilters, type Filters } from '@/lib/filters'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -115,6 +107,19 @@ const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
   ),
 })
 
+// Three sheets that only exist after a tap: filters, rating, reserving.
+// Most visits never open any of them, so they stay out of the download
+// that stands between a patient and the search box. They render over the
+// page rather than in it, so there is nothing for the server to prerender
+// and no layout shift when the chunk lands.
+const ResultFilters = dynamic(() => import('@/components/ResultFilters'), { ssr: false })
+const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog'), { ssr: false })
+const ReserveDialog = dynamic(() => import('@/components/ReserveDialog'), { ssr: false })
+
+// Only appears when a search comes back empty.
+const NotifyMeForm = dynamic(() => import('@/components/NotifyMeForm'), { ssr: false })
+
+
 const STATE_STORAGE_KEY = 'mediquest_state'
 
 type Pos = { lat: number; lng: number }
@@ -163,6 +168,7 @@ async function detectAreaFromPosition(
     const candidates = [data?.address?.county, data?.address?.city, data?.address?.town]
       .filter((v): v is string => typeof v === 'string')
       .map((v) => v.replace(/\s+(local government area|lga)$/i, '').trim().toLowerCase())
+    const { lgasForState } = await loadLgas()
     const lga = lgasForState(state).find((l) => candidates.includes(l.toLowerCase())) ?? null
     return { state, lga }
   } catch {
@@ -184,6 +190,7 @@ export default function PatientHome() {
   const [viewerLoaded, setViewerLoaded] = useState(false)
   const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
   const [selectedLga, setSelectedLga] = useState('')
+  const lgaOptions = useLgas(selectedState)
   const [pickerOpen, setPickerOpen] = useState(false) // full state/LGA dropdowns vs the compact chip
   const selectedLgaRef = useRef('') // read inside runSearch (avoids stale closure)
   const [detectingState, setDetectingState] = useState(true)
@@ -605,9 +612,11 @@ export default function PatientHome() {
               <Field label="Area (LGA)" htmlFor="lga-picker">
                 <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)} required>
                   <option value="" disabled>
-                    Select your LGA in {selectedLabel}
+                    {lgaOptions.length === 0
+                      ? 'Loading areas…'
+                      : `Select your LGA in ${selectedLabel}`}
                   </option>
-                  {lgasForState(selectedState).map((lga) => (
+                  {lgaOptions.map((lga) => (
                     <option key={lga} value={lga}>
                       {lga}
                     </option>
