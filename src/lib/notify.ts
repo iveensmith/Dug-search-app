@@ -5,36 +5,54 @@ import { drugLabel } from './types'
 /**
  * Called whenever a pharmacy's inventory row transitions to inStock=true.
  * Emails every pending StockNotifyRequest for that drug in that pharmacy's
- * state, then marks them notified so they don't fire again. Synchronous —
- * fine at this app's scale (dozens of pharmacies), no queue needed.
+ * state, then marks them notified so they don't fire again.
  */
 export async function notifyStockAvailable(drugId: string, pharmacyId: string): Promise<void> {
-  const [pharmacy, drug] = await Promise.all([
+  return notifyStockAvailableForDrugs([drugId], pharmacyId)
+}
+
+/**
+ * The same thing for a batch of drugs — what a CSV import needs.
+ *
+ * Calling the single-drug version in a loop meant re-reading the same
+ * pharmacy row once per drug, and one UPDATE per waiting patient. This is
+ * a fixed four queries however many drugs came in: the pharmacy, the
+ * drugs, the waiting requests, and one updateMany to close them out.
+ */
+export async function notifyStockAvailableForDrugs(
+  drugIds: string[],
+  pharmacyId: string,
+): Promise<void> {
+  if (drugIds.length === 0) return
+
+  const [pharmacy, drugs] = await Promise.all([
     prisma.pharmacy.findUnique({ where: { id: pharmacyId }, select: { name: true, state: true } }),
-    prisma.drug.findUnique({ where: { id: drugId } }),
+    prisma.drug.findMany({ where: { id: { in: drugIds } } }),
   ])
-  if (!pharmacy || !drug) return
+  if (!pharmacy || drugs.length === 0) return
 
   const pending = await prisma.stockNotifyRequest.findMany({
-    where: { drugId, state: pharmacy.state, notifiedAt: null },
+    where: { drugId: { in: drugs.map((d) => d.id) }, state: pharmacy.state, notifiedAt: null },
   })
   if (pending.length === 0) return
 
-  const label = drugLabel({
-    id: drug.id,
-    genericName: drug.genericName,
-    brandNames: drug.brandNames,
-    strength: drug.strength,
-    form: drug.form,
-    packSize: drug.packSize,
-  })
+  const labels = new Map(drugs.map((d) => [d.id, drugLabel(d)]))
 
-  await Promise.all(
-    pending.map(async (req) => {
-      await sendStockAvailableEmail(req.email, label, pharmacy.name)
-      await prisma.stockNotifyRequest.update({ where: { id: req.id }, data: { notifiedAt: new Date() } })
-    }),
+  // allSettled, so one bad address doesn't cost everyone else their email
+  // — and only the ones that actually went out get marked notified, or a
+  // failure here would silently swallow the notice for good.
+  const results = await Promise.allSettled(
+    pending.map((req) =>
+      sendStockAvailableEmail(req.email, labels.get(req.drugId) ?? '', pharmacy.name),
+    ),
   )
+  const sent = pending.filter((_, i) => results[i].status === 'fulfilled').map((r) => r.id)
+  if (sent.length > 0) {
+    await prisma.stockNotifyRequest.updateMany({
+      where: { id: { in: sent } },
+      data: { notifiedAt: new Date() },
+    })
+  }
 }
 
 /**
