@@ -9,10 +9,13 @@ import { stateLabel } from '@/lib/states'
 import {
   IconAlertCircle,
   IconClipboardList,
+  IconClock,
   IconDownload,
   IconPlus,
   IconSearch,
   IconStore,
+  IconUser,
+  type IconProps,
 } from '@/components/ui/icons'
 
 type Pharmacy = {
@@ -30,6 +33,21 @@ type RecentSearch = { id: string; drug: DrugSuggestion | null; youStock: boolean
 type Scope = { kind: 'lga' | 'state'; label: string }
 
 type Gap = { drug: DrugSuggestion; count: number }
+
+const quickActionClass =
+  'inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400'
+
+const QUICK_ACTIONS: {
+  label: string
+  href: string
+  download?: boolean
+  Icon?: (p: IconProps) => React.ReactElement
+}[] = [
+  { label: 'Local searches', href: '/pharmacy?tab=searches', Icon: IconSearch },
+  { label: 'Update opening hours', href: '/pharmacy#hours', Icon: IconClock },
+  { label: 'Download stock CSV', href: '/api/inventory/export', download: true, Icon: IconDownload },
+  { label: 'Account settings', href: '/account', Icon: IconUser },
+]
 
 /**
  * The home page for a signed-in pharmacy owner. Patients get the search
@@ -251,22 +269,28 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
           Quick actions
         </p>
+        {/* Each of these has to land somewhere specific. They all used to
+            point at bare /pharmacy, which drops you on the inventory tab and
+            leaves you to find the thing yourself. "?tab=" picks the tab on
+            arrival; "#hours" scrolls to the hours card once the dashboard
+            data has loaded, since it doesn't exist before that. */}
         <div className="mt-3 flex flex-wrap gap-2">
-          {[
-            ['Local searches', '/pharmacy'],
-            ['Update opening hours', '/pharmacy'],
-            ['Download stock CSV', '/pharmacy'],
-            ['Account settings', '/account'],
-          ].map(([label, href]) => (
-            <Link
-              key={label}
-              href={href}
-              className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
-            >
-              {label === 'Download stock CSV' && <IconDownload width={13} height={13} />}
-              {label}
-            </Link>
-          ))}
+          {QUICK_ACTIONS.map(({ label, href, download, Icon }) =>
+            download ? (
+              // A real download, so a plain anchor: the export route sends
+              // Content-Disposition: attachment, and routing through <Link>
+              // would try to navigate to a CSV instead of saving it.
+              <a key={label} href={href} className={quickActionClass}>
+                {Icon && <Icon width={13} height={13} />}
+                {label}
+              </a>
+            ) : (
+              <Link key={label} href={href} className={quickActionClass}>
+                {Icon && <Icon width={13} height={13} />}
+                {label}
+              </Link>
+            ),
+          )}
         </div>
       </section>
     </div>

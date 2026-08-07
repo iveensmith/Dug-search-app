@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
@@ -420,7 +420,7 @@ function HoursCard({
   }
 
   return (
-    <Card className="mb-4">
+    <Card id="hours" className="mb-4 scroll-mt-24">
       <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Hours</p>
       <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
         <input
@@ -575,11 +575,21 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
   )
 }
 
-export default function PharmacyDashboard() {
+function PharmacyDashboard() {
   const router = useRouter()
   const [data, setData] = useState<Dashboard | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [tab, setTab] = useState<'inventory' | 'reservations' | 'searches' | 'bulk'>('inventory')
+  // Opened straight from the overview's quick actions via "?tab=searches".
+  // Read through useSearchParams, not window.location: on a client-side
+  // navigation this component mounts before the browser URL is updated, so
+  // location.search/hash is still the old page's at first render and the
+  // tab would silently fall back to Inventory.
+  const tabParam = useSearchParams().get('tab')
+  const [tab, setTab] = useState<'inventory' | 'reservations' | 'searches' | 'bulk'>(
+    tabParam === 'searches' || tabParam === 'reservations' || tabParam === 'bulk'
+      ? tabParam
+      : 'inventory',
+  )
 
   // add-drug panel
   const [formOpen, setFormOpen] = useState(false)
@@ -607,6 +617,11 @@ export default function PharmacyDashboard() {
   // Loaded with the dashboard rather than on tab open, so the tab itself
   // can show how many people are waiting on an answer.
   const [reservations, setReservations] = useState<OwnerReservation[] | null>(null)
+
+  // "#hours" scrolls to the opening-hours card, which doesn't exist until
+  // the dashboard data lands. Runs once — a later reload (after adding a
+  // drug, say) shouldn't yank the page back up there.
+  const scrolledToHours = useRef(false)
 
   const loadReservations = useCallback(async () => {
     try {
@@ -643,6 +658,16 @@ export default function PharmacyDashboard() {
     const timer = setTimeout(loadReservations, 0)
     return () => clearTimeout(timer)
   }, [loadReservations])
+
+  useEffect(() => {
+    if (!data || scrolledToHours.current || window.location.hash !== '#hours') return
+    scrolledToHours.current = true
+    // A frame's grace so the card is in the DOM before we scroll to it.
+    const frame = requestAnimationFrame(() =>
+      document.getElementById('hours')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    )
+    return () => cancelAnimationFrame(frame)
+  }, [data])
 
   const openReservations = (reservations ?? []).filter((r) => isOpen(r.status)).length
 
@@ -1200,5 +1225,15 @@ export default function PharmacyDashboard() {
       </div>
       <SiteFooter />
     </div>
+  )
+}
+
+// useSearchParams needs a Suspense boundary, same as the login and register
+// pages.
+export default function PharmacyDashboardPage() {
+  return (
+    <Suspense>
+      <PharmacyDashboard />
+    </Suspense>
   )
 }
