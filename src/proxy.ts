@@ -28,6 +28,13 @@ export async function proxy(request: NextRequest) {
 
 // Only the home page. Without a matcher this would run on every request,
 // including static assets.
+//
+// Keep prescription uploads out of it. Next buffers the request body in
+// memory for any route the proxy runs on, capped by
+// experimental.proxyClientMaxBodySize — 10MB by default, above which the
+// body is silently truncated rather than rejected. Uploads are allowed up
+// to 20MB (lib/storage.ts), so widening this matcher to cover
+// /api/prescriptions would corrupt large photos instead of failing them.
 export const config = {
   matcher: '/',
 }

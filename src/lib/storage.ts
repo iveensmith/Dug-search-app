@@ -26,7 +26,12 @@ const TYPE_BY_EXT: Record<string, string> = {
 }
 
 export const ALLOWED_IMAGE_TYPES = Object.keys(EXT_BY_TYPE)
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10 MB
+// Generous because nothing is stored at this size: uploads are re-encoded
+// to WebP at 1600px before they hit storage (see lib/images.ts), so a
+// 20 MB phone photo lands as well under a megabyte. The cap is here to
+// stop something absurd being pushed through the decoder, not to keep
+// storage down.
+export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024 // 20 MB
 
 class LocalDiskStorage implements StorageAdapter {
   constructor(private baseDir: string) {}

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Use a JPG, PNG, or WebP photo' }, { status: 400 })
   }
   if (image.size > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: 'Photo is too large (max 10 MB)' }, { status: 400 })
+    return NextResponse.json({ error: 'Photo is too large (max 20 MB)' }, { status: 400 })
   }
 
   // Stored as WebP at a readable size rather than as sent. A phone photo
