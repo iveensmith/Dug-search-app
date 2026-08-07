@@ -12,6 +12,7 @@ import Card from '@/components/ui/Card'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Textarea } from '@/components/ui/Field'
+import { downscaleImage } from '@/lib/downscaleImage'
 import { IconClipboardList, IconUpload, IconX } from '@/components/ui/icons'
 
 type UploadRow = {
@@ -21,6 +22,12 @@ type UploadRow = {
   pharmacistName: string | null
   unreadCount: number
   createdAt: string
+}
+
+function formatSize(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.round(bytes / 1024)} KB`
 }
 
 const STATUS_LABEL: Record<UploadRow['status'], [string, BadgeTone]> = {
@@ -37,6 +44,11 @@ export default function PrescriptionsPage() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null)
+  // The photo actually sent: the shrunk one when that worked, otherwise
+  // whatever was picked.
+  const [ready, setReady] = useState<File | null>(null)
+  const [shrinking, setShrinking] = useState(false)
+  const [savedBytes, setSavedBytes] = useState<{ from: number; to: number } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [cursor, setCursor] = useState<string | null>(null)
@@ -80,12 +92,33 @@ export default function PrescriptionsPage() {
     if (preview) URL.revokeObjectURL(preview.url)
   }, [preview])
 
-  function pickFile(file: File | undefined) {
+  /**
+   * Shrinks the photo as soon as it is chosen, rather than at submit, so
+   * the work overlaps with the patient writing their note and the send
+   * itself is quick. The result is held here; the file input still holds
+   * the original, which is the fallback if this produced nothing.
+   */
+  async function pickFile(file: File | undefined) {
+    setError('')
     setPreview((old) => {
       if (old) URL.revokeObjectURL(old.url)
       return file ? { url: URL.createObjectURL(file), name: file.name } : null
     })
-    setError('')
+    setReady(null)
+    if (!file) return
+
+    setShrinking(true)
+    try {
+      const smaller = await downscaleImage(file)
+      setReady(smaller)
+      if (smaller !== file) {
+        setSavedBytes({ from: file.size, to: smaller.size })
+      } else {
+        setSavedBytes(null)
+      }
+    } finally {
+      setShrinking(false)
+    }
   }
 
   function clearFile() {
@@ -95,11 +128,14 @@ export default function PrescriptionsPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    const file = fileRef.current?.files?.[0]
-    if (!file) {
+    const original = fileRef.current?.files?.[0]
+    if (!original) {
       setError('Choose or take a photo of the prescription first')
       return
     }
+    // Falls back to the original if the browser couldn't shrink it, or if
+    // submit somehow beat the shrink.
+    const file = ready ?? original
     setBusy(true)
     setError('')
     try {
@@ -174,6 +210,21 @@ export default function PrescriptionsPage() {
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Check it&apos;s sharp and the whole slip is visible.
                 </p>
+                {shrinking ? (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Preparing the photo…
+                  </p>
+                ) : (
+                  savedBytes && (
+                    // Worth saying out loud on a metered connection: it
+                    // explains why sending is quick and that the data cost
+                    // is a fraction of the photo.
+                    <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400">
+                      Shrunk to {formatSize(savedBytes.to)} (from{' '}
+                      {formatSize(savedBytes.from)}) so it sends fast on mobile data.
+                    </p>
+                  )
+                )}
               </div>
               <button
                 type="button"
@@ -199,8 +250,16 @@ export default function PrescriptionsPage() {
             </Field>
           </div>
           {error && <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
-          <Button type="submit" loading={busy} className="mt-5 w-full" size="lg">
-            {busy ? 'Uploading…' : 'Send to a pharmacist'}
+          {/* Blocked while the photo is being prepared — submitting then
+              would send the full-size original and undo the point. */}
+          <Button
+            type="submit"
+            loading={busy || shrinking}
+            disabled={shrinking}
+            className="mt-5 w-full"
+            size="lg"
+          >
+            {shrinking ? 'Preparing photo…' : busy ? 'Uploading…' : 'Send to a pharmacist'}
           </Button>
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
             A pharmacist usually replies within a few hours. You&apos;ll see their answer on this
