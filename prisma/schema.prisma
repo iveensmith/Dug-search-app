@@ -141,6 +141,11 @@ model Drug {
   notifyRequests StockNotifyRequest[]
   reservations   Reservation[]
 
+  // Autocomplete matches genericName and brandNames with a leading-wildcard
+  // ILIKE, which no btree can serve. Two trigram GIN indexes cover it,
+  // declared in migration 20260807090000_search_and_fk_indexes rather than
+  // here: one is on a function of brandNames, which this schema language
+  // has no way to express.
   @@unique([genericName, strength, form])
   @@index([category])
 }
@@ -216,6 +221,7 @@ model PharmacyRating {
 
   @@unique([pharmacyId, userId])
   @@index([pharmacyId, createdAt])
+  @@index([userId]) // FK — cascade on user delete would otherwise scan the table
 }
 
 model SearchLog {
@@ -237,6 +243,7 @@ model SearchLog {
   @@index([userId, createdAt]) // per-user search history
   @@index([state, createdAt]) // state-level demand analytics
   @@index([state, lga, createdAt]) // a pharmacy's own LGA demand feed
+  @@index([drugId]) // FK — SetNull on drug delete would otherwise scan the table
 }
 
 // A patient asking a pharmacy to hold a drug until they get there, and the
@@ -270,6 +277,7 @@ model Reservation {
 
   @@index([userId, createdAt]) // the patient's own list
   @@index([pharmacyId, status, createdAt]) // the counter's queue
+  @@index([drugId]) // FK — cascade on drug delete would otherwise scan the table
 }
 
 // A patient's "email me when this is in stock" request against a
@@ -321,4 +329,5 @@ model PrescriptionMessage {
   sender User               @relation(fields: [senderUserId], references: [id])
 
   @@index([prescriptionUploadId, createdAt])
+  @@index([senderUserId]) // FK — restrict check on user delete would otherwise scan the table
 }
