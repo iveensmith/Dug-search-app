@@ -8,7 +8,35 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 })
 
+/**
+ * This seed deletes everything before it writes, so it must never point at
+ * a real database. DEPLOY.md used to suggest running it against the
+ * production connection string to "fill it with demo data", which would
+ * have taken every registered pharmacy and prescription with it.
+ *
+ * Local hosts only. scripts/seed-production.ts is the one that is safe to
+ * run against a live database — it upserts and deletes nothing.
+ */
+function refuseRemoteDatabase() {
+  const url = process.env.DATABASE_URL ?? ''
+  let host = ''
+  try {
+    host = new URL(url).hostname
+  } catch {
+    throw new Error('DATABASE_URL is missing or unparseable.')
+  }
+  const local = ['localhost', '127.0.0.1', '::1', '0.0.0.0']
+  if (!local.includes(host)) {
+    throw new Error(
+      `Refusing to run: this seed deletes all data and DATABASE_URL points at "${host}", ` +
+        'which is not a local database. Use scripts/seed-production.ts instead — it adds ' +
+        'demo rows without removing anything.',
+    )
+  }
+}
+
 async function main() {
+  refuseRemoteDatabase()
   console.log('Clearing existing data...')
   await prisma.prescriptionMessage.deleteMany()
   await prisma.prescriptionUpload.deleteMany()

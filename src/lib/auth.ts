@@ -2,7 +2,7 @@ import { SignJWT } from 'jose'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from './db'
 import type { Role } from '../generated/prisma/enums'
-import { SESSION_COOKIE, verifySessionToken, type Session } from './session'
+import { SESSION_COOKIE, secretKey, verifySessionToken, type Session } from './session'
 import { BCRYPT_COST, hashPassword, needsRehash, verifyPassword } from './passwords'
 
 // Re-exported so existing imports from '@/lib/auth' keep working; the
@@ -17,10 +17,6 @@ export type { Session }
 export { BCRYPT_COST, hashPassword, needsRehash, verifyPassword }
 
 const SESSION_DAYS = 7
-
-function secretKey() {
-  return new TextEncoder().encode(process.env.JWT_SECRET ?? 'dev-only-secret-change-in-production')
-}
 
 export async function signSession(session: Session): Promise<string> {
   return new SignJWT({ role: session.role })

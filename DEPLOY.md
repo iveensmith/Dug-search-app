@@ -28,11 +28,23 @@ DATABASE_URL="<pooled connection string>" DIRECT_URL="<direct connection string>
 ```
 
 Optional — seed it with the demo pharmacies/drugs so the deployed app isn't
-empty:
+empty. Use the **production** seed, which only adds rows:
 
 ```bash
-DATABASE_URL="<pooled connection string>" npm run db:seed
+SEED_ACCOUNT_PASSWORD="$(node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))")" \
+DATABASE_URL="<pooled connection string>" npx tsx scripts/seed-production.ts
 ```
+
+> **Not `npm run db:seed`.** That is the local development seed and it
+> calls `deleteMany()` on every table first — pointed at a live database it
+> would delete every registered pharmacy, prescription and rating. It now
+> refuses to run against anything but localhost, but do not aim it at
+> production regardless.
+>
+> `SEED_ACCOUNT_PASSWORD` is required and has no default. The demo accounts
+> include an **ADMIN**, and the old shared password is a constant committed
+> to this public repository — anyone could have read it and signed in. Keep
+> whatever you generate in a password manager; it is never printed.
 
 ## 3. Create a Vercel project
 
@@ -48,7 +60,7 @@ DATABASE_URL="<pooled connection string>" npm run db:seed
    |---|---|
    | `DATABASE_URL` | the pooled (port 6543) Supabase connection string |
    | `DIRECT_URL` | the direct (port 5432) Supabase connection string |
-   | `JWT_SECRET` | a fresh random value — generate one locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and paste the output in. **Do not reuse the local dev secret.** |
+   | `JWT_SECRET` (**required**, ≥32 chars — the app refuses to start a session without it) | a fresh random value — generate one locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and paste the output in. **Do not reuse the local dev secret.** |
    | `SUPABASE_URL` | your Supabase project URL |
    | `SUPABASE_SERVICE_ROLE_KEY` | the service_role key from step 1 |
    | `SUPABASE_STORAGE_BUCKET` | `prescriptions` |

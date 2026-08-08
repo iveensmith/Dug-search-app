@@ -14,9 +14,20 @@ const prisma = new PrismaClient({
 })
 
 async function main() {
-  // Through the shared helper, so seeded accounts are written at the
-  // same work factor as real ones rather than a number pinned here.
-  const passwordHash = await hashPassword(SEED_PASSWORD)
+  // SEED_PASSWORD is a constant committed to this repository. Using it for
+  // accounts in a live database — one of which is an ADMIN — would publish
+  // working administrator credentials to anyone who can read GitHub. The
+  // password has to come from the environment, and there is no default.
+  const password = process.env.SEED_ACCOUNT_PASSWORD
+  if (!password || password === SEED_PASSWORD || password.length < 12) {
+    throw new Error(
+      'Set SEED_ACCOUNT_PASSWORD to a strong value before seeding. It must not be the ' +
+        'SEED_PASSWORD constant from prisma/seed-data.ts, which is public. Example:\n' +
+        '  SEED_ACCOUNT_PASSWORD="$(node -e "console.log(require(\'crypto\').randomBytes(18).toString(\'base64url\'))")" \\\n' +
+        '  DATABASE_URL="..." npx tsx scripts/seed-production.ts',
+    )
+  }
+  const passwordHash = await hashPassword(password)
 
   console.log('Upserting admin, pharmacist, and demo patient accounts...')
   await prisma.user.upsert({
@@ -90,10 +101,7 @@ async function main() {
     inventoryRows: await prisma.pharmacyInventory.count(),
   }
   console.log('Production seed complete (existing rows untouched):', counts)
-  // Never printed. These accounts share one password that is committed to
-  // the repository, which is survivable in a local database and is not in
-  // a real one — see the warning at the top of this file.
-  console.log('Demo accounts share the password in prisma/seed-data.ts (SEED_PASSWORD)')
+  console.log('Demo accounts use the SEED_ACCOUNT_PASSWORD you supplied. It is not printed here.')
 }
 
 main()
