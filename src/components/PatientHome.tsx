@@ -79,7 +79,7 @@ const FAQ = [
   },
   {
     q: 'Do you show prices?',
-    a: 'No. Pharmacies set their own prices and they move often, so instead patients rate each pharmacy on fair pricing after a visit. Confirm the price at the counter.',
+    a: 'No. Pharmacies set their own prices and they move often, so instead patients rate each pharmacy on relative affordability after a visit — how its prices compared with others nearby. Confirm the price at the counter.',
   },
   {
     q: 'Can any shop list on MediQuest?',
