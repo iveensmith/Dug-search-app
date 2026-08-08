@@ -99,20 +99,20 @@ enum NigerianState {
 }
 
 model User {
-  id                      String    @id @default(cuid())
+  id                     String         @id @default(cuid())
   // Not globally unique — the same email/phone can have one account per
   // role (e.g. a patient account and a separate pharmacy-owner account),
   // enforced instead by @@unique([email, role]) / @@unique([phone, role])
   // below. Login disambiguates by role (the Patient/Pharmacy portal tab).
-  email                   String?
-  phone                   String?
-  passwordHash            String
-  displayName             String?
-  role                    Role      @default(PATIENT)
-  state                   NigerianState? // patient's home state — pre-fills the search state picker
-  passwordResetTokenHash  String?   @unique // SHA-256 of the emailed token — raw token never stored
-  passwordResetExpiresAt  DateTime?
-  createdAt               DateTime  @default(now())
+  email                  String?
+  phone                  String?
+  passwordHash           String
+  displayName            String?
+  role                   Role           @default(PATIENT)
+  state                  NigerianState? // patient's home state — pre-fills the search state picker
+  passwordResetTokenHash String?        @unique // SHA-256 of the emailed token — raw token never stored
+  passwordResetExpiresAt DateTime?
+  createdAt              DateTime       @default(now())
 
   pharmacy       Pharmacy? // set when role = PHARMACY_OWNER
   uploads        PrescriptionUpload[]  @relation("PatientUploads")
@@ -203,18 +203,18 @@ model PharmacyInventory {
 // updates the existing row rather than stacking, so a single unhappy visit
 // can't be voted repeatedly. Owners cannot rate their own pharmacy.
 model PharmacyRating {
-  id           String   @id @default(cuid())
-  pharmacyId   String
-  userId       String
-  availability Int // did they have the drugs? 1-5
-  service      Int // speed and helpfulness of staff
-  pricing      Int // fair pricing
-  honesty      Int // genuine drugs, honest advice
-  comment      String? // optional free text, shown to other patients
-  ownerReply   String? // the pharmacy's public response to that comment
+  id             String    @id @default(cuid())
+  pharmacyId     String
+  userId         String
+  availability   Int // did they have the drugs? 1-5
+  service        Int // speed and helpfulness of staff
+  pricing        Int // fair pricing
+  honesty        Int // genuine drugs, honest advice
+  comment        String? // optional free text, shown to other patients
+  ownerReply     String? // the pharmacy's public response to that comment
   ownerRepliedAt DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -259,17 +259,17 @@ model SearchLog {
 // twice while one is still open is prevented in the API instead, which
 // returns the open reservation rather than making a second one.
 model Reservation {
-  id          String            @id @default(cuid())
-  userId      String
-  pharmacyId  String
-  drugId      String
-  quantity    Int? // how many packs/units, if the patient said
-  note        String? // e.g. "coming after 5pm" — free text, patient's words
+  id           String            @id @default(cuid())
+  userId       String
+  pharmacyId   String
+  drugId       String
+  quantity     Int? // how many packs/units, if the patient said
+  note         String? // e.g. "coming after 5pm" — free text, patient's words
   contactPhone String? // so the counter can call back; copied from the account or typed in
-  status      ReservationStatus @default(PENDING)
-  collectedAt DateTime? // set when it reaches COLLECTED, whoever marked it
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  status       ReservationStatus @default(PENDING)
+  collectedAt  DateTime? // set when it reaches COLLECTED, whoever marked it
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
@@ -285,11 +285,11 @@ model Reservation {
 // email. Triggered from src/app/api/inventory/route.ts and [id]/route.ts
 // whenever a matching pharmacy in that state marks the drug in stock.
 model StockNotifyRequest {
-  id         String    @id @default(cuid())
+  id         String        @id @default(cuid())
   drugId     String
   state      NigerianState
   email      String
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime      @default(now())
   notifiedAt DateTime? // null = still waiting; set once we've emailed them
 
   drug Drug @relation(fields: [drugId], references: [id], onDelete: Cascade)
@@ -330,4 +330,27 @@ model PrescriptionMessage {
 
   @@index([prescriptionUploadId, createdAt])
   @@index([senderUserId]) // FK — restrict check on user delete would otherwise scan the table
+}
+
+/// Counters behind the sign-in throttle (lib/loginThrottle).
+///
+/// Postgres rather than an in-process Map because the app runs on
+/// serverless functions: a per-instance counter resets whenever the
+/// platform starts a new one, so an attacker gets a fresh allowance for
+/// free and a "locked" account stays open on every other instance. This
+/// is the only state all instances already share.
+///
+/// `key` is either `ip:<address>` or `account:<sha256 of identifier and
+/// portal>` — never a raw email, so the table cannot be read as a list of
+/// who has an account here.
+model AuthThrottle {
+  key           String    @id
+  count         Int       @default(0) // failures in the current window
+  windowStart   DateTime  @default(now())
+  lockedUntil   DateTime? // set once the failure threshold is crossed
+  nextAttemptAt DateTime? // progressive delay between attempts
+  notifiedAt    DateTime? // lockout email already sent for this lock
+  updatedAt     DateTime  @updatedAt
+
+  @@index([updatedAt]) // for pruning rows that have gone quiet
 }

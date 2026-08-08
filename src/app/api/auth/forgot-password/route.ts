@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import crypto from 'crypto'
 import { prisma } from '@/lib/db'
 import { normalizePhone } from '@/lib/auth'
 import { sendPasswordResetEmail } from '@/lib/mail'
+import { issueResetUrl } from '@/lib/passwordReset'
 
 const bodySchema = z.object({ identifier: z.string().min(3).max(200) })
-
-const RESET_TOKEN_TTL_MS = 60 * 60 * 1000 // 1 hour
 
 // Always responds { ok: true } regardless of whether the account exists (or
 // has an email on file) — avoids leaking which identifiers are registered.
@@ -28,17 +26,7 @@ export async function POST(req: NextRequest) {
 
   for (const user of users) {
     if (!user.email) continue
-    const token = crypto.randomBytes(32).toString('hex')
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordResetTokenHash: tokenHash,
-        passwordResetExpiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS),
-      },
-    })
-    const resetUrl = `${req.nextUrl.origin}/reset-password?token=${token}`
-    await sendPasswordResetEmail(user.email, resetUrl)
+    await sendPasswordResetEmail(user.email, await issueResetUrl(user.id, req.nextUrl.origin))
   }
 
   return NextResponse.json({ ok: true })

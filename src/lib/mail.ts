@@ -40,6 +40,38 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
   )
 }
 
+/**
+ * Tells someone their account stopped accepting sign-ins.
+ *
+ * This is the only place the lockout is ever mentioned. The sign-in form
+ * deliberately cannot say it — telling the browser "locked" tells whoever
+ * is guessing that they have found a real account. The person who owns
+ * the address is the one who should hear about it, and this is the
+ * channel only they can read.
+ */
+export async function sendAccountLockedEmail(
+  to: string,
+  minutes: number,
+  resetUrl: string,
+): Promise<void> {
+  await sendEmail(
+    to,
+    'Your MediQuest account is temporarily locked',
+    `
+      <p>Someone tried to sign in to your MediQuest account several times
+      with the wrong password, so we have stopped accepting sign-ins for
+      the next ${minutes} minutes.</p>
+      <p><strong>If this was you</strong> — wait ${minutes} minutes and try
+      again, or <a href="${resetUrl}">set a new password now</a>. That link
+      expires in 1 hour and unlocks the account straight away.</p>
+      <p><strong>If this was not you</strong> — your password has not been
+      changed and nobody has got in. Setting a new password is the safest
+      next step, especially if you use that password anywhere else.</p>
+    `,
+    `account-locked notice for ${to} (${minutes} min): ${resetUrl}`,
+  )
+}
+
 export async function sendStockAvailableEmail(to: string, drugLabel: string, pharmacyName: string): Promise<void> {
   await sendEmail(
     to,
