@@ -47,9 +47,12 @@ export default function ForgotPasswordPage() {
                 <IconCheck width={22} height={22} />
               </div>
               <p className="mt-3 font-medium text-gray-900 dark:text-gray-100">Check your email</p>
+              {/* Deliberately conditional, and shown whether or not the
+                  address is registered — the wording is the whole defence.
+                  The address is not echoed back either: repeating it makes
+                  the sentence read as confirmation even though it isn't. */}
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                If an account exists for <span className="font-medium">{identifier}</span>, a reset
-                link is on its way. It expires in 1 hour.
+                If that email is registered, you&apos;ll receive a reset link. It expires in 1 hour.
               </p>
             </div>
           ) : (

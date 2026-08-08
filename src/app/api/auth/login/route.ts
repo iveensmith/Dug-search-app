@@ -28,23 +28,22 @@ import { sendAccountLockedEmail } from '@/lib/mail'
 import { issueResetUrl } from '@/lib/passwordReset'
 import { PORTAL_ROLES } from '@/lib/roles'
 
-const NO_ACCOUNT_MESSAGE = {
-  pharmacy:
-    'No pharmacy account is registered with that email. Register your pharmacy to create one — you can use the same email as your patient account.',
-  patient: 'No patient account is registered with that email. Create one — it only takes a minute.',
-} as const
-
 /**
- * The one answer given to a wrong password, a locked account, and an
- * attempt made too soon after the last one.
+ * The only answer this route gives to a failed sign-in, whatever the
+ * reason: no account at all, an account on the other portal, the wrong
+ * password, a locked account, or an attempt made too soon after the last
+ * one. One string, one status code, one response body.
  *
- * They have to be indistinguishable. "Too many attempts" confirms to
- * whoever is guessing both that the account is real and that their
- * guesses are landing somewhere worth guessing. The person who owns the
- * account learns about the lockout by email instead — a channel only they
- * can read.
+ * Each of those distinctions is worth something to whoever is guessing.
+ * "No account with that email" sorts a stolen address list into real and
+ * junk without a single password being tried. "Too many attempts"
+ * confirms both that the account exists and that the guessing is being
+ * noticed, which is the cue to slow down and keep going elsewhere.
+ *
+ * The person who owns the account still gets told when it locks — by
+ * email, a channel only they can read.
  */
-const WRONG_CREDENTIALS_MESSAGE = 'Wrong email/phone or password'
+const SIGN_IN_FAILED_MESSAGE = 'Incorrect email or password'
 
 export async function POST(req: NextRequest) {
   // Volume first, before parsing or touching a password hash. This is the
@@ -83,8 +82,8 @@ export async function POST(req: NextRequest) {
   // not, "this one answers instantly" would itself be an answer.
   const key = accountKey(identifier, portal)
   if (await accountIsBlocked(key)) {
-    // Same reply as a wrong password. See WRONG_CREDENTIALS_MESSAGE.
-    return NextResponse.json({ error: WRONG_CREDENTIALS_MESSAGE }, { status: 401 })
+    // Same reply as a wrong password. See SIGN_IN_FAILED_MESSAGE.
+    return NextResponse.json({ error: SIGN_IN_FAILED_MESSAGE }, { status: 401 })
   }
 
   // Email/phone are unique per-role, not globally, so one identifier can
@@ -96,20 +95,18 @@ export async function POST(req: NextRequest) {
     allowed.includes(u.role),
   )
 
-  // Deliberately distinguished from a wrong password: the whole point is to
-  // tell someone that this side of the app has no account for them yet, so
-  // they know to register rather than keep retrying the password. It does
-  // reveal that no account exists on this side for that email — the sign-up
-  // form already gives that away by rejecting duplicates. It still never
-  // says anything about the *other* side.
+  // No account on this portal reads exactly like a wrong password. This
+  // used to say so explicitly, to point a pharmacist whose email is only a
+  // patient account at the right sign-up form; that hint also told anyone
+  // holding a list of addresses which ones are real, for free. The sign-up
+  // routes are linked permanently from the login page instead, where they
+  // are visible to everyone and therefore tell no one anything.
   if (candidates.length === 0) {
     // Still counted. Guessing at an address with no account here must cost
-    // the same as guessing at one that has.
+    // the same as guessing at one that has — otherwise the *speed* of the
+    // answer becomes the thing that gives it away.
     await recordFailure(key)
-    return NextResponse.json(
-      { error: NO_ACCOUNT_MESSAGE[portal], needsAccount: portal },
-      { status: 401 },
-    )
+    return NextResponse.json({ error: SIGN_IN_FAILED_MESSAGE }, { status: 401 })
   }
 
   let user = null
@@ -122,7 +119,7 @@ export async function POST(req: NextRequest) {
   if (!user) {
     const { justLocked } = await recordFailure(key)
     if (justLocked) await notifyLockedOut(candidates, req.nextUrl.origin)
-    return NextResponse.json({ error: WRONG_CREDENTIALS_MESSAGE }, { status: 401 })
+    return NextResponse.json({ error: SIGN_IN_FAILED_MESSAGE }, { status: 401 })
   }
 
   // Signing in clears the history — a run of failures that ended in the

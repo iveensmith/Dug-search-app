@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { normalizePhone } from '@/lib/auth'
 import { sendPasswordResetEmail } from '@/lib/mail'
 import { issueResetUrl } from '@/lib/passwordReset'
+import { INVALID_INPUT_MESSAGE } from '@/lib/authValidation'
 
 const bodySchema = z.object({ identifier: z.string().min(3).max(200) })
 
@@ -16,7 +17,10 @@ const bodySchema = z.object({ identifier: z.string().min(3).max(200) })
 export async function POST(req: NextRequest) {
   const parsed = bodySchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Enter your email or phone' }, { status: 400 })
+    // Same generic reply as the other auth routes. Everything past this
+    // point already answers { ok: true } whether or not the account
+    // exists, so this is the only line that could have said otherwise.
+    return NextResponse.json({ error: INVALID_INPUT_MESSAGE }, { status: 400 })
   }
 
   const id = parsed.data.identifier.trim()

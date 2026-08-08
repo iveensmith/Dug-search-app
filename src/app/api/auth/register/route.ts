@@ -61,17 +61,23 @@ export async function POST(req: NextRequest) {
     return res
   } catch (e) {
     // The unique constraint is [email, role], so this only fires when an
-    // account of *this* type already exists. Say which, so someone whose
-    // email is already a patient account isn't told to go and log in when
-    // what they actually just did was create their pharmacy account.
+    // account of this type already exists. The reply used to say so, and
+    // which type — which turned sign-up into a way of testing whether an
+    // address is registered here, without needing a password at all.
+    //
+    // It now says neither. What is left is a true statement that fits both
+    // a taken address and a rejected one, and points at the two things
+    // that help if the address really is yours.
+    //
+    // This narrows the gap rather than closing it: the response is still
+    // a 409, and still arrives faster than a successful sign-up (which
+    // hashes a password first). Closing it properly means not deciding
+    // here at all — accept every sign-up, send a mail either way, and let
+    // the link in it be the thing that proves the address. That is a
+    // verification flow, and a bigger change than a string.
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       return NextResponse.json(
-        {
-          error:
-            accountType === 'pharmacy'
-              ? 'A pharmacy account with that email already exists — log in on the pharmacy tab instead.'
-              : 'A patient account with that email already exists — log in instead.',
-        },
+        { error: 'Could not create that account. Try logging in, or reset your password.' },
         { status: 409 },
       )
     }

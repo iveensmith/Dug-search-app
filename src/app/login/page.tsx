@@ -56,22 +56,17 @@ function LoginForm() {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  // Set when the email has no account on this side of the app — turns the
-  // error into a link to the right sign-up form instead of a dead end.
-  const [needsAccount, setNeedsAccount] = useState<Portal | null>(null)
   const [busy, setBusy] = useState(false)
 
   function switchPortal(to: Portal) {
     setPortal(to)
     setError('')
-    setNeedsAccount(null)
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError('')
-    setNeedsAccount(null)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -81,9 +76,6 @@ function LoginForm() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error ?? 'Login failed')
-        if (data.needsAccount === 'patient' || data.needsAccount === 'pharmacy') {
-          setNeedsAccount(data.needsAccount)
-        }
         return
       }
       setWelcomeName(data.user.displayName)
@@ -153,27 +145,13 @@ function LoginForm() {
               </Link>
             </div>
 
+            {/* One message for every kind of failure. The sign-up routes
+                are linked below the form, permanently and for everyone —
+                showing them only after a failed attempt would say which
+                addresses are registered. */}
             {error && (
               <div className="rounded-xl bg-red-50 p-3 dark:bg-red-950/40">
                 <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
-                {needsAccount === 'pharmacy' && (
-                  <Link
-                    href={`/register?type=pharmacy&next=${encodeURIComponent(next ?? '/pharmacy')}`}
-                    className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-800 underline underline-offset-2 dark:text-red-300"
-                  >
-                    Create a pharmacy account
-                    <IconChevronRight width={15} height={15} />
-                  </Link>
-                )}
-                {needsAccount === 'patient' && (
-                  <Link
-                    href={`/register?next=${encodeURIComponent(next ?? '/')}`}
-                    className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-red-800 underline underline-offset-2 dark:text-red-300"
-                  >
-                    Create a patient account
-                    <IconChevronRight width={15} height={15} />
-                  </Link>
-                )}
               </div>
             )}
 
