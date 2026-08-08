@@ -5,10 +5,12 @@ import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OwnerRatingCard from '@/components/OwnerRatingCard'
+import type { RatingSummary } from '@/lib/ratings'
 import { drugLabel, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
 import {
   IconAlertCircle,
+  IconChevronRight,
   IconClipboardList,
   IconClock,
   IconDownload,
@@ -27,6 +29,9 @@ type Pharmacy = {
   lga: string | null
   verificationStatus: string
 }
+
+const statTileClass =
+  'rounded-2xl border border-gray-200 bg-white p-4 text-center dark:border-gray-800 dark:bg-gray-900 sm:p-5'
 
 type RecentSearch = { id: string; drug: DrugSuggestion | null; youStock: boolean }
 
@@ -63,6 +68,8 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
   const [searches, setSearches] = useState<RecentSearch[] | null>(null)
   const [scope, setScope] = useState<Scope | null>(null)
   const [noPharmacy, setNoPharmacy] = useState(false)
+  // Reported by the rating card below rather than fetched again here.
+  const [ratingSummary, setRatingSummary] = useState<RatingSummary | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -175,7 +182,10 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         </div>
       )}
 
-      <dl className="mt-8 grid grid-cols-3 gap-3 sm:gap-4">
+      {/* Two across on a phone, four on anything wider: four tiles side by
+          side on a 390px screen leaves each about 85px, which the numbers
+          outgrow as soon as a shop lists a hundred drugs. */}
+      <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {[
           ['Drugs listed', counts?.total],
           ['In stock', inStock],
@@ -183,7 +193,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         ].map(([label, value]) => (
           <div
             key={label as string}
-            className="rounded-2xl border border-gray-200 bg-white p-4 text-center dark:border-gray-800 dark:bg-gray-900 sm:p-5"
+            className={statTileClass}
           >
             <dd className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-50">
               {counts === null ? '—' : (value as number)}
@@ -193,6 +203,30 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             </dt>
           </div>
         ))}
+
+        {/* The only tile that goes anywhere, so it is the only one drawn as
+            a link — a tile that looks identical to three dead ones but
+            happens to be clickable is a thing nobody finds. */}
+        <Link
+          href="/pharmacy/ratings"
+          className={`${statTileClass} group transition-colors hover:border-emerald-300 hover:bg-emerald-50/60 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/5`}
+        >
+          <dd className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-50">
+            {ratingSummary === null
+              ? '—'
+              : ratingSummary.count === 0
+                ? '—'
+                : ratingSummary.overall!.toFixed(1)}
+          </dd>
+          <dt className="mt-1 flex items-center justify-center gap-0.5 text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400">
+            {ratingSummary && ratingSummary.count === 0 ? 'No ratings yet' : 'Rating'}
+            <IconChevronRight
+              width={13}
+              height={13}
+              className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-600 dark:text-gray-600 dark:group-hover:text-emerald-400"
+            />
+          </dt>
+        </Link>
       </dl>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -277,7 +311,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             Your rating
           </p>
           <div className="mt-3">
-            <OwnerRatingCard pharmacyId={pharmacy.id} />
+            <OwnerRatingCard pharmacyId={pharmacy.id} onSummary={setRatingSummary} />
           </div>
         </section>
       )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Field'
@@ -8,7 +8,7 @@ import RatingStars from '@/components/RatingStars'
 import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
 import { IconAlertCircle } from '@/components/ui/icons'
 
-type Comment = {
+export type Comment = {
   id: string
   comment: string
   createdAt: string
@@ -42,7 +42,7 @@ function dimensionList() {
  * Owner-facing view of their own rating: the score patients see, broken
  * down by dimension, plus the note explaining what they're judged on.
  */
-function ReplyBox({
+export function ReplyBox({
   pharmacyId,
   comment,
   onSaved,
@@ -106,9 +106,24 @@ function ReplyBox({
   )
 }
 
-export default function OwnerRatingCard({ pharmacyId }: { pharmacyId: string }) {
+export default function OwnerRatingCard({
+  pharmacyId,
+  onSummary,
+}: {
+  pharmacyId: string
+  /** Lets the page show the score in its stats row without fetching it a
+   *  second time — this card is already asking for it. */
+  onSummary?: (summary: RatingSummary) => void
+}) {
   const [summary, setSummary] = useState<RatingSummary | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
+
+  // Held in a ref, and kept current in its own effect, so an inline arrow
+  // from the parent cannot re-trigger the fetch on every render above.
+  const onSummaryRef = useRef(onSummary)
+  useEffect(() => {
+    onSummaryRef.current = onSummary
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -118,6 +133,7 @@ export default function OwnerRatingCard({ pharmacyId }: { pharmacyId: string }) 
         if (cancelled || !data) return
         setSummary(data.summary)
         setComments(data.comments ?? [])
+        onSummaryRef.current?.(data.summary)
       })
       .catch(() => {})
     return () => {
