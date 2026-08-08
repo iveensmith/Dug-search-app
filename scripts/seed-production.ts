@@ -4,17 +4,19 @@
 // safe to run against a database that already has real registered users.
 // Run with: DATABASE_URL="<pooled connection string>" npx tsx scripts/seed-production.ts
 import 'dotenv/config'
-import bcrypt from 'bcryptjs'
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { SEED_PASSWORD, DRUGS, PHARMACIES, inventoryFor } from '../prisma/seed-data'
+import { hashPassword } from '../src/lib/auth'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 })
 
 async function main() {
-  const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10)
+  // Through the shared helper, so seeded accounts are written at the
+  // same work factor as real ones rather than a number pinned here.
+  const passwordHash = await hashPassword(SEED_PASSWORD)
 
   console.log('Upserting admin, pharmacist, and demo patient accounts...')
   await prisma.user.upsert({
@@ -88,7 +90,10 @@ async function main() {
     inventoryRows: await prisma.pharmacyInventory.count(),
   }
   console.log('Production seed complete (existing rows untouched):', counts)
-  console.log(`All demo accounts use password "${SEED_PASSWORD}"`)
+  // Never printed. These accounts share one password that is committed to
+  // the repository, which is survivable in a local database and is not in
+  // a real one — see the warning at the top of this file.
+  console.log('Demo accounts share the password in prisma/seed-data.ts (SEED_PASSWORD)')
 }
 
 main()

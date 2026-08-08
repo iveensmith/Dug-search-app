@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
   findUsersByIdentifier,
+  hashPassword,
+  needsRehash,
   setSessionCookie,
   signSession,
   verifyPassword,
 } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import {
   INVALID_INPUT_MESSAGE,
   loginSchema,
@@ -127,11 +130,40 @@ export async function POST(req: NextRequest) {
   await clearFailures(key)
   void pruneOccasionally()
 
+  // The one moment the plaintext is in hand and known to be correct, and
+  // so the only moment an old hash can be replaced with a current one.
+  // Raising the work factor does nothing for accounts that already exist
+  // until each of them signs in once; this is how they get there, without
+  // anyone being asked to do anything.
+  if (needsRehash(user.passwordHash)) {
+    await upgradeHash(user.id, password)
+  }
+
   const res = NextResponse.json({
     user: { id: user.id, role: user.role, displayName: user.displayName },
   })
   setSessionCookie(res, await signSession({ userId: user.id, role: user.role }))
   return res
+}
+
+/**
+ * Rewrites one account's password hash at the current work factor.
+ *
+ * Guarded so it can never cost anyone their sign-in. They typed the right
+ * password; the session is already earned. If the write fails — a dropped
+ * connection, a pooler hiccup — the old hash stays, which still works,
+ * and the next sign-in tries again.
+ */
+async function upgradeHash(userId: string, password: string): Promise<void> {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await hashPassword(password) },
+    })
+  } catch (e) {
+    // No password in the message — only that one row could not be rewritten.
+    console.error('[auth] could not upgrade a password hash', { userId, error: String(e) })
+  }
 }
 
 /**

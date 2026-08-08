@@ -1,9 +1,9 @@
-import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from './db'
 import type { Role } from '../generated/prisma/enums'
 import { SESSION_COOKIE, verifySessionToken, type Session } from './session'
+import { BCRYPT_COST, hashPassword, needsRehash, verifyPassword } from './passwords'
 
 // Re-exported so existing imports from '@/lib/auth' keep working; the
 // cookie name and the verify live in lib/session, which carries no
@@ -11,18 +11,15 @@ import { SESSION_COOKIE, verifySessionToken, type Session } from './session'
 export { SESSION_COOKIE }
 export type { Session }
 
+// Password hashing lives in lib/passwords, which carries no Prisma or
+// next/server import so the seed scripts can use it too. Re-exported here
+// because every route already imports its auth helpers from this module.
+export { BCRYPT_COST, hashPassword, needsRehash, verifyPassword }
+
 const SESSION_DAYS = 7
 
 function secretKey() {
   return new TextEncoder().encode(process.env.JWT_SECRET ?? 'dev-only-secret-change-in-production')
-}
-
-export function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10)
-}
-
-export function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash)
 }
 
 export async function signSession(session: Session): Promise<string> {

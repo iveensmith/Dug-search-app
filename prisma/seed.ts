@@ -1,8 +1,8 @@
 import 'dotenv/config'
-import bcrypt from 'bcryptjs'
 import { PrismaClient } from '../src/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { SEED_PASSWORD, DRUGS, PHARMACIES, inventoryFor } from './seed-data'
+import { hashPassword } from '../src/lib/auth'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -18,7 +18,9 @@ async function main() {
   await prisma.user.deleteMany()
   await prisma.drug.deleteMany()
 
-  const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10)
+  // Through the shared helper, so seeded accounts are written at the
+  // same work factor as real ones rather than a number pinned here.
+  const passwordHash = await hashPassword(SEED_PASSWORD)
 
   console.log('Creating admin, pharmacist, and patient accounts...')
   await prisma.user.create({
@@ -76,7 +78,10 @@ async function main() {
     inventoryRows: await prisma.pharmacyInventory.count(),
   }
   console.log('Seed complete:', counts)
-  console.log(`All seed accounts use password "${SEED_PASSWORD}"`)
+  // The password itself is not printed. It is a constant in seed-data.ts
+  // for anyone who needs it, and a log line is the easiest place for a
+  // credential to end up somewhere it was never meant to be read.
+  console.log('All seed accounts share the password in prisma/seed-data.ts (SEED_PASSWORD)')
 }
 
 main()
