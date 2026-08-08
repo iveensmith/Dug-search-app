@@ -14,6 +14,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import { IconShieldCheck, IconStore, IconUser } from '@/components/ui/icons'
 
 type Me = { id: string; email: string | null; displayName: string | null; role: string }
+type Pos = { lat: number; lng: number }
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
@@ -46,6 +47,7 @@ export default function PharmacyRegisterPage() {
   const [pinConfirmed, setPinConfirmed] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
   const [geocodeNote, setGeocodeNote] = useState('')
+  const [placeQuery, setPlaceQuery] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [step, setStep] = useState(0) // 0 details · 1 location · 2 confirm
@@ -99,35 +101,81 @@ export default function PharmacyRegisterPage() {
     }
   }
 
-  async function geocodeAddress() {
+  /**
+   * Accepts either a place to look up or a pair of coordinates.
+   *
+   * Coordinates are here because they are the reliable path: OSM's
+   * address coverage across Nigeria is thin, so a shop on a street the
+   * map has never heard of can still be placed exactly by pasting what
+   * Google Maps gives when you long-press a spot and copy it.
+   */
+  function parseCoordinates(text: string): Pos | null {
+    const m = text.trim().match(/^(-?\d{1,2}(?:\.\d+)?)\s*[, ]\s*(-?\d{1,3}(?:\.\d+)?)$/)
+    if (!m) return null
+    const lat = parseFloat(m[1])
+    const lng = parseFloat(m[2])
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null
+    // Nigeria only, roughly. Coordinates the wrong way round — the most
+    // common paste mistake — land outside it and are caught here rather
+    // than dropping a pharmacy in the sea off Ghana.
+    if (lat < 3.5 || lat > 14.5 || lng < 2 || lng > 15.5) return null
+    return { lat, lng }
+  }
+
+  async function lookupPlace(rawQuery: string, { fromAddressField = false } = {}) {
+    const text = rawQuery.trim()
+
+    const coords = parseCoordinates(text)
+    if (coords) {
+      setPosition(coords)
+      setPinConfirmed(false)
+      setGeocodeNote('Moved to those coordinates — check the pin is on your building.')
+      return
+    }
+    if (/^[-\d\s.,]+$/.test(text) && text.length > 3) {
+      setGeocodeNote('That looks like coordinates but not a spot in Nigeria. Use "latitude, longitude", e.g. 5.0377, 7.9128')
+      return
+    }
+
     if (!selectedState) {
-      setGeocodeNote('Select your state first, then the address search will be accurate')
+      setGeocodeNote('Select your state first, then the search will be accurate')
       return
     }
-    if (form.address.trim().length < 5) {
-      setGeocodeNote('Type the street address first')
+    if (text.length < 5) {
+      setGeocodeNote(
+        fromAddressField
+          ? 'Type the street address first'
+          : 'Type a place name, or paste coordinates as "latitude, longitude"',
+      )
       return
     }
+
     setGeocoding(true)
     setGeocodeNote('')
     try {
-      const q = `${form.address}, ${stateLabel(selectedState)}, Nigeria`
+      const q = `${text}, ${stateLabel(selectedState)}, Nigeria`
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
       )
       const data = await res.json()
       if (Array.isArray(data) && data.length > 0) {
         setPosition({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) })
-        setGeocodeNote('Found a match — now drag the pin to your exact shopfront')
+        setPinConfirmed(false)
+        setGeocodeNote('Found a match — now move the map so the pin sits on your shopfront')
       } else {
-        setGeocodeNote('Address not found on the map — place the pin manually below')
+        setGeocodeNote(
+          'Not found on the map. Try a nearby landmark, or paste coordinates from Google Maps as "latitude, longitude".',
+        )
       }
     } catch {
-      setGeocodeNote('Could not reach the map service — place the pin manually below')
+      setGeocodeNote('Could not reach the map service — move the map by hand instead')
     } finally {
       setGeocoding(false)
     }
   }
+
+  const geocodeAddress = () => lookupPlace(form.address, { fromAddressField: true })
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -388,14 +436,57 @@ export default function PharmacyRegisterPage() {
               <div>
                 <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Pin your exact location{' '}
-                  <span className="font-normal text-gray-500 dark:text-gray-400">(drag the pin or tap the map)</span>
+                  <span className="font-normal text-gray-500 dark:text-gray-400">
+                    (move the map so the pin sits on your shopfront)
+                  </span>
                 </p>
                 <Button type="button" variant="outline" size="sm" onClick={geocodeAddress} loading={geocoding} className="mb-2">
                   {geocoding ? 'Searching…' : 'Find my address on the map'}
                 </Button>
+
+                {/* The typed way in, for anyone who would rather not drag a
+                    map at all. It takes a landmark to look up, or a pair of
+                    coordinates pasted straight from Google Maps — which is
+                    the dependable route where OSM has never heard of the
+                    street. Enter submits it without submitting the form. */}
+                <div className="mb-2 flex gap-2">
+                  <Input
+                    id="placeQuery"
+                    value={placeQuery}
+                    onChange={(e) => setPlaceQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        void lookupPlace(placeQuery)
+                      }
+                    }}
+                    placeholder="Or type a landmark, or paste 5.0377, 7.9128"
+                    aria-label="Search for a place, or paste coordinates"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    loading={geocoding}
+                    onClick={() => void lookupPlace(placeQuery)}
+                  >
+                    Go
+                  </Button>
+                </div>
+
                 {geocodeNote && <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">{geocodeNote}</p>}
                 <div className="map-tiles h-72 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700">
-                  <LocationPicker position={position} onChange={(p) => { setPosition(p); setPinConfirmed(true) }} />
+                  {/* The tick follows the map, but only when the owner moved it —
+                      a programmatic recentre (picking a state, a place
+                      search) must not confirm a pin on their behalf. */}
+                  <LocationPicker
+                    position={position}
+                    onChange={(p, source) => {
+                      setPosition(p)
+                      if (source === 'user') setPinConfirmed(true)
+                    }}
+                  />
                 </div>
                 <label className="mt-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                   <input
