@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
-import OwnerRatingCard from '@/components/OwnerRatingCard'
 import type { RatingSummary } from '@/lib/ratings'
 import { drugLabel, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
@@ -85,6 +84,15 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         if (cancelled || !data) return
         setPharmacy(data.pharmacy)
         setCounts({ total: data.total ?? 0, inStock: data.inStockCount ?? 0 })
+      })
+      .catch(() => {})
+    // Just the summary — limit=1 because the tile needs the average, not
+    // the ratings themselves. The full list lives on /pharmacy/ratings.
+    fetch('/api/pharmacy/ratings?limit=1')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return
+        setRatingSummary(data.summary ?? null)
       })
       .catch(() => {})
     fetch('/api/pharmacy/recent-searches')
@@ -300,21 +308,6 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           </ul>
         )}
       </section>
-
-      {/* Beneath the demand list, above the actions: worth seeing every
-          visit, but not the thing an owner came here to do. Gated on the
-          pharmacy having loaded — the card fetches by id, and a heading
-          with nothing under it is worse than no heading. */}
-      {pharmacy && (
-        <section className="mt-12 border-t border-gray-200/80 pt-8 dark:border-gray-800/80">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-            Your rating
-          </p>
-          <div className="mt-3">
-            <OwnerRatingCard pharmacyId={pharmacy.id} onSummary={setRatingSummary} />
-          </div>
-        </section>
-      )}
 
       <section className="mt-12 border-t border-gray-200/80 pt-8 dark:border-gray-800/80">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">

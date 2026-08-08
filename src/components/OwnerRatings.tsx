@@ -5,10 +5,10 @@ import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import RatingStars from '@/components/RatingStars'
 import LoadMore from '@/components/ui/LoadMore'
-import { ReplyBox } from '@/components/OwnerRatingCard'
+import { ReplyBox } from '@/components/RatingReplyBox'
 import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
 import { relativeTime } from '@/lib/types'
-import { IconChevronRight, IconStore } from '@/components/ui/icons'
+import { IconAlertCircle, IconChevronRight, IconStore } from '@/components/ui/icons'
 
 type Rating = {
   id: string
@@ -21,6 +21,28 @@ type Rating = {
 }
 
 const PAGE_SIZE = 20
+
+const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six']
+
+/**
+ * The dimension names as a sentence, read straight off RATING_DIMENSIONS.
+ *
+ * This paragraph used to spell them out by hand, and duly went stale the
+ * moment two of them were renamed — an owner was still being told they
+ * are judged on "drug availability" and "cost" while the bars below said
+ * otherwise. Deriving it means the prose cannot disagree with the chart
+ * beneath it again, and the count word follows the list too.
+ *
+ * formatToParts rather than format: it keeps the separators and the names
+ * apart, so each name can stay bold.
+ */
+function dimensionList() {
+  return new Intl.ListFormat('en', { type: 'conjunction' })
+    .formatToParts(RATING_DIMENSIONS.map((d) => d.label.toLowerCase()))
+    .map((part, i) =>
+      part.type === 'element' ? <strong key={i}>{part.value}</strong> : <span key={i}>{part.value}</span>,
+    )
+}
 
 export default function OwnerRatings() {
   const [pharmacyId, setPharmacyId] = useState<string | null>(null)
@@ -119,6 +141,16 @@ export default function OwnerRatings() {
                 count={summary.count}
                 size={18}
               />
+            </div>
+
+            <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-relaxed text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200">
+              <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0 text-blue-500 dark:text-blue-400" />
+              <p>
+                <span className="font-semibold">Patients rate your pharmacy</span> on{' '}
+                {COUNT_WORDS[RATING_DIMENSIONS.length] ?? RATING_DIMENSIONS.length} things:{' '}
+                {dimensionList()}. Your score shows on every search result, so keeping your stock
+                list accurate and your prices fair directly affects how many patients choose you.
+              </p>
             </div>
 
             {!summary.scored && (
