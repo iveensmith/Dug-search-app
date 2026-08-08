@@ -2,32 +2,51 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { hashPassword, setSessionCookie, signSession } from '@/lib/auth'
+import {
+  INVALID_INPUT_MESSAGE,
+  logValidationFailure,
+  readJsonBody,
+  registerSchema,
+} from '@/lib/authValidation'
 import { isValidState } from '@/lib/states'
 import { Prisma } from '@/generated/prisma/client'
 
 // Sign-up: email is the only login identifier. accountType picks the role —
 // 'patient' (default) or 'pharmacy' for a pharmacy owner account, which is
 // what /pharmacy/register requires before an outlet can be added.
-const bodySchema = z.object({
-  email: z.string().email().max(200),
-  displayName: z.string().min(2).max(80).optional(),
-  password: z.string().min(8).max(200),
-  state: z.string().refine(isValidState, { message: 'Select a valid state' }).optional(),
-  accountType: z.enum(['patient', 'pharmacy']).optional(),
+//
+// The field rules live in lib/authValidation, shared with sign-in so the
+// two endpoints cannot drift apart on what an email or a password is.
+const bodySchema = registerSchema.extend({
+  state: z.string().refine(isValidState).optional(),
 })
 
 export async function POST(req: NextRequest) {
-  const parsed = bodySchema.safeParse(await req.json().catch(() => null))
+  // Validated server-side regardless of what the form checked first.
+  const body = await readJsonBody(req)
+  const parsed = bodySchema.safeParse(body)
   if (!parsed.success) {
-    const issue = parsed.error.issues[0]
-    return NextResponse.json({ error: issue.message }, { status: 400 })
+    logValidationFailure(
+      'auth/register',
+      req,
+      parsed.error,
+      typeof (body as { email?: unknown })?.email === 'string'
+        ? (body as { email: string }).email
+        : undefined,
+    )
+    // Deliberately says nothing about which field was wrong. The form
+    // already shows the per-field rules as you type; this is the reply to
+    // a caller that skipped the form.
+    return NextResponse.json({ error: INVALID_INPUT_MESSAGE }, { status: 400 })
   }
+  // email is lowercased and trimmed, displayName is stripped of markup and
+  // re-checked, by the schema above — these are the cleaned values.
   const { email, displayName, password, state, accountType } = parsed.data
 
   try {
     const user = await prisma.user.create({
       data: {
-        email: email.toLowerCase(),
+        email,
         displayName,
         passwordHash: await hashPassword(password),
         role: accountType === 'pharmacy' ? 'PHARMACY_OWNER' : 'PATIENT',

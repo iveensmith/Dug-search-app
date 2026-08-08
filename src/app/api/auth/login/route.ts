@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import {
   findUsersByIdentifier,
   setSessionCookie,
   signSession,
   verifyPassword,
 } from '@/lib/auth'
+import {
+  INVALID_INPUT_MESSAGE,
+  loginSchema,
+  logValidationFailure,
+  readJsonBody,
+} from '@/lib/authValidation'
 import { PORTAL_ROLES } from '@/lib/roles'
-
-const bodySchema = z.object({
-  identifier: z.string().min(3).max(200), // email or phone
-  password: z.string().min(1).max(200),
-  // Which portal tab the login form had open. Defaults to the patient tab
-  // so a body without it can't quietly skip the role check below.
-  portal: z.enum(['patient', 'pharmacy']).default('patient'),
-})
 
 const NO_ACCOUNT_MESSAGE = {
   pharmacy:
@@ -23,9 +20,22 @@ const NO_ACCOUNT_MESSAGE = {
 } as const
 
 export async function POST(req: NextRequest) {
-  const parsed = bodySchema.safeParse(await req.json().catch(() => null))
+  // Every rule runs here, on the body as it arrived. What the form did
+  // before sending it is not evidence of anything.
+  const body = await readJsonBody(req)
+  const parsed = loginSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Enter your email/phone and password' }, { status: 400 })
+    logValidationFailure(
+      'auth/login',
+      req,
+      parsed.error,
+      typeof (body as { identifier?: unknown })?.identifier === 'string'
+        ? (body as { identifier: string }).identifier
+        : undefined,
+    )
+    // One reply for every shape of bad input, so probing the endpoint
+    // tells you nothing about which field it disliked.
+    return NextResponse.json({ error: INVALID_INPUT_MESSAGE }, { status: 400 })
   }
   const { identifier, password, portal } = parsed.data
 

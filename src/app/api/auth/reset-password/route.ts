@@ -3,16 +3,25 @@ import { z } from 'zod'
 import crypto from 'crypto'
 import { prisma } from '@/lib/db'
 import { hashPassword, setSessionCookie, signSession } from '@/lib/auth'
+import {
+  INVALID_INPUT_MESSAGE,
+  logValidationFailure,
+  newPasswordSchema,
+  readJsonBody,
+} from '@/lib/authValidation'
 
+// Same password rule as sign-up — this route also decides what gets
+// hashed and stored, so it cannot be the lenient way in.
 const bodySchema = z.object({
-  token: z.string().min(10),
-  password: z.string().min(8).max(200),
+  token: z.string().min(10).max(200),
+  password: newPasswordSchema,
 })
 
 export async function POST(req: NextRequest) {
-  const parsed = bodySchema.safeParse(await req.json().catch(() => null))
+  const parsed = bodySchema.safeParse(await readJsonBody(req))
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Enter a password with at least 8 characters' }, { status: 400 })
+    logValidationFailure('auth/reset-password', req, parsed.error)
+    return NextResponse.json({ error: INVALID_INPUT_MESSAGE }, { status: 400 })
   }
   const { token, password } = parsed.data
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
