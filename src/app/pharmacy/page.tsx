@@ -16,7 +16,6 @@ import Badge from '@/components/ui/Badge'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import { Field, Input, Select } from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
-import OwnerRatingCard from '@/components/OwnerRatingCard'
 import LoadMore from '@/components/ui/LoadMore'
 import OwnerReservations, { type OwnerReservation } from '@/components/OwnerReservations'
 import { isOpen } from '@/lib/reservations'
@@ -1276,13 +1275,9 @@ function PharmacyDashboard() {
 
           {tab === 'bulk' && <BulkUploadPanel onImported={load} itemCount={inventoryTotal} />}
 
-          {/* Below the working area — the stock list is what an owner opens
-              this page to do; their score is something to check on, not to
-              be met by every time. */}
-          <div className="mt-8">
-            <OwnerRatingCard pharmacyId={pharmacy.id} />
-          </div>
-
+          {/* The rating lives on the overview now — this page is for
+              working the stock list, and a score is something to check on
+              rather than to be met by while doing it. */}
           <DeleteOutletCard pharmacy={pharmacy} />
         </>
       )}
