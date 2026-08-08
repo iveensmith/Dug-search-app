@@ -199,7 +199,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               const value = ratings.averages![key]
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <dt className="w-28 shrink-0 text-sm text-gray-600 dark:text-gray-400">{label}</dt>
+                  <dt className="w-36 shrink-0 text-sm leading-tight text-gray-600 dark:text-gray-400">{label}</dt>
                   <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
                     <div
                       className="h-full rounded-full bg-emerald-500"

@@ -1,13 +1,26 @@
 // The four things patients judge a pharmacy on. Shared by the rating form,
 // the summary display and the owner's dashboard so the wording never drifts.
+// The `key` of each dimension is also its column name on PharmacyRating.
+// Wording can change here without touching the database, and it has —
+// these are labels, not keys.
 export const RATING_DIMENSIONS = [
   {
     key: 'availability',
-    label: 'Drug availability',
-    hint: 'Did they actually have what you came for?',
+    // Was "Drug availability", which asked whether they happened to have
+    // it — mostly luck, and not really the pharmacy's doing. What matters
+    // on this app is whether the listing that sent someone across town
+    // was true, which is a thing a pharmacy controls.
+    label: 'Stock transparency',
+    hint: 'Was what they listed here actually there?',
   },
   { key: 'service', label: 'Service', hint: 'Speed and helpfulness of the staff' },
-  { key: 'pricing', label: 'Cost', hint: 'Was the price fair?' },
+  {
+    key: 'pricing',
+    // "Cost" invited a score for being expensive. The useful question is
+    // how the price compared with everywhere else nearby.
+    label: 'Relative affordability',
+    hint: 'Fair price compared with other pharmacies nearby?',
+  },
   { key: 'honesty', label: 'Honesty', hint: 'Genuine drugs and straight answers' },
 ] as const
 
