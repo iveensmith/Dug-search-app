@@ -9,12 +9,12 @@ import { drugLabel, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
 import {
   IconAlertCircle,
-  IconChevronRight,
   IconClipboardList,
   IconClock,
   IconDownload,
   IconPlus,
   IconSearch,
+  IconStar,
   IconStore,
   IconUser,
   type IconProps,
@@ -212,29 +212,18 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           </div>
         ))}
 
-        {/* The only tile that goes anywhere, so it is the only one drawn as
-            a link — a tile that looks identical to three dead ones but
-            happens to be clickable is a thing nobody finds. */}
-        <Link
-          href="/pharmacy/ratings"
-          className={`${statTileClass} group transition-colors hover:border-emerald-300 hover:bg-emerald-50/60 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/5`}
-        >
+        {/* A number to glance at, nothing to click — the way through to the
+            ratings is the button below, where the other actions live. */}
+        <div className={statTileClass}>
           <dd className="text-2xl font-bold text-gray-900 sm:text-3xl dark:text-gray-50">
-            {ratingSummary === null
+            {ratingSummary === null || ratingSummary.count === 0
               ? '—'
-              : ratingSummary.count === 0
-                ? '—'
-                : ratingSummary.overall!.toFixed(1)}
+              : ratingSummary.overall!.toFixed(1)}
           </dd>
-          <dt className="mt-1 flex items-center justify-center gap-0.5 text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400">
+          <dt className="mt-1 text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400">
             {ratingSummary && ratingSummary.count === 0 ? 'No ratings yet' : 'Rating'}
-            <IconChevronRight
-              width={13}
-              height={13}
-              className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-600 dark:text-gray-600 dark:group-hover:text-emerald-400"
-            />
           </dt>
-        </Link>
+        </div>
       </dl>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -251,6 +240,13 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         >
           <IconPlus width={18} height={18} />
           Add a drug
+        </Link>
+        <Link
+          href="/pharmacy/ratings"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-600/60 px-5 py-3 font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
+        >
+          <IconStar width={18} height={18} />
+          See your ratings
         </Link>
       </div>
 

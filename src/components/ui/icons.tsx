@@ -245,3 +245,11 @@ export function IconBookmark(props: IconProps) {
     </svg>
   )
 }
+
+export function IconStar(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6.1L12 16.8 6.7 19.7l1.1-6.1L3.4 9.4l6-.8L12 3z" />
+    </svg>
+  )
+}
