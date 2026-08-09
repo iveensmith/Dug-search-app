@@ -36,6 +36,7 @@ import {
   IconChevronDown,
   IconChevronRight,
   IconClipboardList,
+  IconClock,
   IconMapPin,
   IconMessageCircle,
   IconPhone,
@@ -43,10 +44,21 @@ import {
   IconSearch,
   IconShieldCheck,
   IconStore,
+  IconUser,
   IconX,
 } from '@/components/ui/icons'
 
-const TRUST_BADGES = ['PCN-verified pharmacies', 'Licensed pharmacists', 'Stock kept up to date', 'Secure & private']
+// Four identical shields said nothing about which promise was which. Each
+// now carries the icon for the thing it is actually about — and each is a
+// claim the code keeps: the approval gate in api/pharmacies/register, the
+// pharmacist accounts only an admin can create, the 24-hour decay in
+// stockFreshness, and the ownership check on the prescription image route.
+const TRUST_BADGES = [
+  { label: 'PCN-verified pharmacies', Icon: IconStore },
+  { label: 'Licensed pharmacists', Icon: IconUser },
+  { label: 'Stock kept up to date', Icon: IconClock },
+  { label: 'Secure & private', Icon: IconShieldCheck },
+] as const
 
 const QUICK_SEARCHES = ['Paracetamol', 'Amoxicillin', 'Coartem', 'Ventolin', 'Insulin']
 
@@ -787,14 +799,30 @@ export default function PatientHome() {
                 </div>
               </Link>
 
-              <ul className="mt-8 grid max-w-md grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-                {TRUST_BADGES.map((t) => (
-                  <li key={t} className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <IconShieldCheck width={16} height={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
+              {/* A quiet card, deliberately. It sits under a green
+                  gradient call to action, and a second loud panel would
+                  compete with the thing we actually want tapped — this is
+                  reassurance you read on the way past. */}
+              <div className="mt-6 rounded-3xl border border-gray-200/90 bg-white/70 p-5 backdrop-blur-sm dark:border-gray-800/90 dark:bg-gray-900/50">
+                {/* One column, not two. The hero puts this card in a
+                    464px-wide grid column at every desktop size, and two
+                    columns inside that wrapped every label onto a second
+                    line — "PCN-verified / pharmacies". A breakpoint would
+                    not have caught it, because the viewport is wide even
+                    when the card is not. */}
+                <ul className="space-y-3">
+                  {TRUST_BADGES.map(({ label, Icon }) => (
+                    <li key={label} className="flex items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                        <Icon width={16} height={16} />
+                      </span>
+                      <span className="min-w-0 text-sm font-semibold leading-snug text-gray-800 dark:text-gray-200">
+                        {label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </section>
 
