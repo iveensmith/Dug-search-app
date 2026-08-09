@@ -14,7 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MediQuest",
+  // `template` wraps whatever a route sets, so a page only has to name
+  // itself: "Log in" becomes "Log in · MediQuest". `default` covers the
+  // home page and anything that sets no title of its own.
+  title: {
+    default: "MediQuest — find medicine in stock near you",
+    template: "%s · MediQuest",
+  },
   description:
     "Find which pharmacies near you in Nigeria have your medicine in stock, with directions and phone numbers.",
 };

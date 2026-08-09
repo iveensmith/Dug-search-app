@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import SiteHeader from '@/components/ui/SiteHeader'
@@ -16,6 +17,13 @@ import { SESSION_COOKIE, verifySessionToken } from '@/lib/session'
  * proxy.ts sends owners here from "/" so a bookmark or the logo lands in
  * the same place.
  */
+// Owner-only, so it is marked away from crawlers as well as retitled.
+export const metadata: Metadata = {
+  title: 'Pharmacy dashboard',
+  description: "Your outlet's stock, local demand and rating at a glance.",
+  robots: { index: false, follow: false },
+}
+
 export default async function PharmacyOverviewPage() {
   const session = await verifySessionToken((await cookies()).get(SESSION_COOKIE)?.value)
   if (!session) redirect('/login?portal=pharmacy&next=/pharmacy/overview')
