@@ -19,7 +19,7 @@ import Button from '@/components/ui/Button'
 import LoadMore from '@/components/ui/LoadMore'
 import OwnerReservations, { type OwnerReservation } from '@/components/OwnerReservations'
 import { isOpen } from '@/lib/reservations'
-import { IconAlertCircle, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
+import { IconAlertCircle, IconCheck, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
   id: string
@@ -46,6 +46,9 @@ type Dashboard = {
     closesAt: string | null
   }
   items: InventoryItem[]
+  /** Whole-list counts from the server — `items` is one page of twenty. */
+  inStockCount: number
+  staleCount: number
 }
 
 type RecentSearch = {
@@ -582,6 +585,12 @@ function PharmacyDashboard() {
   // The stock list arrives a page at a time now, so the counts on screen
   // come from the server rather than from items.length.
   const [inventoryTotal, setInventoryTotal] = useState(0)
+  // In-stock rows past the 24-hour cliff, counted server-side across the
+  // whole list rather than the page on screen.
+  const [staleCount, setStaleCount] = useState(0)
+  const [confirming, setConfirming] = useState(false)
+  const [confirmNote, setConfirmNote] = useState('')
+  const [confirmAsking, setConfirmAsking] = useState(false)
   const [inventoryPage, setInventoryPage] = useState(1)
   const [loadingInventory, setLoadingInventory] = useState(false)
   const [loadError, setLoadError] = useState('')
@@ -674,8 +683,40 @@ function PharmacyDashboard() {
     const json = await res.json()
     setData(json)
     setInventoryTotal(json.total ?? 0)
+    setStaleCount(json.staleCount ?? 0)
     setInventoryPage(1)
   }, [router])
+
+  /**
+   * Restamps every in-stock line as confirmed now.
+   *
+   * Deliberately behind a question rather than a single tap: the whole
+   * point of the freshness stamp is that it means something, and a button
+   * you can hit without reading is how it stops meaning anything.
+   */
+  async function confirmAllInStock() {
+    setConfirming(true)
+    setConfirmNote('')
+    try {
+      const res = await fetch('/api/inventory/confirm-all', { method: 'POST' })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setConfirmNote(json.error ?? 'Could not confirm your list — try again.')
+        return
+      }
+      setConfirmAsking(false)
+      setConfirmNote(
+        json.refreshed > 0
+          ? `Confirmed ${json.confirmed} ${json.confirmed === 1 ? 'drug' : 'drugs'} — ${json.refreshed} of them were stale and are visible to patients again.`
+          : `Confirmed ${json.confirmed} ${json.confirmed === 1 ? 'drug' : 'drugs'}. None had gone stale.`,
+      )
+      await load()
+    } catch {
+      setConfirmNote('Network problem — try again.')
+    } finally {
+      setConfirming(false)
+    }
+  }
 
   /** Next page of the stock list, appended. */
   async function loadMoreInventory() {
@@ -863,7 +904,11 @@ function PharmacyDashboard() {
   }
 
   const { pharmacy, items } = data
-  const inStockCount = items.filter((i) => i.inStock).length
+  // From the server, not from items.filter(): the stock list arrives twenty
+  // rows at a time, so counting what is loaded said "20 in stock" for a
+  // shop with 282 — and the confirm-all dialog would have told the owner
+  // they were vouching for twenty drugs while restamping all of them.
+  const inStockCount = data?.inStockCount ?? 0
 
   return (
     <div className="flex min-h-dvh w-full flex-col">
@@ -952,6 +997,78 @@ function PharmacyDashboard() {
 
           {tab === 'inventory' && (
             <>
+              {/* Sits above the add-drug button because refreshing what is
+                  already listed is the daily job; adding is occasional. */}
+              {inStockCount > 0 && (
+                <Card className="mb-3">
+                  {staleCount > 0 ? (
+                    <div className="flex items-start gap-2.5">
+                      <IconAlertCircle
+                        width={16}
+                        height={16}
+                        className="mt-0.5 shrink-0 text-amber-500"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          {staleCount} {staleCount === 1 ? 'drug has' : 'drugs have'} gone stale
+                        </p>
+                        <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                          Listings older than 24 hours drop below fresher ones in patient searches.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Your whole list was confirmed in the last 24 hours.
+                    </p>
+                  )}
+
+                  {!confirmAsking ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={() => {
+                        setConfirmNote('')
+                        setConfirmAsking(true)
+                      }}
+                    >
+                      <IconCheck width={15} height={15} />
+                      Confirm all still in stock
+                    </Button>
+                  ) : (
+                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
+                      {/* Names what is being claimed, in the owner's own
+                          terms. A patient may travel on the strength of it. */}
+                      <p className="text-sm text-amber-900 dark:text-amber-200">
+                        You&apos;re telling patients that all{' '}
+                        <strong>{inStockCount}</strong> of your in-stock drugs are on your shelf
+                        right now. Only confirm what you have actually got.
+                      </p>
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" loading={confirming} onClick={confirmAllInStock}>
+                          {confirming ? 'Confirming…' : 'Yes, all still in stock'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={confirming}
+                          onClick={() => setConfirmAsking(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {confirmNote && (
+                    <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {confirmNote}
+                    </p>
+                  )}
+                </Card>
+              )}
+
               {!formOpen ? (
                 <Button onClick={() => setFormOpen(true)} className="w-full">
                   <IconPlus width={16} height={16} />

@@ -25,9 +25,16 @@ export async function GET(req: NextRequest) {
   // dashboard load. Offset paging: the list is alphabetical and browsed,
   // and the owner wants to see how many they have.
   const { take, skip, page } = offsetPage(req.nextUrl.searchParams)
-  const [total, inStockCount, items] = await Promise.all([
+  // Counted here rather than from the twenty rows on screen: an owner with
+  // 200 drugs needs to know how many of the whole list have gone quiet, not
+  // how many did on this page.
+  const staleBefore = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const [total, inStockCount, staleCount, items] = await Promise.all([
     prisma.pharmacyInventory.count({ where: { pharmacyId: pharmacy.id } }),
     prisma.pharmacyInventory.count({ where: { pharmacyId: pharmacy.id, inStock: true } }),
+    prisma.pharmacyInventory.count({
+      where: { pharmacyId: pharmacy.id, inStock: true, updatedAt: { lt: staleBefore } },
+    }),
     prisma.pharmacyInventory.findMany({
       where: { pharmacyId: pharmacy.id },
       include: { drug: true },
@@ -42,6 +49,9 @@ export async function GET(req: NextRequest) {
     // Counted in the database, not by measuring the page — the dashboard
     // header reports the whole shop, not the twenty rows on screen.
     inStockCount,
+    // In-stock rows past the 24-hour cliff — invisible to patients until
+    // somebody confirms them.
+    staleCount,
     pharmacy: {
       id: pharmacy.id,
       name: pharmacy.name,
