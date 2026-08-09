@@ -19,6 +19,7 @@ import Button from '@/components/ui/Button'
 import LoadMore from '@/components/ui/LoadMore'
 import OwnerReservations, { type OwnerReservation } from '@/components/OwnerReservations'
 import { isOpen } from '@/lib/reservations'
+import { STOCK_LEVELS, type StockLevelKey } from '@/lib/stockLevels'
 import { IconAlertCircle, IconCheck, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
@@ -27,6 +28,7 @@ type InventoryItem = {
   brand: string | null
   expiryDate: string | null
   quantity: number | null
+  stockLevel: string | null
   updatedAt: string
   drug: DrugSuggestion
 }
@@ -64,8 +66,8 @@ function isExpired(iso: string | null): boolean {
   return !!iso && new Date(iso) < new Date()
 }
 
-// Shared brand/expiry/quantity fields for both the "pick existing drug" and
-// "add a new drug" add-to-inventory forms.
+// Shared brand/expiry/quantity/level fields for both the "pick existing
+// drug" and "add a new drug" add-to-inventory forms.
 function AddOnFields({
   brand,
   onBrandChange,
@@ -74,6 +76,8 @@ function AddOnFields({
   onExpiryChange,
   quantity,
   onQuantityChange,
+  level,
+  onLevelChange,
 }: {
   brand: string
   onBrandChange: (v: string) => void
@@ -82,6 +86,8 @@ function AddOnFields({
   onExpiryChange: (v: string) => void
   quantity: string
   onQuantityChange: (v: string) => void
+  level: StockLevelKey | ''
+  onLevelChange: (v: StockLevelKey | '') => void
 }) {
   return (
     <>
@@ -106,7 +112,7 @@ function AddOnFields({
         <Field label="Expiry date" hint="(optional)" htmlFor="expiryDate">
           <Input id="expiryDate" type="date" value={expiryDate} onChange={(e) => onExpiryChange(e.target.value)} />
         </Field>
-        <Field label="Quantity" hint="(optional)" htmlFor="quantity">
+        <Field label="Quantity" hint="(your own note)" htmlFor="quantity">
           <Input
             id="quantity"
             type="number"
@@ -116,6 +122,41 @@ function AddOnFields({
             placeholder="e.g. 50"
           />
         </Field>
+      </div>
+
+      {/* Chips rather than the quantity box, because that number has no
+          unit beside it — 12 could be twelve boxes or twelve tablets — so
+          it cannot be turned into something a patient can act on. Leaving
+          it unset is a real answer and stays the default. */}
+      <div>
+        <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+          How much do you have?{' '}
+          <span className="font-normal text-gray-500 dark:text-gray-400">
+            (optional — patients see this)
+          </span>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {STOCK_LEVELS.map((l) => (
+            <button
+              key={l.key}
+              type="button"
+              onClick={() => onLevelChange(level === l.key ? '' : l.key)}
+              aria-pressed={level === l.key}
+              title={l.ownerHint}
+              className={`min-h-10 cursor-pointer rounded-full border px-3.5 text-sm font-semibold transition-colors ${
+                level === l.key
+                  ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+              }`}
+            >
+              {l.ownerLabel}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+          {STOCK_LEVELS.find((l) => l.key === level)?.ownerHint ??
+            'Leave blank and patients just see “In stock”.'}
+        </p>
       </div>
     </>
   )
@@ -615,6 +656,7 @@ function PharmacyDashboard() {
   const [brand, setBrand] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
   const [quantity, setQuantity] = useState('')
+  const [level, setLevel] = useState<StockLevelKey | ''>('')
   const [adding, setAdding] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
@@ -800,6 +842,7 @@ function PharmacyDashboard() {
     setBrand(existing?.brand ?? '')
     setExpiryDate(existing?.expiryDate ? existing.expiryDate.slice(0, 10) : '')
     setQuantity(existing?.quantity != null ? String(existing.quantity) : '')
+    setLevel((existing?.stockLevel as StockLevelKey | null) ?? '')
   }
 
   function resetForm() {
@@ -811,6 +854,7 @@ function PharmacyDashboard() {
     setBrand('')
     setExpiryDate('')
     setQuantity('')
+    setLevel('')
     setNewGenericName('')
     setNewForm('TABLET')
     setNewStrength('')
@@ -843,6 +887,7 @@ function PharmacyDashboard() {
           brand,
           expiryDate,
           quantity,
+          stockLevel: level || null,
         }),
       })
       resetForm()
@@ -1159,6 +1204,8 @@ function PharmacyDashboard() {
                         expiryDate={expiryDate}
                         onExpiryChange={setExpiryDate}
                         quantity={quantity}
+                        level={level}
+                        onLevelChange={setLevel}
                         onQuantityChange={setQuantity}
                       />
 
@@ -1249,6 +1296,8 @@ function PharmacyDashboard() {
                         expiryDate={expiryDate}
                         onExpiryChange={setExpiryDate}
                         quantity={quantity}
+                        level={level}
+                        onLevelChange={setLevel}
                         onQuantityChange={setQuantity}
                       />
 

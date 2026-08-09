@@ -19,6 +19,8 @@ async function findOwnedItem(userId: string, itemId: string) {
 
 const patchSchema = z.object({
   inStock: z.boolean().optional(),
+  // null clears it back to "in stock, amount not stated".
+  stockLevel: z.enum(['PLENTY', 'LOW', 'LAST_FEW']).nullish(),
   brand: optionalBrand,
   expiryDate: optionalDate,
   quantity: optionalQuantity,
@@ -45,6 +47,9 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   if ('brand' in raw) data.brand = parsed.data.brand
   if ('expiryDate' in raw) data.expiryDate = parsed.data.expiryDate
   if ('quantity' in raw) data.quantity = parsed.data.quantity
+  // `in raw` rather than a truthiness check, so sending null clears the
+  // band back to "in stock, amount not stated" instead of being ignored.
+  if ('stockLevel' in raw) data.stockLevel = parsed.data.stockLevel ?? null
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
@@ -64,6 +69,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       brand: updated.brand,
       expiryDate: updated.expiryDate,
       quantity: updated.quantity,
+      stockLevel: updated.stockLevel,
       updatedAt: updated.updatedAt,
     },
   })

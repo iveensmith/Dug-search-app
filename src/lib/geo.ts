@@ -13,6 +13,7 @@ export type PharmacyStockResult = {
   phone: string
   distanceKm: number
   stockUpdatedAt: Date
+  stockLevel: string | null
   open24h: boolean
   opensAt: string | null
   closesAt: string | null
@@ -51,6 +52,7 @@ export async function findPharmaciesWithDrug(opts: {
       p."opensAt",
       p."closesAt",
       i."updatedAt" AS "stockUpdatedAt",
+      i."stockLevel",
       COALESCE(r."ratingCount", 0)::int AS "ratingCount",
       r."ratingAvg",
       2 * 6371 * asin(
@@ -124,6 +126,7 @@ export async function findPharmaciesWithDrugs(opts: {
         p."opensAt",
         p."closesAt",
         i."updatedAt" AS "stockUpdatedAt",
+        i."stockLevel",
         COALESCE(r."ratingCount", 0)::int AS "ratingCount",
         r."ratingAvg",
         2 * 6371 * asin(
@@ -158,7 +161,7 @@ export async function findPharmaciesWithDrugs(opts: {
     -- bigint, and JSON.stringify throws on those.
     SELECT
       "drugId", "id", "name", "address", "lga", "latitude", "longitude", "phone",
-      "open24h", "opensAt", "closesAt", "stockUpdatedAt", "ratingCount", "ratingAvg",
+      "open24h", "opensAt", "closesAt", "stockUpdatedAt", "stockLevel", "ratingCount", "ratingAvg",
       "distanceKm"
     FROM (
       SELECT *, ROW_NUMBER() OVER (PARTITION BY "drugId" ORDER BY "distanceKm" ASC) AS rn

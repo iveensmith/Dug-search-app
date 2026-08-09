@@ -25,6 +25,7 @@ import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import RatingStars from '@/components/RatingStars'
 import StockPulse from '@/components/StockPulse'
+import StockLevelBadge from '@/components/StockLevelBadge'
 import RecentSearches from '@/components/RecentSearches'
 import { NO_FILTERS, activeFilterCount, applyFilters, type Filters } from '@/lib/filters'
 import { Field, Select } from '@/components/ui/Field'
@@ -1272,6 +1273,7 @@ export default function PatientHome() {
                         </p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           <StockPulse stockUpdatedAt={r.stockUpdatedAt} />
+                          <StockLevelBadge level={r.stockLevel} />
                           <VerifiedBadge />
                           <OpenStatusBadge open24h={r.open24h} opensAt={r.opensAt} closesAt={r.closesAt} />
                         </div>

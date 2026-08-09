@@ -51,6 +51,19 @@ enum ReservationStatus {
   DECLINED // pharmacy can't hold it after all
 }
 
+/// How much of a drug a pharmacy has, in the only terms a patient can act
+/// on. Not a count: "12" means something different for boxes, strips and
+/// single tablets, and the unit is never recorded — so a number cannot be
+/// banded reliably and the pharmacy says which band it is.
+///
+/// Null is a real answer and the default: it means "in stock, amount not
+/// said", which is exactly what every listing meant before this existed.
+enum StockLevel {
+  PLENTY // a full course, or several
+  LOW // enough for one person, probably
+  LAST_FEW // call before travelling
+}
+
 enum PrescriptionStatus {
   PENDING
   CLAIMED
@@ -186,7 +199,8 @@ model PharmacyInventory {
   pharmacyId String
   drugId     String
   inStock    Boolean   @default(true)
-  quantity   Int?
+  stockLevel StockLevel? // null = in stock, amount not stated
+  quantity   Int? // the pharmacy's own count, for their reference only
   brand      String? // which brand this pharmacy actually stocks, if they know
   expiryDate DateTime? // optional — pharmacy's own stock-rotation note
   updatedAt  DateTime  @updatedAt

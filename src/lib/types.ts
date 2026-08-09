@@ -20,6 +20,7 @@ export type PharmacyResult = {
   phone: string
   distanceKm: number
   stockUpdatedAt: string // ISO string over the wire
+  stockLevel: string | null // null = in stock, amount not stated
   open24h: boolean
   opensAt: string | null
   closesAt: string | null

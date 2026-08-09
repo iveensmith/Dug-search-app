@@ -73,6 +73,7 @@ export async function GET(req: NextRequest) {
       brand: i.brand,
       expiryDate: i.expiryDate,
       quantity: i.quantity,
+      stockLevel: i.stockLevel,
       updatedAt: i.updatedAt,
       drug: {
         id: i.drug.id,
@@ -115,6 +116,7 @@ const addSchema = z
     brand: optionalBrand,
     expiryDate: optionalDate,
     quantity: optionalQuantity,
+    stockLevel: z.enum(['PLENTY', 'LOW', 'LAST_FEW']).nullish(),
   })
   .refine((d) => d.drugId || d.newDrug, { message: 'Pick a drug from the list, or add a new one' })
 
