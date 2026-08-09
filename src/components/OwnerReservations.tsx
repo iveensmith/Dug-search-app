@@ -9,7 +9,7 @@ import {
   isStale,
   type ReservationStatusValue,
 } from '@/lib/reservations'
-import { IconBookmark, IconCheck, IconPhone, IconX } from '@/components/ui/icons'
+import { IconBookmark, IconPhone, IconStore, IconX } from '@/components/ui/icons'
 
 export type OwnerReservation = {
   id: string
@@ -141,14 +141,18 @@ export default function OwnerReservations({
                       Set aside
                     </Button>
                   )}
+                  {/* "Collected" was both the button and the status chip
+                      this row turns into — the same word for the thing you
+                      do and the thing that has happened. "Handed over" is
+                      the counter action, and pairs with "Set aside". */}
                   <Button
                     variant="secondary"
                     size="sm"
                     disabled={busyId === r.id}
                     onClick={() => setStatus(r.id, 'COLLECTED')}
                   >
-                    <IconCheck width={15} height={15} />
-                    Collected
+                    <IconStore width={15} height={15} />
+                    Handed over
                   </Button>
                   {r.contactPhone && (
                     <a

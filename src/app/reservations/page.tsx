@@ -15,9 +15,10 @@ import {
   type ReservationStatusValue,
 } from '@/lib/reservations'
 import LoadMore from '@/components/ui/LoadMore'
-import { IconBookmark, IconCheck, IconPhone, IconX } from '@/components/ui/icons'
+import { IconBookmark, IconPhone, IconPill, IconX } from '@/components/ui/icons'
 
-// Only appears after "Medicine obtained", so it need not arrive with the list.
+// Only appears once the patient says they've picked it up, so it need not
+// arrive with the list.
 const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog'), { ssr: false })
 
 type Reservation = {
@@ -250,9 +251,13 @@ function ReservationCard({
 
       {live && onCollected && onCancel && (
         <div className="mt-3 flex flex-wrap gap-2">
+          {/* Not "✓ Medicine obtained". The card already carries a status
+              chip; a tick and a past tense on the button beside it read as
+              a second, contradicting status rather than the thing you tap
+              once you are holding the medicine. */}
           <Button variant="primary" size="sm" loading={busy} onClick={onCollected}>
-            <IconCheck width={15} height={15} />
-            Medicine obtained
+            <IconPill width={15} height={15} />
+            I&apos;ve picked it up
           </Button>
           <a
             href={`tel:${r.pharmacy.phone.replace(/\s/g, '')}`}

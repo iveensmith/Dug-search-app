@@ -41,6 +41,7 @@ import {
   IconMapPin,
   IconMessageCircle,
   IconPhone,
+  IconPill,
   IconRoute,
   IconSearch,
   IconShieldCheck,
@@ -1435,20 +1436,38 @@ export default function PatientHome() {
                         last pack while they travel. */}
                     {reserved[r.id] ? (
                       <div className="mt-2.5 rounded-xl bg-emerald-50 p-3 dark:bg-emerald-500/10">
-                        <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-                          {reserved[r.id].status === 'READY'
-                            ? 'Held for you'
-                            : 'Reservation sent — waiting on the pharmacy'}
+                        {/* The tick belongs here, on the state, and nowhere
+                            near the button. A filled green block wearing a
+                            tick and the words "Medicine obtained" reads as
+                            a badge saying it already happened — three
+                            signals all pointing at "done" on a control
+                            whose entire job is to say "not yet". */}
+                        <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                          {reserved[r.id].status === 'READY' ? (
+                            <>
+                              <IconCheck width={14} height={14} className="shrink-0" />
+                              Held for you
+                            </>
+                          ) : (
+                            <>
+                              <IconClock width={14} height={14} className="shrink-0" />
+                              Reservation sent — waiting on the pharmacy
+                            </>
+                          )}
                         </p>
+                        {/* First person, because no status label ever
+                            starts with "I've" — that one word is what
+                            makes it unmistakably the patient's own claim
+                            rather than the app reporting a fact. */}
                         <Button
-                          variant="secondary"
+                          variant="outline"
                           size="sm"
-                          className="mt-2 w-full"
+                          className="mt-2 w-full bg-white/70 dark:bg-transparent"
                           loading={collectingId === reserved[r.id].id}
                           onClick={() => markObtained(r.id, r.name)}
                         >
-                          <IconCheck width={15} height={15} />
-                          Medicine obtained
+                          <IconPill width={15} height={15} />
+                          I&apos;ve picked it up
                         </Button>
                       </div>
                     ) : (
