@@ -9,6 +9,8 @@ import Card from '@/components/ui/Card'
 import StockPulse from '@/components/StockPulse'
 import RatingStars from '@/components/RatingStars'
 import { type DrugSuggestion, type PharmacyResult } from '@/lib/types'
+import DispensingBadge from '@/components/DispensingBadge'
+import { dispensingClass } from '@/lib/dispensing'
 import { isValidState, stateLabel } from '@/lib/states'
 import { IconAlertCircle, IconPill, IconStore } from '@/components/ui/icons'
 
@@ -23,6 +25,46 @@ function Spec({ label, value }: { label: string; value: string }) {
         {label}
       </span>
       <strong className="mt-1 block text-sm text-gray-900 dark:text-gray-100">{value}</strong>
+    </div>
+  )
+}
+
+/**
+ * The one sentence about handing the medicine over, in the place the
+ * patient is about to choose a pharmacy from.
+ *
+ * Prescription-only gets a bordered note and a way to reach a pharmacist,
+ * because it is the case where the app's answer is otherwise incomplete —
+ * "six pharmacies have it" is true and still not enough. The other two
+ * classes are reassurance, so they read as a plain line and nothing more.
+ * An unclassified drug renders nothing at all.
+ */
+function DispensingNote({ value }: { value: string | null | undefined }) {
+  const c = dispensingClass(value)
+  if (!c) return null
+
+  if (c.key !== 'POM') {
+    return (
+      <p className="mt-4 flex items-start gap-2 px-1 text-sm text-gray-500 dark:text-gray-400">
+        <IconAlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
+        {c.note}
+      </p>
+    )
+  }
+
+  return (
+    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+      <p className="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-300">
+        <IconAlertCircle width={16} height={16} className="shrink-0" />
+        {c.label}
+      </p>
+      <p className="mt-1.5 text-sm text-amber-900/90 dark:text-amber-200/90">{c.note}</p>
+      <Link
+        href="/prescriptions"
+        className="mt-2.5 inline-block text-sm font-bold text-amber-900 underline underline-offset-2 dark:text-amber-300"
+      >
+        Don&apos;t have one? Ask a pharmacist →
+      </Link>
     </div>
   )
 }
@@ -99,12 +141,17 @@ function DrugBody({ id }: { id: string }) {
         <div className="grid h-32 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
           <IconPill width={48} height={48} />
         </div>
-        {drug.category && (
-          <span className="mt-5 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
-            {drug.category}
-          </span>
+        {(drug.category || drug.dispensing) && (
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            {drug.category && (
+              <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+                {drug.category}
+              </span>
+            )}
+            <DispensingBadge value={drug.dispensing} className="px-3 py-1 font-bold" />
+          </div>
         )}
-        <h1 className={`text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50 ${drug.category ? 'mt-2.5' : 'mt-5'}`}>
+        <h1 className={`text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50 ${drug.category || drug.dispensing ? 'mt-2.5' : 'mt-5'}`}>
           {drug.genericName}
         </h1>
         {drug.brandNames.length > 0 && (
@@ -125,6 +172,10 @@ function DrugBody({ id }: { id: string }) {
           />
         </div>
       </Card>
+
+      {/* Said before the pharmacy list, not after it: this is the thing
+          that decides whether the journey is worth making at all. */}
+      <DispensingNote value={drug.dispensing} />
 
       <Card className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">

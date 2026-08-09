@@ -20,6 +20,7 @@ import LoadMore from '@/components/ui/LoadMore'
 import OwnerReservations, { type OwnerReservation } from '@/components/OwnerReservations'
 import { isOpen } from '@/lib/reservations'
 import { STOCK_LEVELS, type StockLevelKey } from '@/lib/stockLevels'
+import DispensingBadge from '@/components/DispensingBadge'
 import { IconAlertCircle, IconCheck, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
@@ -1325,7 +1326,14 @@ function PharmacyDashboard() {
                       <li key={item.id}>
                         <Card padded={false} className="flex items-center justify-between gap-3 p-3">
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-gray-900 dark:text-gray-100">{drugLabel(item.drug)}</p>
+                            <p className="flex items-center gap-2 truncate font-medium text-gray-900 dark:text-gray-100">
+                              <span className="truncate">{drugLabel(item.drug)}</span>
+                              {/* Read-only here. Prescription status is a
+                                  regulatory fact about the medicine, not
+                                  something a shop sets about its own
+                                  stock — an admin owns it. */}
+                              <DispensingBadge value={item.drug.dispensing} short className="shrink-0" />
+                            </p>
                             <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                               {item.brand ?? (item.drug.brandNames.length > 0 ? item.drug.brandNames.join(', ') : null) ?? 'No brand noted'}
                             </p>

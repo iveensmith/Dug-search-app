@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
+import DispensingBadge from '@/components/DispensingBadge'
 import Button from '@/components/ui/Button'
 import { IconMic, IconPill, IconSearch, IconX } from '@/components/ui/icons'
 
@@ -241,6 +242,11 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
                     </span>
                   )}
                 </span>
+                {/* Short form only: the row is already carrying a name, its
+                    brands and a class tag, and "Prescription only" spelled
+                    out would push the medicine's own name into an ellipsis.
+                    The full wording is one tap away on the results. */}
+                <DispensingBadge value={d.dispensing} short className="shrink-0" />
                 {d.category && (
                   <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-white/10 dark:text-gray-300">
                     {d.category}

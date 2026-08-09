@@ -59,6 +59,10 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       strength: drug.strength,
       form: drug.form,
       packSize: drug.packSize,
+      // The page has always had markup for the class tag; it never showed
+      // because this shape dropped the field on the way out.
+      category: drug.category,
+      dispensing: drug.dispensing,
     },
     stockedBy,
     siblings: siblings.map((d) => ({
@@ -68,6 +72,8 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       strength: d.strength,
       form: d.form,
       packSize: d.packSize,
+      category: d.category,
+      dispensing: d.dispensing,
     })),
   })
 }

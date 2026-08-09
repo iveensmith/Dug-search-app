@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const drugs = await prisma.$queryRaw<DrugSuggestion[]>`
     WITH matches AS MATERIALIZED (
       SELECT "id", "genericName", "brandNames", "strength", "form",
-        "category", "packSize"
+        "category", "packSize", "dispensing"
       FROM "Drug"
       WHERE "genericName" ILIKE ${pattern}
          OR "drugBrandNamesText"("brandNames") ILIKE ${pattern}

@@ -10,6 +10,8 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import LoadMore from '@/components/ui/LoadMore'
 import Card from '@/components/ui/Card'
 import { DRUG_CATEGORIES } from '@/lib/drugCategories'
+import { DISPENSING_CLASSES } from '@/lib/dispensing'
+import DispensingBadge from '@/components/DispensingBadge'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -37,6 +39,7 @@ type AdminDrug = {
   strength: string
   form: string
   category: string | null
+  dispensing: string | null
   stockedByCount: number
 }
 
@@ -395,12 +398,21 @@ function chipClass(on: boolean) {
   }`
 }
 
+const EMPTY_DRUG_FORM = {
+  genericName: '',
+  brandNames: '',
+  strength: '',
+  form: 'TABLET',
+  category: '',
+  dispensing: '',
+}
+
 function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => void }) {
-  const [form, setForm] = useState({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' })
+  const [form, setForm] = useState(EMPTY_DRUG_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [filter, setFilter] = useState<'all' | 'unclassified' | string>('all')
+  const [filter, setFilter] = useState<'all' | 'unclassified' | 'no-dispensing' | string>('all')
   const [query, setQuery] = useState('')
 
   function startEdit(d: AdminDrug) {
@@ -411,6 +423,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       strength: d.strength,
       form: d.form,
       category: d.category ?? '',
+      dispensing: d.dispensing ?? '',
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -425,6 +438,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       strength: form.strength.trim(),
       form: form.form,
       category: form.category,
+      dispensing: form.dispensing,
     }
     try {
       const res = await fetch(editingId ? `/api/admin/drugs/${editingId}` : '/api/admin/drugs', {
@@ -437,7 +451,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
         setError(data.error ?? 'Save failed')
         return
       }
-      setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' })
+      setForm(EMPTY_DRUG_FORM)
       setEditingId(null)
       onChanged()
     } finally {
@@ -446,10 +460,15 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
   }
 
   const unclassifiedCount = drugs.filter((d) => !d.category).length
+  // Two separate backlogs: a drug can have a therapeutic class and still
+  // have nobody's word on whether it needs a prescription.
+  const noDispensingCount = drugs.filter((d) => !d.dispensing).length
   const needle = query.trim().toLowerCase()
   const visible = drugs.filter((d) => {
     if (filter === 'unclassified' && d.category) return false
-    if (filter !== 'all' && filter !== 'unclassified' && d.category !== filter) return false
+    if (filter === 'no-dispensing' && d.dispensing) return false
+    if (filter !== 'all' && filter !== 'unclassified' && filter !== 'no-dispensing' && d.category !== filter)
+      return false
     if (!needle) return true
     return (
       d.genericName.toLowerCase().includes(needle) ||
@@ -493,6 +512,22 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
                 ))}
               </Select>
             </Field>
+            {/* Admin-only on purpose: a pharmacy cannot declare its own
+                stock over-the-counter. "Not set" stays the default and
+                shows the patient nothing at all — never "no prescription
+                needed", which is a claim nobody has made. */}
+            <Field label="Dispensing" hint="(prescription status)" htmlFor="drug-dispensing">
+              <Select
+                id="drug-dispensing"
+                value={form.dispensing}
+                onChange={(e) => setForm((f) => ({ ...f, dispensing: e.target.value }))}
+              >
+                <option value="">Not set — patients see nothing</option>
+                {DISPENSING_CLASSES.map((c) => (
+                  <option key={c.key} value={c.key}>{c.label}</option>
+                ))}
+              </Select>
+            </Field>
           </div>
           {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
           <div className="mt-3 flex gap-2">
@@ -503,7 +538,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => { setEditingId(null); setForm({ genericName: '', brandNames: '', strength: '', form: 'TABLET', category: '' }) }}
+                onClick={() => { setEditingId(null); setForm(EMPTY_DRUG_FORM) }}
               >
                 Cancel
               </Button>
@@ -525,9 +560,15 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
         >
           Unclassified ({unclassifiedCount})
         </button>
+        <button
+          onClick={() => setFilter('no-dispensing')}
+          className={chipClass(filter === 'no-dispensing')}
+        >
+          No Rx status ({noDispensingCount})
+        </button>
         <Select
           aria-label="Filter by class"
-          value={filter === 'all' || filter === 'unclassified' ? '' : filter}
+          value={filter === 'all' || filter === 'unclassified' || filter === 'no-dispensing' ? '' : filter}
           onChange={(e) => setFilter(e.target.value || 'all')}
           className="!w-auto"
         >
@@ -562,16 +603,21 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
         <p className="mt-4 rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
           {filter === 'unclassified'
             ? 'Every drug has a class. Nothing to do here.'
-            : 'No drug matches that.'}
+            : filter === 'no-dispensing'
+              ? 'Every drug has a prescription status. Nothing to do here.'
+              : 'No drug matches that.'}
         </p>
       ) : (
       <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
         {visible.map((d) => (
           <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-              <p className="truncate font-medium text-gray-900 dark:text-gray-100">
-                {d.genericName} {d.strength}{' '}
-                <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{d.form.toLowerCase()}</span>
+              <p className="flex items-center gap-2 truncate font-medium text-gray-900 dark:text-gray-100">
+                <span className="truncate">
+                  {d.genericName} {d.strength}{' '}
+                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{d.form.toLowerCase()}</span>
+                </span>
+                <DispensingBadge value={d.dispensing} short className="shrink-0" />
               </p>
               <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                 <span

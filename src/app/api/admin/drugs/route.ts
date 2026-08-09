@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { Prisma } from '@/generated/prisma/client'
 import { isValidCategory } from '@/lib/drugCategories'
+import { isDispensingClass } from '@/lib/dispensing'
 import { offsetPage, offsetResult } from '@/lib/pagination'
 
 const FORMS = [
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
       strength: d.strength,
       form: d.form,
       category: d.category,
+      dispensing: d.dispensing,
       stockedByCount: d._count.inventory,
     })),
   })
@@ -50,6 +52,13 @@ const createSchema = z.object({
   category: z
     .string()
     .refine((v) => v === '' || isValidCategory(v), { message: 'Unknown drug category' })
+    .optional()
+    .transform((v) => (v ? v : null)),
+  // Omitted on create means unclassified, which is the honest default for
+  // a drug nobody has ruled on yet.
+  dispensing: z
+    .string()
+    .refine((v) => v === '' || isDispensingClass(v), { message: 'Unknown dispensing class' })
     .optional()
     .transform((v) => (v ? v : null)),
 })

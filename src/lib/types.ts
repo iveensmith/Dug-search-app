@@ -8,6 +8,7 @@ export type DrugSuggestion = {
   form: string
   packSize?: string | null
   category?: string | null
+  dispensing?: string | null // null = unclassified; see lib/dispensing
 }
 
 export type PharmacyResult = {

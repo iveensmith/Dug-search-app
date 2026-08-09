@@ -26,6 +26,7 @@ import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import RatingStars from '@/components/RatingStars'
 import StockPulse from '@/components/StockPulse'
 import StockLevelBadge from '@/components/StockLevelBadge'
+import { dispensingClass, needsPrescription } from '@/lib/dispensing'
 import RecentSearches from '@/components/RecentSearches'
 import { NO_FILTERS, activeFilterCount, applyFilters, type Filters } from '@/lib/filters'
 import { Field, Select } from '@/components/ui/Field'
@@ -144,6 +145,10 @@ type SearchState =
       kind: 'results'
       label: string
       drugId: string
+      // Carried from the picked suggestion rather than refetched: whether
+      // the drug needs a prescription has to be on screen with the very
+      // first result, not a render later.
+      dispensing: string | null
       results: PharmacyResult[]
       substitutes: SubstituteGroup[]
       elsewhere: PharmacyResult[] // same drug, elsewhere in the state — powers the empty state
@@ -360,13 +365,22 @@ export default function PatientHome() {
         kind: 'results',
         label,
         drugId: drug.id,
+        dispensing: drug.dispensing ?? null,
         results: data.results ?? [],
         substitutes: data.substitutes ?? [],
         elsewhere: data.elsewhere ?? [],
       })
       void loadReservations(drug.id)
     } catch {
-      setState({ kind: 'results', label, drugId: drug.id, results: [], substitutes: [], elsewhere: [] })
+      setState({
+        kind: 'results',
+        label,
+        drugId: drug.id,
+        dispensing: drug.dispensing ?? null,
+        results: [],
+        substitutes: [],
+        elsewhere: [],
+      })
     }
   }
 
@@ -1028,6 +1042,29 @@ export default function PatientHome() {
             <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">
               Try the generic name, or check the spelling. We add new drugs regularly.
             </p>
+          </div>
+        )}
+
+        {/* Above both branches, because it is true whether four pharmacies
+            have it or none do. Deliberately not an amber card: the empty
+            state below is already one, and two stacked warnings read as
+            noise. An amber rule down the side says "bring this with you"
+            without competing with "nobody has it". */}
+        {state.kind === 'results' && needsPrescription(state.dispensing) && (
+          <div className="animate-fade-up mb-4 rounded-2xl border border-gray-200 border-l-4 border-l-amber-400 bg-white p-4 dark:border-gray-800 dark:border-l-amber-500 dark:bg-gray-900">
+            <p className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-gray-100">
+              <IconAlertCircle width={16} height={16} className="shrink-0 text-amber-500 dark:text-amber-400" />
+              {dispensingClass('POM')!.label}
+            </p>
+            <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
+              {dispensingClass('POM')!.note}
+            </p>
+            <Link
+              href="/prescriptions"
+              className="mt-2.5 inline-block text-sm font-bold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            >
+              Don&apos;t have one? Ask a pharmacist →
+            </Link>
           </div>
         )}
 

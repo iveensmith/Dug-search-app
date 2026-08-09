@@ -83,6 +83,10 @@ export async function GET(req: NextRequest) {
         form: i.drug.form,
         packSize: i.drug.packSize,
         category: i.drug.category,
+        // Shown on the owner's own shelf so they can see at a glance which
+        // of their listings patients are being told to bring a script for.
+        // Not editable here — see the note in lib/dispensing.
+        dispensing: i.drug.dispensing,
       },
     })),
   })

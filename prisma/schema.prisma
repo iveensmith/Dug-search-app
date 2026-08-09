@@ -64,6 +64,15 @@ enum StockLevel {
   LAST_FEW // call before travelling
 }
 
+// How a medicine may be handed over. See src/lib/dispensing.ts — null on a
+// Drug means "nobody has classified this", which the UI must never render
+// as "no prescription needed".
+enum DispensingClass {
+  POM // prescription required
+  PHARMACY_ONLY // no prescription, but dispensed by a pharmacist
+  OTC // general sale
+}
+
 enum PrescriptionStatus {
   PENDING
   CLAIMED
@@ -147,6 +156,7 @@ model Drug {
   form        DrugForm
   category    String? // therapeutic class, from src/lib/drugCategories.ts — always set by a person, never inferred
   packSize    String? // pack/container size for non-tablet forms, e.g. "30 g tube", "100 ml bottle"
+  dispensing  DispensingClass? // prescription status — admin-set only; null = unclassified, and the UI must then say nothing
   createdAt   DateTime @default(now())
 
   inventory      PharmacyInventory[]

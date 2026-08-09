@@ -4,22 +4,39 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { Prisma } from '@/generated/prisma/client'
 import { isValidCategory } from '@/lib/drugCategories'
+import { isDispensingClass } from '@/lib/dispensing'
 
 const FORMS = [
   'TABLET', 'CAPSULE', 'SYRUP', 'SUSPENSION', 'INJECTION', 'CREAM',
   'OINTMENT', 'GEL', 'DROPS', 'INHALER', 'SUPPOSITORY', 'OTHER',
 ] as const
 
+/**
+ * Fields an admin may clear as well as set. Empty string means "back to
+ * unclassified", which is a real answer and has to stay reachable — an
+ * admin who marked the wrong drug prescription-only needs a way back to
+ * silence, not only a way to a different claim.
+ *
+ * The undefined check is load-bearing. `.optional().transform()` still
+ * runs the transform when the key is absent, so the obvious `v ? v : null`
+ * turns "didn't mention it" into "clear it": a PATCH sending only a
+ * corrected spelling would quietly un-classify the drug. Absent has to
+ * stay undefined so Prisma leaves the column alone.
+ */
+const clearable = <T extends string>(check: (v: string) => v is T, message: string) =>
+  z
+    .string()
+    .refine((v): v is T | '' => v === '' || check(v), { message })
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === '' ? null : (v as T)))
+
 const patchSchema = z.object({
   genericName: z.string().min(2).max(120).optional(),
   brandNames: z.array(z.string().min(1).max(80)).max(20).optional(),
   strength: z.string().min(1).max(60).optional(),
   form: z.enum(FORMS).optional(),
-  category: z
-    .string()
-    .refine((v) => v === '' || isValidCategory(v), { message: 'Unknown drug category' })
-    .optional()
-    .transform((v) => (v ? v : null)),
+  category: clearable(isValidCategory, 'Unknown drug category'),
+  dispensing: clearable(isDispensingClass, 'Unknown dispensing class'),
 })
 
 export async function PATCH(
