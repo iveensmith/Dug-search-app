@@ -21,6 +21,7 @@ import OwnerReservations, { type OwnerReservation } from '@/components/OwnerRese
 import { isOpen } from '@/lib/reservations'
 import { STOCK_LEVELS, type StockLevelKey } from '@/lib/stockLevels'
 import DispensingBadge from '@/components/DispensingBadge'
+import StaffNumbersCard from '@/components/StaffNumbersCard'
 import { IconAlertCircle, IconCheck, IconDownload, IconPlus, IconTrash, IconUpload, IconX } from '@/components/ui/icons'
 
 type InventoryItem = {
@@ -1452,6 +1453,8 @@ function PharmacyDashboard() {
           {/* The rating lives on the overview now — this page is for
               working the stock list, and a score is something to check on
               rather than to be met by while doing it. */}
+          <StaffNumbersCard />
+
           <DeleteOutletCard pharmacy={pharmacy} />
         </>
       )}

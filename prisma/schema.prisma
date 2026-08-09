@@ -74,6 +74,22 @@ enum DispensingClass {
   OTC // general sale
 }
 
+// What somebody did to a stock listing, for the audit trail. Deliberately
+// coarse: this is "who said what about the shelf", not a diff.
+enum InventoryAction {
+  CONFIRMED_ALL
+  MARKED_IN_STOCK
+  MARKED_OUT_OF_STOCK
+  QUANTITY_SET
+}
+
+/// Where an inventory change came from. WhatsApp updates are made by staff
+/// who never sign in, so the source is the only thing separating them.
+enum InventoryLogSource {
+  WEB
+  WHATSAPP
+}
+
 enum PrescriptionStatus {
   PENDING
   CLAIMED
@@ -198,11 +214,71 @@ model Pharmacy {
   inventory    PharmacyInventory[]
   ratings      PharmacyRating[]
   reservations Reservation[]
+  staff        PharmacyStaff[]
+  inventoryLogs InventoryLog[]
 
   @@index([verificationStatus])
   @@index([state])
   @@index([state, lga])
   @@index([latitude, longitude])
+}
+
+/// A phone number allowed to update one pharmacy's stock over WhatsApp.
+///
+/// Separate from User on purpose: the people at the counter are not
+/// account holders. They never sign in, hold no password and see no
+/// patient data — the number itself is the whole credential, which is why
+/// it is the owner who adds it and the owner who can revoke it.
+///
+/// Globally unique, not unique per pharmacy: an inbound message carries
+/// nothing but a phone number, so a number that mapped to two shops would
+/// leave the update with no shelf to belong to.
+model PharmacyStaff {
+  id          String   @id @default(cuid())
+  pharmacyId  String
+  phone       String   @unique // stored E.164, via normalizePhone in lib/auth
+  displayName String?
+  active      Boolean  @default(true) // revoked rather than deleted, so the logs keep a name
+  createdAt   DateTime @default(now())
+
+  pharmacy Pharmacy       @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  logs     InventoryLog[]
+
+  @@index([pharmacyId])
+}
+
+/// Who changed a stock listing, when, and through what.
+///
+/// Stock claims are the one thing this app asks patients to trust, and a
+/// channel where a text message can flip a shelf to "out" needs to leave
+/// a trail the owner can read back.
+model InventoryLog {
+  id          String             @id @default(cuid())
+  pharmacyId  String
+  staffId     String? // null when an owner did it from the dashboard
+  inventoryId String? // null for whole-list actions like CONFIRMED_ALL
+  action      InventoryAction
+  source      InventoryLogSource
+  detail      String? // e.g. "Amoxicillin 500 mg → 12", for reading back
+  createdAt   DateTime           @default(now())
+
+  pharmacy Pharmacy       @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  staff    PharmacyStaff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  @@index([pharmacyId, createdAt])
+}
+
+/// Every inbound WhatsApp message id we have already acted on.
+///
+/// Meta retries a webhook until it gets a 200, and a retried "/out
+/// amoxicillin" must not mark it out twice, nor a retried button press
+/// re-stamp a whole catalogue. Recording the id first makes every handler
+/// below idempotent without any of them having to think about it.
+model WhatsappInbound {
+  messageId   String   @id // Meta's wamid
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
 }
 
 model PharmacyInventory {
