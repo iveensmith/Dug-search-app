@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react'
 import Button from '@/components/ui/Button'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { IconX } from '@/components/ui/icons'
+import { HOLD_HOURS } from '@/lib/reservations'
 
 export type ReservationResult = {
   id: string
   status: string
+  /** When the pack was set aside — the two-hour hold counts from here. */
+  readyAt: string | null
   pharmacy: { id: string; name: string }
   drug: { id: string }
 }
@@ -179,9 +182,14 @@ export default function ReserveDialog({
         <Button onClick={submit} loading={busy} className="mt-5 w-full" size="lg">
           {busy ? 'Sending…' : 'Send reservation'}
         </Button>
+        {/* The hold window is said here, before anyone commits, and counted
+            down on the reservation afterwards. An expiry a patient only
+            finds out about when it has already happened is worse than no
+            expiry at all. */}
         <p className="mt-2.5 text-center text-xs text-gray-500 dark:text-gray-400">
           This sends a request to the pharmacy — nothing is paid and they may not be able to hold
-          it. Check your reservations to see their answer.
+          it. If they do set it aside, they&apos;ll keep it for {HOLD_HOURS} hours. Check your
+          reservations to see their answer.
         </p>
       </div>
     </div>

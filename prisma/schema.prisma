@@ -49,6 +49,7 @@ enum ReservationStatus {
   COLLECTED // patient picked it up
   CANCELLED // patient changed their mind
   DECLINED // pharmacy can't hold it after all
+  EXPIRED // the 2-hour hold ran out before anyone came — only ever set by the sweep in lib/reservations
 }
 
 /// How much of a drug a pharmacy has, in the only terms a patient can act
@@ -291,6 +292,11 @@ model Reservation {
   note         String? // e.g. "coming after 5pm" — free text, patient's words
   contactPhone String? // so the counter can call back; copied from the account or typed in
   status       ReservationStatus @default(PENDING)
+  // When the pharmacy set the pack aside — the clock the 2-hour hold runs
+  // from. Null on rows that reached READY before holds existed, and those
+  // never lapse: retroactively expiring a hold somebody was promised is
+  // exactly the surprise this feature is meant to prevent.
+  readyAt      DateTime?
   collectedAt  DateTime? // set when it reaches COLLECTED, whoever marked it
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt

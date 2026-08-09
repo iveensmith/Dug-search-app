@@ -4,7 +4,9 @@ import { useState } from 'react'
 import Button from '@/components/ui/Button'
 import { drugLabel, relativeTime, type DrugSuggestion } from '@/lib/types'
 import {
+  HOLD_HOURS,
   RESERVATION_STATUS_META,
+  holdTimeLeft,
   isOpen,
   isStale,
   type ReservationStatusValue,
@@ -17,6 +19,7 @@ export type OwnerReservation = {
   note: string | null
   contactPhone: string | null
   status: ReservationStatusValue
+  readyAt: string | null
   collectedAt: string | null
   createdAt: string
   patientName: string
@@ -129,6 +132,16 @@ export default function OwnerReservations({
                   </p>
                 )}
 
+                {/* How long this pack is spoken for. The counter's version
+                    of the countdown answers a different question from the
+                    patient's: not "can I still get there" but "when is
+                    this mine to sell again". */}
+                {holdTimeLeft(r.status, r.readyAt) && (
+                  <p className="mt-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    Set aside · {holdTimeLeft(r.status, r.readyAt)}
+                  </p>
+                )}
+
                 <div className="mt-3 flex flex-wrap gap-2">
                   {r.status === 'PENDING' && (
                     <Button
@@ -198,6 +211,15 @@ export default function OwnerReservations({
                           ? `collected ${relativeTime(r.collectedAt)}`
                           : relativeTime(r.createdAt)}
                       </p>
+                      {/* The one closed state with something still to do
+                          about it: there is a real pack behind the counter
+                          with this person's name on it, and nobody is
+                          coming for it. */}
+                      {r.status === 'EXPIRED' && (
+                        <p className="mt-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                          Nobody came within {HOLD_HOURS} hours — put it back on the shelf.
+                        </p>
+                      )}
                     </div>
                     <span
                       className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${RESERVATION_STATUS_META[r.status].tone}`}

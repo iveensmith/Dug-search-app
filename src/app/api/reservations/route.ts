@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { notifyReservationRequested } from '@/lib/notify'
 import { cursorPage, cursorResult } from '@/lib/pagination'
+import { expireLapsedHolds } from '@/lib/expireHolds'
 
 const bodySchema = z.object({
   pharmacyId: z.string().min(1),
@@ -27,6 +28,7 @@ const select = {
   note: true,
   contactPhone: true,
   status: true,
+  readyAt: true,
   collectedAt: true,
   createdAt: true,
   pharmacy: { select: { id: true, name: true, address: true, phone: true, lga: true } },
@@ -46,6 +48,10 @@ const select = {
 export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['PATIENT'])
   if (session instanceof NextResponse) return session
+
+  // Before reading, not after: a hold that ran out an hour ago must not
+  // come back as live in this patient's own list.
+  await expireLapsedHolds({ userId: session.userId })
 
   const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
   // ?drugId= lets the search page ask "do I have an open reservation for
@@ -100,6 +106,10 @@ export async function POST(req: NextRequest) {
       { status: 409 },
     )
   }
+
+  // A hold that ran out is not an open reservation, and must not stand in
+  // the way of asking again — so it is closed out before the check below.
+  await expireLapsedHolds({ userId: session.userId, pharmacyId, drugId })
 
   // Reserving twice over should not create a second request for the counter
   // to work through. Hand back the one that's already open instead.

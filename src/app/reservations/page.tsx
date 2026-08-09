@@ -9,7 +9,9 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Button from '@/components/ui/Button'
 import { drugLabel, relativeTime, type DrugSuggestion } from '@/lib/types'
 import {
+  HOLD_HOURS,
   RESERVATION_STATUS_META,
+  holdTimeLeft,
   isOpen,
   isStale,
   type ReservationStatusValue,
@@ -26,6 +28,7 @@ type Reservation = {
   quantity: number | null
   note: string | null
   status: ReservationStatusValue
+  readyAt: string | null
   collectedAt: string | null
   createdAt: string
   pharmacy: { id: string; name: string; address: string; phone: string; lga: string | null }
@@ -207,6 +210,7 @@ function ReservationCard({
 }) {
   const meta = RESERVATION_STATUS_META[r.status]
   const live = isOpen(r.status)
+  const timeLeft = holdTimeLeft(r.status, r.readyAt)
 
   return (
     <li
@@ -246,6 +250,25 @@ function ReservationCard({
       {isStale(r.status, r.createdAt) && (
         <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
           No answer in over a day — worth calling the pharmacy to check.
+        </p>
+      )}
+
+      {/* The deadline, while there is still one. Emerald rather than amber:
+          a hold running is good news, and the countdown is there to help
+          them set off, not to alarm them. */}
+      {timeLeft && (
+        <p className="mt-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+          Held for you · {timeLeft}
+        </p>
+      )}
+
+      {/* And afterwards, what it actually means. The hold lapsed; the
+          medicine is almost certainly still on the shelf, and saying so is
+          the difference between a dead end and a next step. */}
+      {r.status === 'EXPIRED' && (
+        <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+          The {HOLD_HOURS}-hour hold ran out, so the pharmacy can sell it again. It may well still
+          be in stock — search for it to check, or call them.
         </p>
       )}
 

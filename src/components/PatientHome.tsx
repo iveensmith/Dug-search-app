@@ -29,6 +29,7 @@ import StockLevelBadge from '@/components/StockLevelBadge'
 import { dispensingClass, needsPrescription } from '@/lib/dispensing'
 import RecentSearches from '@/components/RecentSearches'
 import { NO_FILTERS, activeFilterCount, applyFilters, type Filters } from '@/lib/filters'
+import { holdTimeLeft, type ReservationStatusValue } from '@/lib/reservations'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -227,7 +228,9 @@ export default function PatientHome() {
   // Open reservations the signed-in patient already has for the drug on
   // screen, keyed by pharmacy — so a card shows "Reserved" instead of
   // offering to reserve the same thing twice.
-  const [reserved, setReserved] = useState<Record<string, { id: string; status: string }>>({})
+  const [reserved, setReserved] = useState<
+    Record<string, { id: string; status: string; readyAt: string | null }>
+  >({})
   const [reserving, setReserving] = useState<{ id: string; name: string } | null>(null)
   // Same dialog as `rating`, but opened by us rather than tapped — kept
   // separate so the two can't collide mid-flow.
@@ -399,9 +402,9 @@ export default function PatientHome() {
       const res = await fetch(`/api/reservations?drugId=${encodeURIComponent(drugId)}&open=true`)
       if (!res.ok) return
       const data = await res.json()
-      const open: Record<string, { id: string; status: string }> = {}
+      const open: Record<string, { id: string; status: string; readyAt: string | null }> = {}
       for (const r of data.reservations ?? []) {
-        open[r.pharmacy.id] = { id: r.id, status: r.status }
+        open[r.pharmacy.id] = { id: r.id, status: r.status, readyAt: r.readyAt ?? null }
       }
       setReserved(open)
     } catch {
@@ -1446,7 +1449,23 @@ export default function PatientHome() {
                           {reserved[r.id].status === 'READY' ? (
                             <>
                               <IconCheck width={14} height={14} className="shrink-0" />
+                              {/* Never a bare "Held for you" once there is a
+                                  deadline behind it — the time is the half
+                                  of the sentence that decides whether they
+                                  set off now. */}
                               Held for you
+                              {holdTimeLeft(
+                                reserved[r.id].status as ReservationStatusValue,
+                                reserved[r.id].readyAt,
+                              ) && (
+                                <span className="font-bold">
+                                  ·{' '}
+                                  {holdTimeLeft(
+                                    reserved[r.id].status as ReservationStatusValue,
+                                    reserved[r.id].readyAt,
+                                  )}
+                                </span>
+                              )}
                             </>
                           ) : (
                             <>
@@ -1581,7 +1600,10 @@ export default function PatientHome() {
           drugLabel={state.label}
           onClose={() => setReserving(null)}
           onReserved={(r) =>
-            setReserved((prev) => ({ ...prev, [reserving.id]: { id: r.id, status: r.status } }))
+            setReserved((prev) => ({
+              ...prev,
+              [reserving.id]: { id: r.id, status: r.status, readyAt: r.readyAt ?? null },
+            }))
           }
         />
       )}

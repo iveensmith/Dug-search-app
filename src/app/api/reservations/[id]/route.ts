@@ -52,7 +52,13 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: 'You cannot set that status' }, { status: 403 })
   }
 
-  if (!isOpen(reservation.status as ReservationStatusValue)) {
+  // A lapsed hold is closed, with one exception: the patient turns up late
+  // and the counter still has the pack. Refusing to record that would mean
+  // the one case where everyone did the right thing is the one the app
+  // can't write down. Nothing else may move an expired reservation.
+  const status = reservation.status as ReservationStatusValue
+  const lateCollection = status === 'EXPIRED' && next === 'COLLECTED'
+  if (!isOpen(status) && !lateCollection) {
     return NextResponse.json(
       { error: 'This reservation is already closed — make a new one instead' },
       { status: 409 },
@@ -64,8 +70,12 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     data: {
       status: next,
       collectedAt: next === 'COLLECTED' ? new Date() : null,
+      // Setting the pack aside starts the two-hour hold. Only stamped on
+      // the way into READY, so a later collect or decline can't restart a
+      // clock that has already run.
+      ...(next === 'READY' ? { readyAt: new Date() } : {}),
     },
-    select: { id: true, status: true, collectedAt: true, pharmacyId: true },
+    select: { id: true, status: true, collectedAt: true, readyAt: true, pharmacyId: true },
   })
 
   return NextResponse.json({ reservation: updated })

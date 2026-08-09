@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/auth'
 import { cursorPage, cursorResult } from '@/lib/pagination'
+import { expireLapsedHolds } from '@/lib/expireHolds'
 
 /**
  * The counter's queue: every reservation against the signed-in owner's
@@ -19,6 +20,10 @@ export async function GET(req: NextRequest) {
   })
   if (!pharmacy) return NextResponse.json({ error: 'No pharmacy for this account' }, { status: 404 })
 
+  // The counter's queue is the other place a lapsed hold must not still
+  // look live — that pack can go back on the shelf.
+  await expireLapsedHolds({ pharmacyId: pharmacy.id })
+
   const { take, cursorArgs } = cursorPage(req.nextUrl.searchParams)
   const rows = await prisma.reservation.findMany({
     where: { pharmacyId: pharmacy.id },
@@ -31,6 +36,7 @@ export async function GET(req: NextRequest) {
       note: true,
       contactPhone: true,
       status: true,
+      readyAt: true,
       collectedAt: true,
       createdAt: true,
       user: { select: { displayName: true } },
