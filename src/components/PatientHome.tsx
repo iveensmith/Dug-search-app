@@ -723,26 +723,68 @@ export default function PatientHome() {
             <div className="md:col-start-1 md:row-start-2">
               {searchPanel}
 
+              {/* The other way in, for someone holding a slip they cannot
+                  read. It sits under the search box because searching is
+                  still the main act — but it was a thin one-line row, easy
+                  to scroll past, and this is the path for the patients least
+                  able to help themselves. Brand green, like everything
+                  else — it is a different kind of help, not a different
+                  product. */}
               <Link
                 href="/prescriptions"
-                className="group mt-5 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-800"
+                className="group relative mt-5 block overflow-hidden rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900 dark:hover:border-emerald-800"
               >
-                <span className="flex shrink-0 items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                  <IconClipboardList width={20} height={20} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold text-gray-900 dark:text-gray-50">
-                    Not sure what you need?
-                  </span>
-                  <span className="block text-sm text-gray-500 dark:text-gray-400">
-                    Send a prescription photo to a pharmacist
-                  </span>
-                </span>
-                <IconChevronRight
-                  width={20}
-                  height={20}
-                  className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 dark:text-gray-600"
+                {/* Soft light behind the corner. pointer-events-none so it
+                    never sits between a thumb and the link. */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-emerald-400/15 blur-3xl dark:bg-emerald-500/10"
                 />
+
+                <div className="relative flex items-start gap-4 sm:gap-5">
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20">
+                    <IconClipboardList width={26} height={26} />
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-lg font-bold tracking-tight text-gray-900 sm:text-xl dark:text-gray-50">
+                      Not sure what you need?
+                    </span>
+                    <span className="mt-1 block text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-400">
+                      Send a photo of your prescription and a licensed pharmacist will explain.
+                    </span>
+
+                    {/* Both claims are true of the page this links to: see
+                        the copy on /prescriptions and the ownership check on
+                        the image route. */}
+                    <span className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1.5">
+                      {['Usually answered within a few hours', 'Only you and the pharmacist see it'].map(
+                        (line) => (
+                          <span
+                            key={line}
+                            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400"
+                          >
+                            <IconCheck
+                              width={13}
+                              height={13}
+                              className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                            />
+                            {line}
+                          </span>
+                        ),
+                      )}
+                    </span>
+
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                      Ask a pharmacist
+                      <IconChevronRight
+                        width={16}
+                        height={16}
+                        className="transition-transform duration-200 group-hover:translate-x-1"
+                      />
+                    </span>
+                  </span>
+                </div>
               </Link>
 
               <ul className="mt-8 grid max-w-md grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
