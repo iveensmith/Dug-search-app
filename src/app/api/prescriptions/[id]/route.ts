@@ -53,6 +53,8 @@ export async function GET(
       id: upload.id,
       status: upload.status,
       patientNote: upload.patientNote,
+      hasAudio: upload.audioKey !== null,
+      audioDurationSec: upload.audioDurationSec,
       patientName: upload.patient.displayName ?? 'Patient',
       pharmacistName: upload.pharmacist?.displayName ?? null,
       isMine: upload.patientUserId === session.userId,
@@ -64,6 +66,8 @@ export async function GET(
     messages: messages.map((m) => ({
       id: m.id,
       text: m.messageText,
+      hasAudio: m.audioKey !== null,
+      audioDurationSec: m.audioDurationSec,
       mine: m.sender.id === session.userId,
       senderName: m.sender.displayName ?? (m.sender.role === 'PHARMACIST' ? 'Pharmacist' : 'Patient'),
       senderRole: m.sender.role,

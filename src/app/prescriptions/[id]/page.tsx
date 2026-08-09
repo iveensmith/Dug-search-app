@@ -8,12 +8,16 @@ import Card from '@/components/ui/Card'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Button from '@/components/ui/Button'
 import { IconSend } from '@/components/ui/icons'
+import AudioNoteRecorder, { type RecordedNote } from '@/components/AudioNoteRecorder'
+import AudioNotePlayer from '@/components/AudioNotePlayer'
 
 type Thread = {
   upload: {
     id: string
     status: 'PENDING' | 'CLAIMED' | 'ANSWERED' | 'CLOSED'
     patientNote: string | null
+    hasAudio: boolean
+    audioDurationSec: number | null
     patientName: string
     pharmacistName: string | null
     isMine: boolean
@@ -23,7 +27,9 @@ type Thread = {
   }
   messages: {
     id: string
-    text: string
+    text: string | null
+    hasAudio: boolean
+    audioDurationSec: number | null
     mine: boolean
     senderName: string
     senderRole: string
@@ -37,6 +43,7 @@ export default function PrescriptionThreadPage() {
   const [thread, setThread] = useState<Thread | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [text, setText] = useState('')
+  const [voiceNote, setVoiceNote] = useState<RecordedNote | null>(null)
   const [busy, setBusy] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -69,21 +76,37 @@ export default function PrescriptionThreadPage() {
 
   async function send(e: React.FormEvent) {
     e.preventDefault()
-    if (!text.trim()) return
+    if (!text.trim() && !voiceNote) return
     setBusy(true)
     try {
-      const res = await fetch(`/api/prescriptions/${id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim() }),
-      })
+      // Multipart only when there is a recording to carry. A typed reply,
+      // which is still most of them, keeps the plain JSON body.
+      const init: RequestInit = voiceNote
+        ? { method: 'POST', body: audioForm() }
+        : {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text.trim() }),
+          }
+      const res = await fetch(`/api/prescriptions/${id}/messages`, init)
       if (res.ok) {
         setText('')
+        setVoiceNote(null)
         await load()
       }
     } finally {
       setBusy(false)
     }
+  }
+
+  function audioForm(): FormData {
+    const form = new FormData()
+    if (text.trim()) form.append('text', text.trim())
+    if (voiceNote) {
+      form.append('audio', voiceNote.blob, 'voice-note')
+      form.append('audioDuration', String(voiceNote.seconds))
+    }
+    return form
   }
 
   async function claim() {
@@ -170,6 +193,18 @@ export default function PrescriptionThreadPage() {
             <span className="font-medium">Patient&apos;s note:</span> {upload.patientNote}
           </p>
         )}
+        {/* With the prescription rather than in the conversation: this is
+            part of the question being asked, and a pharmacist deciding
+            whether to claim it should be able to hear it first. */}
+        {upload.hasAudio && (
+          <div className="mt-2 rounded-lg bg-gray-50 p-2 dark:bg-white/5">
+            <AudioNotePlayer
+              src={`/api/prescriptions/${upload.id}/audio`}
+              seconds={upload.audioDurationSec}
+              label="Patient's voice note"
+            />
+          </div>
+        )}
       </Card>
 
       {upload.canClaim && (
@@ -201,7 +236,16 @@ export default function PrescriptionThreadPage() {
                   {m.senderRole === 'PHARMACIST' ? ' · Pharmacist' : ''}
                 </p>
               )}
-              <p className="whitespace-pre-wrap text-sm">{m.text}</p>
+              {m.text && <p className="whitespace-pre-wrap text-sm">{m.text}</p>}
+              {m.hasAudio && (
+                <div className={m.text ? 'mt-2' : ''}>
+                  <AudioNotePlayer
+                    src={`/api/prescriptions/${upload.id}/messages/${m.id}/audio`}
+                    seconds={m.audioDurationSec}
+                    tone={m.mine ? 'own' : 'neutral'}
+                  />
+                </div>
+              )}
               <p className={`mt-1 text-right text-[10px] ${m.mine ? 'text-emerald-100 dark:text-emerald-900' : 'text-gray-400 dark:text-gray-500'}`}>
                 {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
@@ -212,18 +256,33 @@ export default function PrescriptionThreadPage() {
       </div>
 
       {upload.canMessage ? (
-        <form onSubmit={send} className="sticky bottom-0 mt-4 flex gap-2 bg-background py-3">
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type your message…"
-            maxLength={2000}
-            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900"
-          />
-          <Button type="submit" disabled={!text.trim()} loading={busy} size="lg" className="shrink-0">
-            <IconSend width={16} height={16} />
-            Send
-          </Button>
+        <form onSubmit={send} className="sticky bottom-0 mt-4 bg-background py-3">
+          {/* A follow-up question deserves the same answer as the first
+              one. Without this, a patient who explained their symptoms by
+              voice would have to type the moment the pharmacist asked
+              anything back. */}
+          <div className="mb-2">
+            <AudioNoteRecorder value={voiceNote} onChange={setVoiceNote} disabled={busy} />
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={voiceNote ? 'Add a note with it (optional)…' : 'Type your message…'}
+              maxLength={2000}
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900"
+            />
+            <Button
+              type="submit"
+              disabled={!text.trim() && !voiceNote}
+              loading={busy}
+              size="lg"
+              className="shrink-0"
+            >
+              <IconSend width={16} height={16} />
+              Send
+            </Button>
+          </div>
         </form>
       ) : upload.status === 'CLOSED' ? (
         <p className="mt-4 rounded-xl bg-gray-100 p-3 text-center text-sm text-gray-600 dark:bg-white/5 dark:text-gray-400">

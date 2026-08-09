@@ -14,18 +14,31 @@ export interface StorageAdapter {
   delete(key: string): Promise<void>
 }
 
-const EXT_BY_TYPE: Record<string, string> = {
+// The extension is derived from the content type on the way in and the
+// content type from the extension on the way out, so these two must stay
+// exact mirrors of each other or a stored file becomes unreadable.
+const IMAGE_EXT_BY_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
 }
-const TYPE_BY_EXT: Record<string, string> = {
-  jpg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
+// Voice notes on prescription queries — see lib/audioNotes. Stored exactly
+// as the browser recorded them: there is no re-encoding step for audio the
+// way there is for photos, because every format here is already
+// speech-sized and transcoding would need a binary this app doesn't carry.
+const AUDIO_EXT_BY_TYPE: Record<string, string> = {
+  'audio/webm': 'weba',
+  'audio/mp4': 'm4a',
+  'audio/ogg': 'oga',
+  'audio/mpeg': 'mp3',
 }
 
-export const ALLOWED_IMAGE_TYPES = Object.keys(EXT_BY_TYPE)
+const EXT_BY_TYPE: Record<string, string> = { ...IMAGE_EXT_BY_TYPE, ...AUDIO_EXT_BY_TYPE }
+const TYPE_BY_EXT: Record<string, string> = Object.fromEntries(
+  Object.entries(EXT_BY_TYPE).map(([type, ext]) => [ext, type]),
+)
+
+export const ALLOWED_IMAGE_TYPES = Object.keys(IMAGE_EXT_BY_TYPE)
 // Generous because nothing is stored at this size: uploads are re-encoded
 // to WebP at 1600px before they hit storage (see lib/images.ts), so a
 // 20 MB phone photo lands as well under a megabyte. The cap is here to

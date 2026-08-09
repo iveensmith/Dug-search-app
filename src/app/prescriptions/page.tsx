@@ -13,12 +13,16 @@ import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Textarea } from '@/components/ui/Field'
 import { downscaleImage } from '@/lib/downscaleImage'
-import { IconClipboardList, IconUpload, IconX } from '@/components/ui/icons'
+import { IconClipboardList, IconMic, IconUpload, IconX } from '@/components/ui/icons'
+import AudioNoteRecorder, { type RecordedNote } from '@/components/AudioNoteRecorder'
+import { formatDuration } from '@/lib/audioNotes'
 
 type UploadRow = {
   id: string
   status: 'PENDING' | 'CLAIMED' | 'ANSWERED' | 'CLOSED'
   patientNote: string | null
+  hasAudio: boolean
+  audioDurationSec: number | null
   pharmacistName: string | null
   unreadCount: number
   createdAt: string
@@ -48,6 +52,8 @@ export default function PrescriptionsPage() {
   // whatever was picked.
   const [ready, setReady] = useState<File | null>(null)
   const [shrinking, setShrinking] = useState(false)
+  // A spoken note, for patients who would rather say it than type it.
+  const [voiceNote, setVoiceNote] = useState<RecordedNote | null>(null)
   const [savedBytes, setSavedBytes] = useState<{ from: number; to: number } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -142,6 +148,12 @@ export default function PrescriptionsPage() {
       const form = new FormData()
       form.append('image', file)
       if (note.trim()) form.append('note', note.trim())
+      if (voiceNote) {
+        // The extension matters: some servers and players sniff it, and the
+        // blob has no name of its own.
+        form.append('audio', voiceNote.blob, 'voice-note')
+        form.append('audioDuration', String(voiceNote.seconds))
+      }
       const res = await fetch('/api/prescriptions', { method: 'POST', body: form })
       const data = await res.json()
       if (!res.ok) {
@@ -149,6 +161,7 @@ export default function PrescriptionsPage() {
         return
       }
       setNote('')
+      setVoiceNote(null)
       clearFile()
       router.push(`/prescriptions/${data.upload.id}`)
     } catch {
@@ -249,6 +262,13 @@ export default function PrescriptionsPage() {
               />
             </Field>
           </div>
+
+          {/* Beside the typed note rather than instead of it. Some people
+              type, some speak, and plenty do both — a sentence of text and
+              thirty seconds explaining what it actually feels like. */}
+          <div className="mt-4">
+            <AudioNoteRecorder value={voiceNote} onChange={setVoiceNote} disabled={busy} />
+          </div>
           {error && <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
           {/* Blocked while the photo is being prepared — submitting then
               would send the full-size original and undo the point. */}
@@ -305,9 +325,19 @@ export default function PrescriptionsPage() {
                   <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-md">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {u.patientNote ?? 'Prescription question'}
+                        {u.patientNote ?? (u.hasAudio ? 'Voice note' : 'Prescription question')}
                       </p>
-                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="flex items-center gap-1.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                        {/* A marker, not a player. The list is a summary,
+                            and twenty players would each want their own
+                            slice of somebody's data bundle. */}
+                        {u.hasAudio && (
+                          <span className="inline-flex shrink-0 items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
+                            <IconMic width={11} height={11} />
+                            {u.audioDurationSec ? formatDuration(u.audioDurationSec) : 'Voice'}
+                            <span className="text-gray-400 dark:text-gray-600">·</span>
+                          </span>
+                        )}
                         {new Date(u.createdAt).toLocaleDateString()}
                         {u.pharmacistName ? ` · ${u.pharmacistName}` : ''}
                       </p>

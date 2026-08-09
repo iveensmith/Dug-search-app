@@ -4,8 +4,15 @@ import { requireSession } from '@/lib/auth'
 import { cursorPage, cursorResult } from '@/lib/pagination'
 import { storage, ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from '@/lib/storage'
 import { normaliseUpload, STORED_IMAGE_TYPE } from '@/lib/images'
+import {
+  MAX_AUDIO_BYTES,
+  MAX_AUDIO_SECONDS,
+  clampReportedDuration,
+  normaliseAudioType,
+} from '@/lib/audioNotes'
 
-// POST: patient uploads a prescription photo (multipart: image, note?)
+// POST: patient uploads a prescription photo
+// (multipart: image, note?, audio?, audioDuration?)
 export async function POST(req: NextRequest) {
   const session = await requireSession(req, ['PATIENT'])
   if (session instanceof NextResponse) return session
@@ -35,12 +42,37 @@ export async function POST(req: NextRequest) {
     // A file that says image/jpeg but isn't one lands here.
     return NextResponse.json({ error: "That file doesn't look like a photo" }, { status: 400 })
   }
+  // Optional spoken note, for patients who can say what is wrong far more
+  // precisely than they can type it in English. Validated before the photo
+  // is stored so a rejected recording doesn't leave an orphan image.
+  const audio = form.get('audio')
+  let audioKey: string | null = null
+  let audioType: ReturnType<typeof normaliseAudioType> = null
+  if (audio instanceof File && audio.size > 0) {
+    audioType = normaliseAudioType(audio.type)
+    if (!audioType) {
+      return NextResponse.json({ error: "That voice note isn't a format we can play" }, { status: 400 })
+    }
+    if (audio.size > MAX_AUDIO_BYTES) {
+      return NextResponse.json(
+        { error: `That voice note is too long — keep it under ${MAX_AUDIO_SECONDS / 60} minutes` },
+        { status: 400 },
+      )
+    }
+  }
+
   const key = await storage.put(normalised, STORED_IMAGE_TYPE)
+  if (audio instanceof File && audioType) {
+    audioKey = await storage.put(Buffer.from(await audio.arrayBuffer()), audioType)
+  }
+
   const upload = await prisma.prescriptionUpload.create({
     data: {
       patientUserId: session.userId,
       imageKey: key,
       patientNote: typeof note === 'string' && note.trim() ? note.trim().slice(0, 1000) : null,
+      audioKey,
+      audioDurationSec: audioKey ? clampReportedDuration(form.get('audioDuration')) : null,
     },
   })
   return NextResponse.json({ upload: { id: upload.id, status: upload.status } }, { status: 201 })
@@ -98,6 +130,8 @@ export async function GET(req: NextRequest) {
       id: u.id,
       status: u.status,
       patientNote: u.patientNote,
+      hasAudio: u.audioKey !== null,
+      audioDurationSec: u.audioDurationSec,
       patientName: u.patient.displayName ?? 'Patient',
       pharmacistName: u.pharmacist?.displayName ?? null,
       unreadCount: u._count.messages,

@@ -410,6 +410,11 @@ model PrescriptionUpload {
   pharmacistUserId String? // set when a pharmacist claims the upload
   imageKey         String // storage-adapter key, NOT a public URL
   patientNote      String? // optional "what confuses me" note
+  // A spoken note, for the many patients who can say what is wrong far
+  // more precisely than they can type it in English. Never transcribed —
+  // see lib/audioNotes for why.
+  audioKey         String? // storage-adapter key, NOT a public URL
+  audioDurationSec Int? // client-reported, clamped; a label on a play button, nothing more
   status           PrescriptionStatus @default(PENDING)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -427,7 +432,12 @@ model PrescriptionMessage {
   id                   String    @id @default(cuid())
   prescriptionUploadId String
   senderUserId         String
-  messageText          String
+  // Nullable since voice notes: a message is text, or audio, or both, and
+  // the database enforces that it is never neither (see the check
+  // constraint in migration 20260809190000_prescription_audio_notes).
+  messageText          String?
+  audioKey             String?
+  audioDurationSec     Int?
   createdAt            DateTime  @default(now())
   readAt               DateTime? // null = unread; powers the in-app notification badge
 
