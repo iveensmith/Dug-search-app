@@ -34,6 +34,18 @@ export type SubstituteGroup = {
   results: PharmacyResult[]
 }
 
+/**
+ * A pharmacy answering a multi-medicine search: everything a normal result
+ * has, plus which of the requested medicines it actually stocks.
+ *
+ * No stockLevel — bands are per medicine and there is no honest way to
+ * average "plenty" and "last few" into one badge for a shop.
+ */
+export type CoverageResult = Omit<PharmacyResult, 'stockLevel'> & {
+  drugIds: string[]
+  matched: number
+}
+
 export function drugLabel(d: DrugSuggestion): string {
   const base = `${d.genericName} ${d.strength} (${d.form.toLowerCase()})`
   return d.packSize ? `${base} · ${d.packSize}` : base

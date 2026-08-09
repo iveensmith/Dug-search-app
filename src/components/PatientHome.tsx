@@ -9,6 +9,7 @@ import {
   type DrugSuggestion,
   type PharmacyResult,
   type SubstituteGroup,
+  type CoverageResult,
   drugLabel,
   directionsUrl,
   relativeTime,
@@ -30,6 +31,8 @@ import { dispensingClass, needsPrescription } from '@/lib/dispensing'
 import RecentSearches from '@/components/RecentSearches'
 import { NO_FILTERS, activeFilterCount, applyFilters, type Filters } from '@/lib/filters'
 import { holdTimeLeft, type ReservationStatusValue } from '@/lib/reservations'
+import CoverageResults from '@/components/CoverageResults'
+import { MAX_DRUGS } from '@/lib/searchLimits'
 import { Field, Select } from '@/components/ui/Field'
 import {
   IconAlertCircle,
@@ -43,6 +46,7 @@ import {
   IconMessageCircle,
   IconPhone,
   IconPill,
+  IconPlus,
   IconRoute,
   IconSearch,
   IconShieldCheck,
@@ -147,13 +151,18 @@ type SearchState =
       kind: 'results'
       label: string
       drugId: string
-      // Carried from the picked suggestion rather than refetched: whether
-      // the drug needs a prescription has to be on screen with the very
-      // first result, not a render later.
-      dispensing: string | null
+      // The whole suggestion, carried from the pick rather than refetched:
+      // its prescription status has to be on screen with the very first
+      // result, and starting a list from it must not need a round trip.
+      drug: DrugSuggestion
       results: PharmacyResult[]
       substitutes: SubstituteGroup[]
       elsewhere: PharmacyResult[] // same drug, elsewhere in the state — powers the empty state
+    }
+  | {
+      kind: 'coverage'
+      drugs: DrugSuggestion[]
+      results: CoverageResult[]
     }
   | { kind: 'no-match'; query: string }
 
@@ -236,10 +245,16 @@ export default function PatientHome() {
   // separate so the two can't collide mid-flow.
   const [ratingPrompt, setRatingPrompt] = useState<{ id: string; name: string } | null>(null)
   const [collectingId, setCollectingId] = useState<string | null>(null)
+  // The medicines being searched for together. Empty is the normal case
+  // and means the ordinary one-medicine search — list mode is opt-in, so
+  // picking a drug never quietly starts building a list nobody asked for.
+  const [basket, setBasket] = useState<DrugSuggestion[]>([])
+  const [coverageLoading, setCoverageLoading] = useState(false)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
   const userPosRef = useRef<Pos | null>(null)
   const lastDrugRef = useRef<DrugSuggestion | null>(null)
   const resortedRef = useRef(false)
@@ -369,7 +384,7 @@ export default function PatientHome() {
         kind: 'results',
         label,
         drugId: drug.id,
-        dispensing: drug.dispensing ?? null,
+        drug,
         results: data.results ?? [],
         substitutes: data.substitutes ?? [],
         elsewhere: data.elsewhere ?? [],
@@ -380,7 +395,7 @@ export default function PatientHome() {
         kind: 'results',
         label,
         drugId: drug.id,
-        dispensing: drug.dispensing ?? null,
+        drug,
         results: [],
         substitutes: [],
         elsewhere: [],
@@ -442,7 +457,73 @@ export default function PatientHome() {
 
   function searchDrug(drug: DrugSuggestion) {
     if (!selectedState || !selectedLgaRef.current) return
+    // In list mode a pick joins the list instead of replacing it. Picking
+    // something already on the list is a no-op rather than a duplicate.
+    if (basket.length > 0) {
+      if (basket.some((d) => d.id === drug.id)) return
+      const next = [...basket, drug].slice(0, MAX_DRUGS)
+      setBasket(next)
+      return runCoverageSearch(next, selectedState)
+    }
     return runSearch(drug, selectedState)
+  }
+
+  /**
+   * Starts a list from the medicine already on screen, so the patient
+   * never retypes what they just searched for.
+   */
+  function startList(drug: DrugSuggestion) {
+    setBasket([drug])
+    setState({ kind: 'coverage', drugs: [drug], results: [] })
+    // The box is above the results; bring it back into view and put the
+    // cursor in it, or "add another" leaves them looking at nothing.
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setTimeout(() => searchInputRef.current?.focus(), 350)
+  }
+
+  function removeFromList(drugId: string) {
+    const next = basket.filter((d) => d.id !== drugId)
+    setBasket(next)
+    if (!selectedState) return
+    if (next.length === 0) {
+      setState({ kind: 'idle' })
+      return
+    }
+    // One medicine left is not a coverage question any more — the ordinary
+    // search answers it better, with substitutes, filters and reserving.
+    if (next.length === 1) {
+      setBasket([])
+      void runSearch(next[0], selectedState)
+      return
+    }
+    void runCoverageSearch(next, selectedState)
+  }
+
+  /** Which nearby pharmacies cover the most of the list, in one trip. */
+  async function runCoverageSearch(drugs: DrugSuggestion[], forState: NigerianStateValue) {
+    setState({ kind: 'coverage', drugs, results: [] })
+    setRoute(null)
+    setRouteError('')
+    setCoverageLoading(true)
+    const pos = await ensureLocation()
+    const params = new URLSearchParams({
+      drugIds: drugs.map((d) => d.id).join(','),
+      state: forState,
+    })
+    if (selectedLgaRef.current) params.set('lga', selectedLgaRef.current)
+    if (pos) {
+      params.set('lat', String(pos.lat))
+      params.set('lng', String(pos.lng))
+    }
+    try {
+      const res = await fetch(`/api/search/multi?${params}`)
+      const data = await res.json()
+      setState({ kind: 'coverage', drugs, results: data.results ?? [] })
+    } catch {
+      setState({ kind: 'coverage', drugs, results: [] })
+    } finally {
+      setCoverageLoading(false)
+    }
   }
 
   // One-tap search for the "Popular" chips: resolve the term against the
@@ -658,7 +739,47 @@ export default function PatientHome() {
           </>
         )}
 
-        <SearchBox onSelect={searchDrug} onNoMatch={logNoMatch} disabled={!areaChosen} />
+        {/* The list, when there is one. Above the box because it is what
+            the next pick joins — and every chip removable, since a
+            prescription typed wrong is the normal way this goes astray. */}
+        {basket.length > 0 && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+            <p className="text-xs font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+              Medicines you need ({basket.length})
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {basket.map((d) => (
+                <li key={d.id}>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white py-1 pl-3 pr-1 text-xs font-semibold text-gray-800 shadow-sm dark:bg-gray-900 dark:text-gray-100">
+                    {drugLabel(d)}
+                    <button
+                      type="button"
+                      onClick={() => removeFromList(d.id)}
+                      aria-label={`Remove ${drugLabel(d)} from the list`}
+                      className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-gray-200"
+                    >
+                      <IconX width={12} height={12} />
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-emerald-800/80 dark:text-emerald-300/80">
+              {basket.length >= MAX_DRUGS
+                ? `That's the most we can search at once.`
+                : 'Add the rest below — we\'ll show which pharmacies have the most of them.'}
+            </p>
+          </div>
+        )}
+
+        <SearchBox
+          onSelect={searchDrug}
+          onNoMatch={logNoMatch}
+          disabled={!areaChosen || basket.length >= MAX_DRUGS}
+          inputRef={searchInputRef}
+          placeholder={basket.length > 0 ? 'Add another medicine…' : undefined}
+          clearOnSelect={basket.length > 0}
+        />
 
         <RecentSearches
           onPick={(drug) => {
@@ -1037,6 +1158,58 @@ export default function PatientHome() {
           </ul>
         )}
 
+        {state.kind === 'coverage' && (
+          <>
+            {state.drugs.length < 2 ? (
+              <Card className="text-center">
+                <p className="font-semibold text-gray-900 dark:text-gray-100">
+                  Add a second medicine
+                </p>
+                <p className="mx-auto mt-1.5 max-w-md text-sm text-gray-600 dark:text-gray-400">
+                  Search for the next thing on your prescription and we&apos;ll show which
+                  pharmacies near you have the most of the list.
+                </p>
+              </Card>
+            ) : coverageLoading ? (
+              <ul className="space-y-3" aria-label="Searching pharmacies" aria-live="polite">
+                {[0, 1, 2].map((i) => (
+                  <li
+                    key={i}
+                    className="animate-pulse rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+                  >
+                    <div className="h-4 w-2/5 rounded bg-gray-200 dark:bg-gray-800" />
+                    <div className="mt-2 h-3 w-3/5 rounded bg-gray-100 dark:bg-gray-800/70" />
+                    <div className="mt-4 h-9 rounded-lg bg-gray-100 dark:bg-gray-800/70" />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>
+                <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                  {state.results.length === 0 ? (
+                    <>Nothing in {selectedLabel} lists any of these.</>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                        {state.results.length}
+                      </span>{' '}
+                      {state.results.length === 1 ? 'pharmacy' : 'pharmacies'} in {selectedLabel}{' '}
+                      {state.results.length === 1 ? 'has' : 'have'} at least one of your{' '}
+                      {state.drugs.length} medicines
+                    </>
+                  )}
+                </p>
+                <CoverageResults
+                  drugs={state.drugs}
+                  results={state.results}
+                  onCall={handleCall}
+                  copiedPhone={copiedPhone ?? ''}
+                />
+              </>
+            )}
+          </>
+        )}
+
         {state.kind === 'no-match' && (
           <div className="animate-fade-up mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
             <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
@@ -1054,7 +1227,7 @@ export default function PatientHome() {
             state below is already one, and two stacked warnings read as
             noise. An amber rule down the side says "bring this with you"
             without competing with "nobody has it". */}
-        {state.kind === 'results' && needsPrescription(state.dispensing) && (
+        {state.kind === 'results' && needsPrescription(state.drug.dispensing) && (
           <div className="animate-fade-up mb-4 rounded-2xl border border-gray-200 border-l-4 border-l-amber-400 bg-white p-4 dark:border-gray-800 dark:border-l-amber-500 dark:bg-gray-900">
             <p className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-gray-100">
               <IconAlertCircle width={16} height={16} className="shrink-0 text-amber-500 dark:text-amber-400" />
@@ -1282,6 +1455,21 @@ export default function PatientHome() {
                 </div>
               </div>
             </div>
+
+            {/* Offered where someone has just been shown one answer and
+                may have a prescription with four more lines on it. Not on
+                the empty page, where it would be a puzzle rather than an
+                offer. */}
+            {state.kind === 'results' && (
+              <button
+                type="button"
+                onClick={() => startList(state.drug)}
+                className="mb-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:border-emerald-500 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:border-emerald-600 dark:hover:bg-emerald-500/10"
+              >
+                <IconPlus width={15} height={15} />
+                Need more than one? Add to a list
+              </button>
+            )}
 
             <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {(

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from 'react'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import DispensingBadge from '@/components/DispensingBadge'
 import Button from '@/components/ui/Button'
@@ -32,9 +32,26 @@ type Props = {
   onSelect: (drug: DrugSuggestion) => void
   onNoMatch: (query: string) => void
   disabled?: boolean
+  /** Exposed so a caller can put the cursor here — see the list mode in PatientHome. */
+  inputRef?: RefObject<HTMLInputElement | null>
+  /** Overrides the placeholder when the box is adding to a list rather than starting a search. */
+  placeholder?: string
+  /**
+   * Empties the box after a pick instead of leaving the chosen name in it.
+   * What the box is for changes in list mode: the pick has become a chip
+   * above, and the next thing the patient does is type another name.
+   */
+  clearOnSelect?: boolean
 }
 
-export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
+export default function SearchBox({
+  onSelect,
+  onNoMatch,
+  disabled,
+  inputRef,
+  placeholder,
+  clearOnSelect,
+}: Props) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
   const [open, setOpen] = useState(false)
@@ -107,7 +124,7 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
 
   function pick(drug: DrugSuggestion) {
     lastPickedRef.current = drug
-    setQuery(drugLabel(drug))
+    setQuery(clearOnSelect ? '' : drugLabel(drug))
     setOpen(false)
     onSelect(drug)
   }
@@ -169,7 +186,8 @@ export default function SearchBox({ onSelect, onNoMatch, disabled }: Props) {
             }}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
-            placeholder={'Try "Paracetamol", "Amoxicillin" or "Ventolin"'}
+            ref={inputRef}
+            placeholder={placeholder ?? 'Try "Paracetamol", "Amoxicillin" or "Ventolin"'}
             className="w-full rounded-xl border-2 border-gray-300 bg-white py-3.5 pl-10 pr-4 text-base text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-950 dark:disabled:bg-gray-800"
             aria-label="Search for a drug"
             autoComplete="off"

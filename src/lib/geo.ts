@@ -180,6 +180,101 @@ export async function findPharmaciesWithDrugs(opts: {
   return byDrug
 }
 
+/** One pharmacy, and which of the medicines on the list it actually has. */
+export type PharmacyCoverageResult = Omit<PharmacyStockResult, 'stockLevel'> & {
+  /** Which of the requested drugs this pharmacy has in stock. */
+  drugIds: string[]
+  matched: number
+}
+
+/**
+ * Which pharmacies can fill the most of a list of medicines in one visit.
+ *
+ * Ranked by how many of the list a shop covers before distance, because
+ * the question this answers is not "where is the nearest X" — it is
+ * "whose counter can I leave having got everything". Someone holding a
+ * prescription for four things will cross town to avoid making four trips.
+ *
+ * Grouped in the database rather than by fetching each drug's pharmacies
+ * and intersecting in JS: the intersection of five drugs' nearest-twenty
+ * lists can easily be empty while a shop holding all five sits just
+ * outside every one of them.
+ *
+ * stockUpdatedAt is the OLDEST confirmation among the matched drugs, not
+ * the newest. A card saying "confirmed an hour ago" because one of four
+ * items was touched recently would launder a week-old claim about the
+ * other three through the freshest one.
+ */
+export async function findPharmaciesStockingAny(opts: {
+  drugIds: string[]
+  state: NigerianStateValue
+  lga?: string | null
+  lat: number
+  lng: number
+  limit?: number
+}): Promise<PharmacyCoverageResult[]> {
+  const { drugIds, state, lga, lat, lng } = opts
+  const limit = opts.limit ?? 20
+  if (drugIds.length === 0) return []
+
+  return prisma.$queryRaw<PharmacyCoverageResult[]>`
+    WITH matched AS (
+      SELECT
+        i."pharmacyId",
+        array_agg(i."drugId") AS "drugIds",
+        -- ::int on both: COUNT and array_length are bigint, which arrives
+        -- as a BigInt that JSON.stringify refuses to serialise.
+        COUNT(*)::int AS "matched",
+        MIN(i."updatedAt") AS "stockUpdatedAt"
+      FROM "PharmacyInventory" i
+      WHERE i."drugId" IN (${Prisma.join(drugIds)})
+        AND i."inStock" = true
+      GROUP BY i."pharmacyId"
+    )
+    SELECT
+      p."id",
+      p."name",
+      p."address",
+      p."lga",
+      p."latitude",
+      p."longitude",
+      p."phone",
+      p."open24h",
+      p."opensAt",
+      p."closesAt",
+      m."drugIds",
+      m."matched",
+      m."stockUpdatedAt",
+      COALESCE(r."ratingCount", 0)::int AS "ratingCount",
+      r."ratingAvg",
+      2 * 6371 * asin(
+        sqrt(
+          power(sin(radians((p."latitude" - ${lat}) / 2)), 2) +
+          cos(radians(${lat})) * cos(radians(p."latitude")) *
+          power(sin(radians((p."longitude" - ${lng}) / 2)), 2)
+        )
+      ) AS "distanceKm"
+    FROM matched m
+    JOIN "Pharmacy" p ON p."id" = m."pharmacyId"
+    LEFT JOIN (
+      SELECT
+        "pharmacyId",
+        COUNT(*) AS "ratingCount",
+        CASE WHEN COUNT(*) >= 3
+          THEN AVG(("availability" + "service" + "pricing" + "honesty") / 4.0)::float8
+        END AS "ratingAvg"
+      FROM "PharmacyRating"
+      GROUP BY "pharmacyId"
+    ) r ON r."pharmacyId" = p."id"
+    WHERE
+      p."verificationStatus" = 'APPROVED'
+      AND p."state" = ${state}::"NigerianState"
+      AND ${lga ? Prisma.sql`p."lga" = ${lga}` : Prisma.sql`TRUE`}
+    ORDER BY m."matched" DESC, "distanceKm" ASC
+    LIMIT ${limit}
+  `
+}
+
 export type SubstituteGroup = { drug: DrugSuggestion; results: PharmacyStockResult[] }
 
 /**
