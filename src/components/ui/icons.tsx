@@ -73,6 +73,15 @@ export function IconUpload(props: IconProps) {
   )
 }
 
+export function IconCamera(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 8.5A1.5 1.5 0 014.5 7h2.2a1 1 0 00.83-.45l.94-1.4A1 1 0 019.3 4.7h5.4a1 1 0 01.83.45l.94 1.4a1 1 0 00.83.45h2.2A1.5 1.5 0 0121 8.5v9a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 17.5v-9z" />
+      <circle cx="12" cy="13" r="3.2" />
+    </svg>
+  )
+}
+
 export function IconDownload(props: IconProps) {
   return (
     <svg {...base} {...props}>

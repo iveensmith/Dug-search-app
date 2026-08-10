@@ -41,6 +41,7 @@ import {
   IconCheck,
   IconChevronDown,
   IconChevronRight,
+  IconCamera,
   IconClipboardList,
   IconClock,
   IconMapPin,
@@ -969,7 +970,7 @@ export default function PatientHome() {
                   product. */}
               <Link
                 href="/prescriptions"
-                className="group relative mt-5 block overflow-hidden rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900 dark:hover:border-emerald-800"
+                className="group relative mt-4 block overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg sm:mt-5 sm:rounded-3xl sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900 dark:hover:border-emerald-800"
               >
                 {/* Soft light behind the corner. pointer-events-none so it
                     never sits between a thumb and the link. */}
@@ -978,23 +979,31 @@ export default function PatientHome() {
                   className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-emerald-400/15 blur-3xl dark:bg-emerald-500/10"
                 />
 
-                <div className="relative flex items-start gap-4 sm:gap-5">
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20">
-                    <IconClipboardList width={26} height={26} />
+                <div className="relative flex items-center gap-3.5 sm:items-start sm:gap-5">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 sm:rounded-2xl dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20">
+                    <IconCamera width={22} height={22} className="sm:hidden" />
+                    <IconClipboardList width={26} height={26} className="hidden sm:block" />
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block text-lg font-bold tracking-tight text-gray-900 sm:text-xl dark:text-gray-50">
+                    <span className="block text-base font-bold tracking-tight text-gray-900 sm:text-xl dark:text-gray-50">
                       Not sure what you need?
                     </span>
-                    <span className="mt-1 block text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-400">
+                    {/* Two wordings, one meaning. The phone gets the short
+                        one because the card is competing with the search
+                        box on a 390px screen, and losing that contest is
+                        the point — searching is still the main act. */}
+                    <span className="mt-0.5 block text-sm leading-snug text-gray-600 sm:hidden dark:text-gray-400">
+                      Tap to send a photo — a pharmacist will explain.
+                    </span>
+                    <span className="mt-1 hidden text-base leading-relaxed text-gray-600 sm:block dark:text-gray-400">
                       Send a photo of your prescription and a licensed pharmacist will explain.
                     </span>
 
                     {/* Both claims are true of the page this links to: see
                         the copy on /prescriptions and the ownership check on
                         the image route. */}
-                    <span className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1.5">
+                    <span className="mt-3.5 hidden flex-wrap gap-x-4 gap-y-1.5 sm:flex">
                       {['Usually answered within a few hours', 'Only you and the pharmacist see it'].map(
                         (line) => (
                           <span
@@ -1012,7 +1021,12 @@ export default function PatientHome() {
                       )}
                     </span>
 
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                    {/* A call-to-action row inside a card that is itself
+                        one link is a second thing to aim at. Worth the
+                        height on desktop where it reads as a button; on a
+                        phone the chevron at the edge says the same in one
+                        line of nothing. */}
+                    <span className="mt-4 hidden items-center gap-1.5 text-sm font-semibold text-emerald-700 sm:inline-flex dark:text-emerald-400">
                       Ask a pharmacist
                       <IconChevronRight
                         width={16}
@@ -1021,6 +1035,13 @@ export default function PatientHome() {
                       />
                     </span>
                   </span>
+
+                  <IconChevronRight
+                    width={20}
+                    height={20}
+                    aria-hidden="true"
+                    className="shrink-0 text-emerald-600 transition-transform duration-200 group-hover:translate-x-0.5 sm:hidden dark:text-emerald-400"
+                  />
                 </div>
               </Link>
 
