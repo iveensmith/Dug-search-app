@@ -17,6 +17,7 @@ import {
 } from '@/lib/types'
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 import { loadLgas, useLgas } from '@/lib/useLgas'
+import { pickLga } from '@/lib/detectLga'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
@@ -196,21 +197,20 @@ async function detectAreaFromPosition(
 ): Promise<{ state: NigerianStateValue; lga: string | null } | null> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}`,
+      // addressdetails is the default for /reverse, but stated rather
+      // than assumed — the structured fields are the whole point of the
+      // call. zoom=10 asks for administrative detail around LGA level.
+      `https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&zoom=10&lat=${pos.lat}&lon=${pos.lng}`,
     )
     const data = await res.json()
     const stateName: string | undefined = data?.address?.state
     const state = stateName ? matchStateName(stateName) : null
     if (!state) return null
 
-    // Nominatim reports Nigerian LGAs inconsistently — county is the usual
-    // field, city/town sometimes. Match loosely against the canonical list
-    // and fall back to "not detected" rather than guessing wrong.
-    const candidates = [data?.address?.county, data?.address?.city, data?.address?.town]
-      .filter((v): v is string => typeof v === 'string')
-      .map((v) => v.replace(/\s+(local government area|lga)$/i, '').trim().toLowerCase())
+    // Matching lives in lib/detectLga, where it can be tested against real
+    // response shapes — the alternative is standing in 774 places.
     const { lgasForState } = await loadLgas()
-    const lga = lgasForState(state).find((l) => candidates.includes(l.toLowerCase())) ?? null
+    const lga = pickLga(data?.address, data?.display_name, lgasForState(state))
     return { state, lga }
   } catch {
     return null
