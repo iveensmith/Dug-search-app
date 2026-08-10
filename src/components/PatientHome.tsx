@@ -20,6 +20,7 @@ import { loadLgas, useLgas } from '@/lib/useLgas'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
+import NetworkPulse from '@/components/NetworkPulse'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
@@ -109,12 +110,6 @@ const FAQ = [
     q: 'Which parts of Nigeria does it cover?',
     a: 'All 36 states and the FCT. Search is scoped to your state and LGA, so results are always pharmacies you can actually reach.',
   },
-] as const
-
-const EXAMPLE_RESULTS = [
-  ['Wellspring Pharmacy', '1.2 km'],
-  ['GreenCross Pharmacy', '2.3 km'],
-  ['CityCare Pharmacy', '3.1 km'],
 ] as const
 
 // Leaflet touches `window` — client-only
@@ -250,11 +245,16 @@ export default function PatientHome() {
   // picking a drug never quietly starts building a list nobody asked for.
   const [basket, setBasket] = useState<DrugSuggestion[]>([])
   const [coverageLoading, setCoverageLoading] = useState(false)
+  // Set when someone searched before choosing an area, so the picker can
+  // say why it just appeared instead of seeming to interrupt them.
+  const [needsArea, setNeedsArea] = useState(false)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const searchInputRef = useRef<HTMLInputElement | null>(null)
+  // A drug picked before an area was chosen — searched the moment one is.
+  const pendingDrugRef = useRef<DrugSuggestion | null>(null)
   const userPosRef = useRef<Pos | null>(null)
   const lastDrugRef = useRef<DrugSuggestion | null>(null)
   const resortedRef = useRef(false)
@@ -283,8 +283,48 @@ export default function PatientHome() {
     setSelectedLga(value)
     selectedLgaRef.current = value
     setPickerOpen(false) // both parts chosen — collapse back to the chip
-    // Narrow (or widen) an active search immediately
-    if (lastDrugRef.current && selectedState) runSearch(lastDrugRef.current, selectedState)
+    setNeedsArea(false)
+    if (!selectedState) return
+    // Whatever they tried to search before they had an area, run it now —
+    // being asked for your LGA should cost you the question, not the
+    // drug name you already typed.
+    const pending = pendingDrugRef.current
+    pendingDrugRef.current = null
+    if (pending) {
+      void searchDrug(pending)
+      return
+    }
+    // Otherwise narrow (or widen) an active search immediately
+    if (lastDrugRef.current) runSearch(lastDrugRef.current, selectedState)
+  }
+
+  /**
+   * Fills both selects from the phone's own GPS.
+   *
+   * The page already guesses an area quietly on load, but a guess that
+   * failed left no way to ask again except the two dropdowns — 36 states
+   * and up to 774 LGAs of scrolling on a phone.
+   */
+  async function detectMyArea() {
+    setLocating(true)
+    setLocationHint('')
+    try {
+      const pos = applyPosition(await getPosition(10000))
+      if (!pos) {
+        setLocationHint('Your browser blocked location — pick your state below instead.')
+        return
+      }
+      const detected = await detectAreaFromPosition(pos)
+      if (!detected) {
+        setLocationHint("Couldn't work out your area — pick it below.")
+        return
+      }
+      chooseState(detected.state)
+      if (detected.lga) chooseLga(detected.lga)
+      else setLocationHint(`Found ${stateLabel(detected.state)} — now pick your LGA.`)
+    } finally {
+      setLocating(false)
+    }
   }
 
   /** Current position if known, otherwise ask the browser (may show the permission prompt). */
@@ -456,7 +496,18 @@ export default function PatientHome() {
   }
 
   function searchDrug(drug: DrugSuggestion) {
-    if (!selectedState || !selectedLgaRef.current) return
+    // No area yet: hold the pick and open the picker rather than doing
+    // nothing. Previously the whole box was disabled until both selects
+    // were answered, so the first thing a new visitor met was a dead
+    // primary input — the single worst thing on a page whose job is to
+    // get a drug name typed into it.
+    if (!selectedState || !selectedLgaRef.current) {
+      pendingDrugRef.current = drug
+      setPickerOpen(true)
+      setNeedsArea(true)
+      return
+    }
+    setNeedsArea(false)
     // In list mode a pick joins the list instead of replacing it. Picking
     // something already on the list is a no-op rather than a duplicate.
     if (basket.length > 0) {
@@ -529,13 +580,14 @@ export default function PatientHome() {
   // One-tap search for the "Popular" chips: resolve the term against the
   // drug list, then run the normal search (or log the gap if unmatched).
   async function quickSearch(term: string) {
-    if (!selectedState || !selectedLgaRef.current) return
     try {
       const res = await fetch(`/api/drugs/search?q=${encodeURIComponent(term)}`)
       const json = await res.json()
       const drug: DrugSuggestion | undefined = (json.drugs ?? [])[0]
-      if (drug) await runSearch(drug, selectedState)
-      else await logNoMatch(term)
+      // Through searchDrug, not runSearch, so tapping a chip without an
+      // area asks for one and then searches — the same as typing does.
+      if (drug) await searchDrug(drug)
+      else if (selectedState && selectedLgaRef.current) await logNoMatch(term)
     } catch {
       /* network hiccup — leave the page as-is */
     }
@@ -703,30 +755,52 @@ export default function PatientHome() {
           </div>
         ) : (
           <>
-            <Field label="Searching in" htmlFor="state-picker">
-              <Select
-                id="state-picker"
-                value={selectedState ?? ''}
-                onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
-              >
-                <option value="" disabled>
-                  {detectingState ? 'Detecting your location…' : 'Select your state'}
-                </option>
-                {NIGERIAN_STATES.map((st) => (
-                  <option key={st.value} value={st.value}>
-                    {st.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+            {/* Said only when the picker opened because a search needed
+                it, so it reads as an answer to what they just did rather
+                than as an error they caused. */}
+            {needsArea && (
+              <p className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                <IconMapPin width={15} height={15} className="mt-0.5 shrink-0" />
+                Almost there — tell us where you are and we&apos;ll search straight away.
+              </p>
+            )}
 
-            {selectedState && (
-              <Field label="Area (LGA)" htmlFor="lga-picker">
-                <Select id="lga-picker" value={selectedLga} onChange={(e) => chooseLga(e.target.value)} required>
+            {/* Both parts on one row from `sm` up: they are one question,
+                and stacking them made a two-step form out of it. Still
+                stacked on the narrowest phones, where side-by-side selects
+                truncate the LGA names they exist to show. */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="State" htmlFor="state-picker">
+                <Select
+                  id="state-picker"
+                  value={selectedState ?? ''}
+                  onChange={(e) => chooseState(e.target.value as NigerianStateValue)}
+                >
                   <option value="" disabled>
-                    {lgaOptions.length === 0
-                      ? 'Loading areas…'
-                      : `Select your LGA in ${selectedLabel}`}
+                    {detectingState ? 'Detecting your location…' : 'Select your state'}
+                  </option>
+                  {NIGERIAN_STATES.map((st) => (
+                    <option key={st.value} value={st.value}>
+                      {st.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+
+              <Field label="Area (LGA)" htmlFor="lga-picker">
+                <Select
+                  id="lga-picker"
+                  value={selectedLga}
+                  onChange={(e) => chooseLga(e.target.value)}
+                  disabled={!selectedState}
+                  required
+                >
+                  <option value="" disabled>
+                    {!selectedState
+                      ? 'Pick a state first'
+                      : lgaOptions.length === 0
+                        ? 'Loading areas…'
+                        : `Select your LGA in ${selectedLabel}`}
                   </option>
                   {lgaOptions.map((lga) => (
                     <option key={lga} value={lga}>
@@ -735,6 +809,22 @@ export default function PatientHome() {
                   ))}
                 </Select>
               </Field>
+            </div>
+
+            {/* The fast path. Answering two dropdowns means scrolling 36
+                states and up to 774 LGAs on a phone; the GPS already
+                knows, and until now only got a chance on page load. */}
+            <button
+              type="button"
+              onClick={detectMyArea}
+              disabled={locating}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+            >
+              <IconMapPin width={15} height={15} />
+              {locating ? 'Finding you…' : 'Use my location'}
+            </button>
+            {locationHint && (
+              <p className="text-xs text-amber-700 dark:text-amber-400">{locationHint}</p>
             )}
           </>
         )}
@@ -775,18 +865,13 @@ export default function PatientHome() {
         <SearchBox
           onSelect={searchDrug}
           onNoMatch={logNoMatch}
-          disabled={!areaChosen || basket.length >= MAX_DRUGS}
+          disabled={basket.length >= MAX_DRUGS}
           inputRef={searchInputRef}
           placeholder={basket.length > 0 ? 'Add another medicine…' : undefined}
           clearOnSelect={basket.length > 0}
         />
 
-        <RecentSearches
-          onPick={(drug) => {
-            if (selectedState && selectedLgaRef.current) runSearch(drug, selectedState)
-          }}
-          disabled={!areaChosen}
-        />
+        <RecentSearches onPick={(drug) => void searchDrug(drug)} />
 
         <div className="pt-1">
           <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
@@ -798,8 +883,7 @@ export default function PatientHome() {
                 key={term}
                 type="button"
                 onClick={() => quickSearch(term)}
-                disabled={!areaChosen}
-                className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
               >
                 {term}
               </button>
@@ -807,11 +891,12 @@ export default function PatientHome() {
           </div>
         </div>
 
-        {!detectingState && !areaChosen && (
+        {/* An invitation now, not an instruction: searching works from a
+            cold start, and this only explains why the area will be asked
+            for at the end of it. */}
+        {!detectingState && !areaChosen && !needsArea && (
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {!selectedState
-              ? 'Pick your state to search pharmacies there'
-              : 'Now pick your LGA — results are scoped to your area'}
+            Search a medicine — we&apos;ll ask which area to look in.
           </p>
         )}
       </div>
@@ -842,33 +927,34 @@ export default function PatientHome() {
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
+
+              {/* Legitimacy in the first screen, not below the fold. The
+                  full four-promise card still sits further down with room
+                  to explain itself; this is the compressed version, for
+                  someone deciding in three seconds whether a health site
+                  they have never heard of is worth typing a drug name
+                  into. */}
+              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
+                {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
+                  <li
+                    key={label}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300"
+                  >
+                    <Icon width={14} height={14} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    {label}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="relative pb-16 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
               <HeroGraphic />
-              {/* Deliberately styled as a mock-up, not a live result: dashed
-                  border, muted type and an explicit banner, so nobody reads
-                  these placeholder names as real pharmacies. */}
-              <div
-                aria-hidden="true"
-                className="animate-float absolute -bottom-1 left-0 w-60 select-none rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 sm:w-64 dark:border-gray-600 dark:bg-gray-900/95"
-              >
-                <p className="mb-2.5 rounded-md bg-gray-200 px-2 py-1 text-center text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:bg-white/10 dark:text-gray-400">
-                  Sample — not live results
-                </p>
-                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Paracetamol 500 mg</p>
-                <ul className="mt-2.5 space-y-2">
-                  {EXAMPLE_RESULTS.map(([name, dist]) => (
-                    <li key={name} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <IconCheck width={14} height={14} className="shrink-0 text-gray-400 dark:text-gray-500" />
-                        <span className="truncate text-gray-400 dark:text-gray-500">{name}</span>
-                      </span>
-                      <span className="shrink-0 text-xs font-semibold text-gray-400 dark:text-gray-500">{dist}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Was a dashed box captioned "Sample — not live results",
+                  which told a first-time visitor they were looking at a
+                  prototype. Now the real thing: counts and the latest
+                  confirmation, straight from the database, or nothing at
+                  all if there is nothing true to say yet. */}
+              <NetworkPulse />
             </div>
 
             <div className="md:col-start-1 md:row-start-2">
