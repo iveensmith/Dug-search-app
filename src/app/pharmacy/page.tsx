@@ -1137,10 +1137,21 @@ function PharmacyDashboard() {
 
               <div ref={addFormRef} className="scroll-mt-24">
               {!formOpen ? (
-                <Button onClick={() => setFormOpen(true)} className="w-full">
-                  <IconPlus width={16} height={16} />
-                  Add drug
-                </Button>
+                <>
+                  <Button onClick={() => setFormOpen(true)} className="w-full">
+                    <IconPlus width={16} height={16} />
+                    Add drug
+                  </Button>
+                  {/* Typing a shop's whole shelf in one at a time is the
+                      reason inventories here stay half-empty. */}
+                  <Link
+                    href="/pharmacy/import"
+                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+                  >
+                    <IconUpload width={16} height={16} />
+                    Import from a file
+                  </Link>
+                </>
               ) : (
                 <Card>
                   <div className="mb-3 flex items-center justify-between">

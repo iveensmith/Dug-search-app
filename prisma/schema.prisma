@@ -81,6 +81,7 @@ enum InventoryAction {
   MARKED_IN_STOCK
   MARKED_OUT_OF_STOCK
   QUANTITY_SET
+  IMPORTED
 }
 
 /// Where an inventory change came from. WhatsApp updates are made by staff
@@ -88,6 +89,7 @@ enum InventoryAction {
 enum InventoryLogSource {
   WEB
   WHATSAPP
+  CSV
 }
 
 enum PrescriptionStatus {
