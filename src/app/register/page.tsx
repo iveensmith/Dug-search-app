@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { HOME_BY_ROLE } from '@/lib/roles'
 import { NIGERIAN_STATES, type NigerianStateValue } from '@/lib/states'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
@@ -55,7 +56,18 @@ function RegisterForm() {
         setError(data.error ?? 'Sign-up failed')
         return
       }
-      router.push(searchParams.get('next') ?? (isPharmacy ? '/pharmacy/register' : '/prescriptions'))
+      // A new patient lands on the search page, which is what the app is
+      // for — this used to send them to /prescriptions, so signing up
+      // dropped them on the upload form as if that were the point of
+      // having an account. `next` still wins, so somebody who came here
+      // from "Ask a pharmacist" is returned there.
+      //
+      // Owners are the exception and keep their own destination: their
+      // home is /pharmacy/overview, which has nothing to show until an
+      // outlet exists, so a brand-new owner goes to register one.
+      router.push(
+        searchParams.get('next') ?? (isPharmacy ? '/pharmacy/register' : HOME_BY_ROLE.PATIENT),
+      )
     } catch {
       setError('Network problem — try again')
     } finally {
