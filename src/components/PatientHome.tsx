@@ -286,6 +286,8 @@ export default function PatientHome() {
   const [savedDrugs, setSavedDrugs] = useState<DrugSuggestion[]>([])
   // Started as a list before anything has been searched — see the panel.
   const [listMode, setListMode] = useState(false)
+  // Where "Find these medicines" takes you.
+  const coverageRef = useRef<HTMLDivElement | null>(null)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -1036,6 +1038,18 @@ export default function PatientHome() {
             clearOnSelect={basket.length > 0}
             stackedAction
             actionLabel={basket.length > 1 ? 'Find these medicines' : 'Find medicine'}
+            // With a list built the box is empty, so there is nothing to
+            // submit and the button did nothing. Here it means "show me
+            // what you found" — the results are already below, they were
+            // just off the bottom of the screen.
+            onEmptyAction={
+              basket.length > 0
+                ? () => {
+                    setPanelExpanded(false)
+                    coverageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }
+                : undefined
+            }
             // The quick picks belong between the box and the button: they
             // are examples of what to type, so they are useless below the
             // thing that ends the task.
@@ -1451,7 +1465,7 @@ export default function PatientHome() {
         )}
 
         {state.kind === 'coverage' && (
-          <>
+          <div ref={coverageRef} className="scroll-mt-20">
             {state.drugs.length < 2 ? (
               <Card className="text-center">
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
@@ -1499,7 +1513,7 @@ export default function PatientHome() {
                 />
               </>
             )}
-          </>
+          </div>
         )}
 
         {state.kind === 'no-match' && (

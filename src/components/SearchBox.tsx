@@ -53,6 +53,13 @@ type Props = {
   stackedAction?: boolean
   /** Sits between the input and a stacked action — the quick picks. */
   footer?: ReactNode
+  /**
+   * What the action button does when there is nothing in the box to
+   * submit. Without it the button is simply inert, which is what it was
+   * in list mode: every pick is cleared into a chip, so the box is always
+   * empty and the panel's primary action did nothing at all.
+   */
+  onEmptyAction?: () => void
 }
 
 export default function SearchBox({
@@ -62,6 +69,7 @@ export default function SearchBox({
   actionLabel = 'Search',
   stackedAction = false,
   footer,
+  onEmptyAction,
   inputRef,
   placeholder,
   clearOnSelect,
@@ -149,7 +157,10 @@ export default function SearchBox({
       return
     }
     const q = query.trim()
-    if (q.length < 2) return
+    if (q.length < 2) {
+      onEmptyAction?.()
+      return
+    }
     setOpen(false)
     // Re-submitting the label of an already-picked drug just re-runs its search
     if (lastPickedRef.current && drugLabel(lastPickedRef.current) === q) {
