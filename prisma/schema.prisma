@@ -170,6 +170,7 @@ model User {
   searchLogs     SearchLog[]
   ratings        PharmacyRating[]
   reservations   Reservation[]
+  savedDrugs     SavedDrug[]
 
   @@unique([email, role])
   @@unique([phone, role])
@@ -197,6 +198,8 @@ model Drug {
   // here: one is on a function of brandNames, which this schema language
   // has no way to express.
   @@unique([genericName, strength, form])
+  savedBy SavedDrug[]
+
   @@index([category])
 }
 
@@ -342,6 +345,30 @@ model WebhookDelivery {
   @@index([endpointId, createdAt])
   /// The drain query: everything due, oldest first.
   @@index([deliveredAt, failedAt, nextAttemptAt])
+}
+
+/// A medicine a patient wants to find again.
+///
+/// Most of the searching here is repeat business: somebody on a chronic
+/// prescription looks for the same drug every month, and retyping it each
+/// time is the kind of small friction that quietly ends a habit.
+///
+/// Deliberately the drug and not the search. Where a patient is changes —
+/// they travel, they move — and pinning a saved item to an LGA would make
+/// it wrong the first time they use it somewhere else. The area is already
+/// remembered separately.
+model SavedDrug {
+  id        String   @id @default(cuid())
+  userId    String
+  drugId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drug Drug @relation(fields: [drugId], references: [id], onDelete: Cascade)
+
+  /// Saving twice is the same as saving once.
+  @@unique([userId, drugId])
+  @@index([userId, createdAt])
 }
 
 /// Who changed a stock listing, when, and through what.

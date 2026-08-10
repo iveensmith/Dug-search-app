@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
@@ -18,6 +18,7 @@ import {
 import { NIGERIAN_STATES, type NigerianStateValue, isValidState, matchStateName, stateCenter, stateLabel } from '@/lib/states'
 import { loadLgas, useLgas } from '@/lib/useLgas'
 import { pickLga } from '@/lib/detectLga'
+import SavedDrugs from '@/components/SavedDrugs'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroGraphic from '@/components/ui/HeroGraphic'
@@ -281,6 +282,10 @@ export default function PatientHome() {
   const [needsArea, setNeedsArea] = useState(false)
   // Collapsed once there are results to read; see compactPanel.
   const [panelExpanded, setPanelExpanded] = useState(false)
+  // Null until the first load answers; empty array means "asked, none".
+  const [savedDrugs, setSavedDrugs] = useState<DrugSuggestion[]>([])
+  // Started as a list before anything has been searched — see the panel.
+  const [listMode, setListMode] = useState(false)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -357,6 +362,45 @@ export default function PatientHome() {
       else setLocationHint(`Found ${stateLabel(detected.state)} — now pick your LGA.`)
     } finally {
       setLocating(false)
+    }
+  }
+
+  const loadSaved = useCallback(() => {
+    fetch('/api/saved-drugs')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => setSavedDrugs(json?.drugs ?? []))
+      .catch(() => setSavedDrugs([]))
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(loadSaved, 0)
+    return () => clearTimeout(timer)
+  }, [loadSaved])
+
+  const isSaved = (drugId: string) => savedDrugs.some((d) => d.id === drugId)
+
+  /**
+   * Optimistic, and deliberately so: this is a bookmark, not a booking.
+   * Waiting on a round trip to fill in a star makes the tap feel broken
+   * on a slow connection, and the worst case is a chip that reappears on
+   * the next load.
+   */
+  async function toggleSaved(drug: DrugSuggestion) {
+    const saving = !isSaved(drug.id)
+    setSavedDrugs((prev) => (saving ? [drug, ...prev] : prev.filter((d) => d.id !== drug.id)))
+    try {
+      if (saving) {
+        await fetch('/api/saved-drugs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ drugId: drug.id }),
+        })
+      } else {
+        await fetch(`/api/saved-drugs/${drug.id}`, { method: 'DELETE' })
+      }
+    } catch {
+      // Put it back the way the server still has it.
+      loadSaved()
     }
   }
 
@@ -550,7 +594,9 @@ export default function PatientHome() {
     setNeedsArea(false)
     // In list mode a pick joins the list instead of replacing it. Picking
     // something already on the list is a no-op rather than a duplicate.
-    if (basket.length > 0) {
+    // listMode covers the first pick, when the basket is still empty
+    // because the patient chose "several medicines" before searching.
+    if (basket.length > 0 || listMode) {
       if (basket.some((d) => d.id === drug.id)) return
       const next = [...basket, drug].slice(0, MAX_DRUGS)
       setBasket(next)
@@ -564,6 +610,7 @@ export default function PatientHome() {
    * never retypes what they just searched for.
    */
   function startList(drug: DrugSuggestion) {
+    setListMode(true)
     setBasket([drug])
     setState({ kind: 'coverage', drugs: [drug], results: [] })
     // The box is above the results; bring it back into view and put the
@@ -580,6 +627,7 @@ export default function PatientHome() {
     setBasket(next)
     if (!selectedState) return
     if (next.length === 0) {
+      setListMode(false)
       setState({ kind: 'idle' })
       return
     }
@@ -794,7 +842,7 @@ export default function PatientHome() {
   // Expanded whenever the panel is being used rather than merely
   // reporting: while adding to a list, while we are asking for an area,
   // and whenever the patient opens it themselves.
-  const panelOpen = panelExpanded || needsArea || pickerOpen || basket.length > 0
+  const panelOpen = panelExpanded || needsArea || pickerOpen || basket.length > 0 || listMode
 
   const compactPanel = (
     <button
@@ -974,7 +1022,9 @@ export default function PatientHome() {
 
         <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
           <StepLabel>
-            {basket.length > 0 ? 'Add another medicine' : 'What medicine do you need?'}
+            {basket.length > 0 || listMode
+              ? 'Add another medicine'
+              : 'What medicine do you need?'}
           </StepLabel>
 
           <SearchBox
@@ -990,18 +1040,45 @@ export default function PatientHome() {
             // are examples of what to type, so they are useless below the
             // thing that ends the task.
             footer={
-              <div className="mt-3 flex flex-wrap gap-2">
-                {QUICK_SEARCHES.map((term) => (
+              <>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {QUICK_SEARCHES.map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => quickSearch(term)}
+                      className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+
+                <SavedDrugs
+                  drugs={savedDrugs}
+                  onPick={(drug) => void searchDrug(drug)}
+                  onRemove={(drug) => void toggleSaved(drug)}
+                  disabled={basket.length >= MAX_DRUGS}
+                />
+
+                {/* Searching for several at once has worked all along, but
+                    the only way in was a button that appeared after a
+                    search — so somebody holding a prescription with four
+                    lines on it had to search one of them to find out. */}
+                {!listMode && basket.length === 0 && (
                   <button
-                    key={term}
                     type="button"
-                    onClick={() => quickSearch(term)}
-                    className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                    onClick={() => {
+                      setListMode(true)
+                      setTimeout(() => searchInputRef.current?.focus(), 0)
+                    }}
+                    className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
                   >
-                    {term}
+                    <IconPlus width={13} height={13} />
+                    Need several medicines? Search them together
                   </button>
-                ))}
-              </div>
+                )}
+              </>
             }
           />
 
@@ -1056,17 +1133,24 @@ export default function PatientHome() {
               </ul>
             </div>
 
-            <div className="relative pb-16 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
+            <div className="relative order-3 pb-4 md:order-none md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
               <HeroGraphic />
-              {/* Was a dashed box captioned "Sample — not live results",
-                  which told a first-time visitor they were looking at a
-                  prototype. Now the real thing: counts and the latest
-                  confirmation, straight from the database, or nothing at
-                  all if there is nothing true to say yet. */}
-              <NetworkPulse />
             </div>
 
-            <div className="md:col-start-1 md:row-start-2">
+            <div className="order-2 md:order-none md:col-start-1 md:row-start-2">
+              {/* Was a dashed box captioned "Sample — not live results",
+                  which told a first-time visitor they were looking at a
+                  prototype; then a small card floating over the hero art,
+                  where the numbers were too small to read and half of them
+                  did not fit. Now a row of figures directly above the
+                  search, refreshing while the page is open.
+
+                  What has not changed is what may be printed: every number
+                  is counted, and if the network is too small for a count
+                  to reassure, the threshold in NetworkPulse keeps it quiet
+                  rather than dressing it up. */}
+              <NetworkPulse />
+
               {searchPanel}
 
               {/* The other way in, for someone holding a slip they cannot
@@ -1676,14 +1760,44 @@ export default function PatientHome() {
                 the empty page, where it would be a puzzle rather than an
                 offer. */}
             {state.kind === 'results' && (
-              <button
-                type="button"
-                onClick={() => startList(state.drug)}
-                className="mb-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:border-emerald-500 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:border-emerald-600 dark:hover:bg-emerald-500/10"
-              >
-                <IconPlus width={15} height={15} />
-                Need more than one? Add to a list
-              </button>
+              <div className="mb-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => startList(state.drug)}
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:border-emerald-500 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:border-emerald-600 dark:hover:bg-emerald-500/10"
+                >
+                  <IconPlus width={15} height={15} />
+                  Need more than one? Add to a list
+                </button>
+
+                {/* Only for a signed-in patient: there is nowhere to keep
+                    a saved medicine for anyone else, and a control that
+                    silently does nothing is worse than no control. */}
+                {viewerRole === 'PATIENT' && (
+                  <button
+                    type="button"
+                    onClick={() => void toggleSaved((state as { drug: DrugSuggestion }).drug)}
+                    aria-pressed={isSaved(state.drug.id)}
+                    // Leads with the word on the button, then names the
+                    // medicine: a screen reader hears which "Save" this
+                    // is, and the visible label is still contained in the
+                    // accessible one (WCAG 2.5.3).
+                    aria-label={
+                      isSaved(state.drug.id)
+                        ? `Saved ${state.label}, tap to remove`
+                        : `Save ${state.label}`
+                    }
+                    className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                      isSaved(state.drug.id)
+                        ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                        : 'border-gray-300 text-gray-700 hover:border-emerald-400 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-600 dark:hover:text-emerald-400'
+                    }`}
+                  >
+                    <IconBookmark width={15} height={15} />
+                    {isSaved(state.drug.id) ? 'Saved' : 'Save'}
+                  </button>
+                )}
+              </div>
             )}
 
             <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
