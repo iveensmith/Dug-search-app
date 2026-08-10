@@ -219,7 +219,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
             <button
               onClick={showRoute}
               disabled={routing}
-              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950"
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950"
             >
               <IconRoute width={16} height={16} />
               {routing ? 'Finding the way…' : route ? 'Route shown above' : 'Directions'}

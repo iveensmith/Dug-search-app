@@ -61,7 +61,7 @@ export default function SiteFooter() {
       </div>
 
       <div className="border-t border-emerald-700/60 dark:border-emerald-900">
-        <p className="mx-auto w-full max-w-6xl px-4 py-4 text-xs text-emerald-200/80">
+        <p className="mx-auto w-full max-w-6xl px-4 py-4 text-xs text-emerald-200">
           © {new Date().getFullYear()} MediQuest. Not a substitute for professional medical advice.
         </p>
       </div>

@@ -137,7 +137,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           </p>
           <Link
             href="/pharmacy/register"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-emerald-700 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950"
           >
             Add your outlet
           </Link>
@@ -229,7 +229,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/pharmacy"
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white transition-all hover:bg-emerald-700 hover:shadow-md hover:shadow-emerald-600/25 dark:bg-emerald-500 dark:text-emerald-950"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition-all hover:bg-emerald-800 hover:shadow-md hover:shadow-emerald-700/25 dark:bg-emerald-500 dark:text-emerald-950"
         >
           <IconClipboardList width={18} height={18} />
           Manage inventory
@@ -309,7 +309,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       </section>
 
       <section className="mt-12 border-t border-gray-200/80 pt-8 dark:border-gray-800/80">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Quick actions
         </p>
         {/* Each of these has to land somewhere specific. They all used to

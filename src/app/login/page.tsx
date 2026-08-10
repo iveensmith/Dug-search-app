@@ -35,7 +35,7 @@ const PORTAL = {
     subtitle: 'Log in to your account',
     heading: 'Patient account',
     accent: 'emerald' as const,
-    tab: 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950',
+    tab: 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950',
     cardEdge: 'border-t-4 border-t-emerald-500 dark:border-t-emerald-400',
     text: 'text-emerald-700 dark:text-emerald-400',
     chip: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',

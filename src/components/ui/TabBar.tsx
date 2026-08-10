@@ -109,15 +109,23 @@ export default function TabBar() {
                   }
                 }}
                 className={`flex min-h-12 flex-col items-center gap-1 rounded-xl py-1.5 text-[11px] font-bold transition-colors ${
+                  // 11px labels, so both states need the full 4.5:1. The
+                  // greys were also the wrong way round — gray-500 is
+                  // darker than gray-400, so the dark variant was making
+                  // an already-failing label harder to read, not easier.
                   active
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                    ? 'text-emerald-700 dark:text-emerald-400'
+                    // gray-600, not 500: the bar is translucent, so the
+                    // colour behind these labels is whatever page is
+                    // scrolling under it. gray-500 passed over white and
+                    // failed over the register page's tinted background.
+                    : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
                 }`}
               >
                 <span className="relative flex">
                   <Icon width={22} height={22} strokeWidth={active ? 2.6 : 2} />
                   {badge ? (
-                    <span className="absolute -right-2 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-emerald-600 px-1 text-[10px] font-extrabold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                    <span className="absolute -right-2 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-emerald-700 px-1 text-[10px] font-extrabold text-white dark:bg-emerald-500 dark:text-emerald-950">
                       {badge > 9 ? '9+' : badge}
                     </span>
                   ) : null}

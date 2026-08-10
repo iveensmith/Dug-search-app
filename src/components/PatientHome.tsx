@@ -875,7 +875,7 @@ export default function PatientHome() {
         <RecentSearches onPick={(drug) => void searchDrug(drug)} />
 
         <div className="pt-1">
-          <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+          <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Popular searches
           </p>
           <div className="flex flex-wrap gap-2">
@@ -980,7 +980,7 @@ export default function PatientHome() {
                 />
 
                 <div className="relative flex items-center gap-3.5 sm:items-start sm:gap-5">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 sm:rounded-2xl dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-700/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 sm:rounded-2xl dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20">
                     <IconCamera width={22} height={22} className="sm:hidden" />
                     <IconClipboardList width={26} height={26} className="hidden sm:block" />
                   </span>
@@ -1400,7 +1400,7 @@ export default function PatientHome() {
                           <button
                             onClick={() => showRoute(r)}
                             disabled={routeBusyId === r.id}
-                            className="flex-1 cursor-pointer rounded-lg bg-emerald-600 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60 sm:flex-none dark:bg-emerald-500 dark:text-emerald-950"
+                            className="flex-1 cursor-pointer rounded-lg bg-emerald-700 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 sm:flex-none dark:bg-emerald-500 dark:text-emerald-950"
                           >
                             {routeBusyId === r.id ? 'Loading…' : 'Directions'}
                           </button>
@@ -1541,7 +1541,7 @@ export default function PatientHome() {
                 >
                   Filters
                   {activeFilterCount(filters) > 0 && (
-                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-600 px-1 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-700 px-1 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
                       {activeFilterCount(filters)}
                     </span>
                   )}
@@ -1549,13 +1549,13 @@ export default function PatientHome() {
                 <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
                   <button
                     onClick={() => setView('list')}
-                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-emerald-700 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
                   >
                     List
                   </button>
                   <button
                     onClick={() => setView('map')}
-                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-emerald-700 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
                   >
                     Map
                   </button>
@@ -1592,7 +1592,7 @@ export default function PatientHome() {
                   aria-pressed={sortBy === key}
                   className={`shrink-0 cursor-pointer rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
                     sortBy === key
-                      ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                      ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10'
                   }`}
                 >

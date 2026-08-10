@@ -147,7 +147,7 @@ function AddOnFields({
               title={l.ownerHint}
               className={`min-h-10 cursor-pointer rounded-full border px-3.5 text-sm font-semibold transition-colors ${
                 level === l.key
-                  ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                  ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
                   : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
               }`}
             >
@@ -593,7 +593,7 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
           ref={fileRef}
           type="file"
           accept=".csv,text/csv"
-          className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-700 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
+          className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-700 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-800 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
         />
       </div>
       <Button className="mt-3 w-full" loading={busy} onClick={upload}>
@@ -1403,7 +1403,7 @@ function PharmacyDashboard() {
                               aria-pressed={item.inStock}
                               className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                                 item.inStock
-                                  ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950'
+                                  ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950'
                                   : 'bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                               }`}
                             >

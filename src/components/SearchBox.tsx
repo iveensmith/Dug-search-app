@@ -214,7 +214,7 @@ export default function SearchBox({
             aria-pressed={listening}
             className={`flex min-h-[52px] shrink-0 items-center justify-center rounded-xl border px-4 transition-colors disabled:opacity-50 ${
               listening
-                ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
                 : 'border-gray-300 text-gray-500 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-emerald-700 dark:hover:text-emerald-400'
             }`}
           >

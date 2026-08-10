@@ -22,7 +22,7 @@ const base =
 const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline', string>> = {
   emerald: {
     primary:
-      'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 hover:shadow-md hover:shadow-emerald-600/25 active:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:active:bg-emerald-400 dark:text-emerald-950 dark:hover:shadow-emerald-400/20 focus-visible:ring-emerald-500',
+      'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800 hover:shadow-md hover:shadow-emerald-700/25 active:bg-emerald-900 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:active:bg-emerald-400 dark:text-emerald-950 dark:hover:shadow-emerald-400/20 focus-visible:ring-emerald-500',
     secondary:
       'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25 focus-visible:ring-emerald-500',
     outline:
@@ -33,7 +33,7 @@ const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline',
   // it fails contrast.
   deep: {
     primary:
-      'bg-emerald-800 text-white shadow-sm hover:bg-emerald-900 hover:shadow-md hover:shadow-emerald-800/25 active:bg-emerald-950 dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:active:bg-emerald-600 dark:text-white dark:hover:shadow-emerald-700/25 focus-visible:ring-emerald-700',
+      'bg-emerald-800 text-white shadow-sm hover:bg-emerald-900 hover:shadow-md hover:shadow-emerald-800/25 active:bg-emerald-950 dark:bg-emerald-700 dark:hover:bg-emerald-700 dark:active:bg-emerald-700 dark:text-white dark:hover:shadow-emerald-700/25 focus-visible:ring-emerald-700',
     secondary:
       'bg-emerald-100 text-emerald-900 hover:bg-emerald-200 dark:bg-emerald-800/35 dark:text-emerald-100 dark:hover:bg-emerald-800/50 focus-visible:ring-emerald-700',
     outline:

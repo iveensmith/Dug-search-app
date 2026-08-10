@@ -226,7 +226,7 @@ export default function PrescriptionThreadPage() {
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                 m.mine
-                  ? 'rounded-br-sm bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950'
+                  ? 'rounded-br-sm bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950'
                   : 'rounded-bl-sm border border-gray-200 bg-white text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100'
               }`}
             >

@@ -85,7 +85,7 @@ export default function CoverageResults({
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
                       complete
-                        ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950'
+                        ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950'
                         : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
                     }`}
                   >
@@ -161,7 +161,7 @@ export default function CoverageResults({
                 href={directionsUrl(r.latitude, r.longitude)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
               >
                 <IconRoute width={16} height={16} />
                 Directions

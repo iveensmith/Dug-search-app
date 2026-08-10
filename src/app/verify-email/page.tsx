@@ -69,7 +69,7 @@ function VerifyEmailBody() {
             </p>
             <Link
               href="/"
-              className="mt-5 inline-block rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
+              className="mt-5 inline-block rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
             >
               Find medicine
             </Link>

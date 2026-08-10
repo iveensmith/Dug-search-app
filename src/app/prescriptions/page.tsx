@@ -202,7 +202,13 @@ export default function PrescriptionsPage() {
 
       <Card className="mt-5">
         <form onSubmit={submit}>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {/* htmlFor, not a floating label: without it a screen reader
+              announces this control as an unnamed button, so the one
+              thing the page exists to do has no name. */}
+          <label
+            htmlFor="prescription-photo"
+            className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Photo of the prescription
           </label>
           <div className="mb-2">
@@ -212,11 +218,12 @@ export default function PrescriptionsPage() {
             <IconUpload width={18} height={18} className="shrink-0 text-gray-400 dark:text-gray-500" />
             <input
               ref={fileRef}
+              id="prescription-photo"
               type="file"
               accept="image/jpeg,image/png,image/webp"
               capture="environment"
               onChange={(e) => pickFile(e.target.files?.[0])}
-              className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-700 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
+              className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-700 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-800 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
             />
           </div>
 
@@ -360,7 +367,7 @@ export default function PrescriptionsPage() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {u.unreadCount > 0 && (
-                        <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                        <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
                           {u.unreadCount} new
                         </span>
                       )}

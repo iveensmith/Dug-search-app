@@ -39,7 +39,14 @@ export default function AppHeader({
       <WelcomeToast />
       <div className={`mx-auto flex w-full ${width} items-center justify-between gap-3 px-4 py-4`}>
       <div className="flex min-w-0 items-center gap-3">
-        <Link href={backHref} className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
+        {/* The mark is aria-hidden, so without a label this link reads as
+            nothing at all — on every dashboard screen, which is where a
+            keyboard user most needs a way back. */}
+        <Link
+          href={backHref}
+          aria-label="MediQuest home"
+          className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
+        >
           <LogoMark size="sm" />
         </Link>
         <div className="min-w-0">

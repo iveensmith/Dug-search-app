@@ -125,7 +125,7 @@ export default function ApiKeysPage() {
                   navigator.clipboard?.writeText(issued.raw)
                   setCopied(true)
                 }}
-                className="shrink-0 cursor-pointer rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
+                className="shrink-0 cursor-pointer rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
               >
                 {copied ? 'Copied' : 'Copy'}
               </button>

@@ -135,7 +135,7 @@ export default function PharmacistPage() {
                       <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{u.status.toLowerCase()}</p>
                     </div>
                     {u.unreadCount > 0 && (
-                      <span className="shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                      <span className="shrink-0 rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
                         {u.unreadCount} new
                       </span>
                     )}
