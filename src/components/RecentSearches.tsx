@@ -52,8 +52,12 @@ export default function RecentSearches({
   if (!rows || unique.length === 0 || cleared) return null
 
   return (
-    <div>
-      <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+    <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-800">
+      {/* gray-500 on white, not gray-400: 2.6:1 fails, 4.8:1 passes. The
+          same fix as the other quiet labels — this one escaped the earlier
+          sweep because it renders for signed-in patients only, and the
+          audit ran signed out. */}
+      <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
         You searched before
       </p>
       <div className="flex flex-wrap gap-2">
@@ -75,7 +79,7 @@ export default function RecentSearches({
         <button
           type="button"
           onClick={clear}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
         >
           <IconTrash width={13} height={13} />
           Clear
