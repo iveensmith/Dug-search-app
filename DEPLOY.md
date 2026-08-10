@@ -64,6 +64,24 @@ DATABASE_URL="<pooled connection string>" npx tsx scripts/seed-production.ts
    | `SUPABASE_URL` | your Supabase project URL |
    | `SUPABASE_SERVICE_ROLE_KEY` | the service_role key from step 1 |
    | `SUPABASE_STORAGE_BUCKET` | `prescriptions` |
+   | `RESEND_API_KEY` | an API key from [resend.com/api-keys](https://resend.com/api-keys) |
+   | `RESEND_FROM` (see the warning below) | `MediQuest <noreply@yourdomain.com>` |
+
+   > **`RESEND_FROM` is not optional in production.** Left unset, the app
+   > sends from Resend's shared sandbox address `onboarding@resend.dev`,
+   > which delivers **only to the address that owns the Resend account**.
+   > Everyone else is refused with a 403 and receives nothing — not even a
+   > spam-folder copy.
+   >
+   > This hides itself well: you test with your own address, the mail
+   > arrives, and email looks fine. It is not. Verify a domain at
+   > [resend.com/domains](https://resend.com/domains), add the DNS records
+   > it gives you, and point `RESEND_FROM` at an address on that domain.
+   > A `*.vercel.app` subdomain cannot be verified — you need a domain
+   > whose DNS you control.
+   >
+   > The server logs a warning on the first send whenever this is the
+   > case; search the Vercel function logs for `[mail]`.
 
 3. Deploy. Vercel gives you a `*.vercel.app` URL immediately; a custom
    domain can be added later under Project Settings → Domains (also free).

@@ -2,8 +2,28 @@
 // Resend when RESEND_API_KEY is set, otherwise log the content so local dev
 // keeps working without any provider configured.
 
-const RESEND_API_URL = 'https://api.resend.com/emails'
+// Overridable for the same reason WHATSAPP_GRAPH_BASE and OSRM_URL are: so
+// a test can point the adapter at a stub and check what it decides to do
+// with a rejection, rather than only what it does when everything works.
+const RESEND_API_URL = process.env.RESEND_API_URL ?? 'https://api.resend.com/emails'
 const FROM_ADDRESS = process.env.RESEND_FROM ?? 'MediQuest <onboarding@resend.dev>'
+
+/**
+ * Resend's shared sandbox sender, which the line above falls back to.
+ *
+ * It needs no DNS setup, which is what makes it a usable default — and it
+ * delivers only to the address that owns the Resend account. Every other
+ * recipient is refused with a 403 and never posted anywhere, not even to
+ * a spam folder.
+ *
+ * That is a genuinely nasty failure: whoever configured the deploy is
+ * almost always testing with their own address, so it works perfectly for
+ * them and silently reaches nobody else. It cost us exactly that — Gmail
+ * received, Outlook and iCloud heard nothing. Hence the warning below,
+ * loud and on the first send, rather than a line in a doc nobody rereads.
+ */
+const USING_SANDBOX_SENDER = FROM_ADDRESS.includes('@resend.dev')
+let sandboxWarningLogged = false
 
 /**
  * Returns whether the message was actually handed over.
@@ -25,6 +45,16 @@ async function sendEmail(to: string, subject: string, html: string, fallbackLog:
     return true
   }
 
+  if (USING_SANDBOX_SENDER && !sandboxWarningLogged) {
+    sandboxWarningLogged = true
+    console.warn(
+      `[mail] RESEND_FROM is not set, so mail is going out from ${FROM_ADDRESS}. ` +
+        `That is Resend's sandbox sender: it delivers ONLY to the address that owns ` +
+        `the Resend account, and refuses every other recipient. Verify a domain at ` +
+        `resend.com/domains and set RESEND_FROM to an address on it.`,
+    )
+  }
+
   try {
     const res = await fetch(RESEND_API_URL, {
       method: 'POST',
@@ -37,7 +67,13 @@ async function sendEmail(to: string, subject: string, html: string, fallbackLog:
 
     if (!res.ok) {
       const body = await res.text().catch(() => '')
-      console.error(`[mail] Resend request failed (${res.status}): ${body}`)
+      console.error(`[mail] Resend request failed (${res.status}) sending to ${to}: ${body}`)
+      if (res.status === 403 && USING_SANDBOX_SENDER) {
+        console.error(
+          `[mail] ↑ This is the sandbox-sender restriction, not a problem with ${to}. ` +
+            `Set RESEND_FROM to an address on a domain you have verified with Resend.`,
+        )
+      }
       return false
     }
     return true
