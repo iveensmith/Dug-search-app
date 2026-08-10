@@ -10,11 +10,10 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 import RatingStars from '@/components/RatingStars'
-import StockPulse from '@/components/StockPulse'
-import { drugLabel, directionsUrl, type DrugSuggestion } from '@/lib/types'
+import { directionsUrl } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
 import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
-import { IconPhone, IconRoute, IconShieldCheck, IconStore } from '@/components/ui/icons'
+import { IconPhone, IconRoute, IconShieldCheck } from '@/components/ui/icons'
 
 // Opens only when someone taps "Rate this pharmacy".
 const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog'), { ssr: false })
@@ -40,8 +39,6 @@ type Pharmacy = {
   closesAt: string | null
 }
 
-type StockItem = { id: string; brand: string | null; stockUpdatedAt: string; drug: DrugSuggestion }
-
 type Comment = {
   id: string
   comment: string
@@ -52,9 +49,7 @@ type Comment = {
 
 type Payload = {
   pharmacy: Pharmacy
-  itemCount: number
   ratings: RatingSummary
-  items: StockItem[]
   comments: Comment[]
 }
 
@@ -123,7 +118,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
   // Defaulted, not assumed: this is a public page reached from every search
   // result, and a field missing from the response should cost a section,
   // not blank the page with an error screen.
-  const { pharmacy: p, ratings, itemCount, items = [], comments = [] } = data
+  const { pharmacy: p, ratings, comments = [] } = data
   const [copied, setCopied] = useState(false)
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
   const [route, setRoute] = useState<{
@@ -352,49 +347,6 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
         </p>
       </Card>
 
-      <Card className="mt-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-            In stock here
-          </p>
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            {itemCount} {itemCount === 1 ? 'item' : 'items'}
-          </span>
-        </div>
-
-        {items.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-            This pharmacy hasn&apos;t listed any stock yet.
-          </p>
-        ) : (
-          <ul className="mt-1 divide-y divide-gray-100 dark:divide-gray-800">
-            {items.map((i) => (
-              <li key={i.id}>
-                <Link
-                  href={`/drugs/${i.drug.id}`}
-                  className="flex items-center gap-3 py-3.5 transition-colors hover:text-emerald-700 dark:hover:text-emerald-400"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      {drugLabel(i.drug)}
-                    </span>
-                    <span className="mt-1.5 flex flex-wrap items-center gap-2">
-                      <StockPulse stockUpdatedAt={i.stockUpdatedAt} />
-                      {i.brand && <Badge tone="neutral">Stocks {i.brand}</Badge>}
-                    </span>
-                  </span>
-                  <IconStore width={16} height={16} className="shrink-0 text-gray-300 dark:text-gray-600" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        {itemCount > items.length && (
-          <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-            Showing the {items.length} most recently updated of {itemCount}.
-          </p>
-        )}
-      </Card>
     </div>
   )
 }
