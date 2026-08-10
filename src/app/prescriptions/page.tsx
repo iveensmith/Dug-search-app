@@ -13,6 +13,7 @@ import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Textarea } from '@/components/ui/Field'
 import { downscaleImage } from '@/lib/downscaleImage'
+import { MAX_REQUEST_BYTES, readErrorMessage } from '@/lib/uploadLimits'
 import { IconClipboardList, IconMic, IconUpload, IconX } from '@/components/ui/icons'
 import AudioNoteRecorder, { type RecordedNote } from '@/components/AudioNoteRecorder'
 import { formatDuration } from '@/lib/audioNotes'
@@ -154,18 +155,33 @@ export default function PrescriptionsPage() {
         form.append('audio', voiceNote.blob, 'voice-note')
         form.append('audioDuration', String(voiceNote.seconds))
       }
-      const res = await fetch('/api/prescriptions', { method: 'POST', body: form })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? 'Upload failed')
+      // Refused before it leaves, with a reason. The platform rejects an
+      // oversized body with an error page rather than JSON, so sending it
+      // anyway produced "network problem" on a perfectly good connection.
+      const total = file.size + (voiceNote?.blob.size ?? 0)
+      if (total > MAX_REQUEST_BYTES) {
+        setError(
+          `That photo is too large to send (${formatSize(total)}). Take it again from a little further back, or pick a smaller one.`,
+        )
         return
       }
+
+      const res = await fetch('/api/prescriptions', { method: 'POST', body: form })
+      // Status first, body second: reading JSON from a non-JSON error
+      // response throws, and that throw used to be reported as the
+      // patient's network failing.
+      if (!res.ok) {
+        setError(await readErrorMessage(res, 'Upload failed — please try again'))
+        return
+      }
+      const data = await res.json()
       setNote('')
       setVoiceNote(null)
       clearFile()
       router.push(`/prescriptions/${data.upload.id}`)
     } catch {
-      setError('Network problem — try again')
+      // Only a genuine fetch failure reaches here now.
+      setError('Could not reach MediQuest — check your connection and try again')
     } finally {
       setBusy(false)
     }
