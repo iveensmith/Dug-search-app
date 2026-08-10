@@ -165,9 +165,25 @@ type SearchState =
 function getPosition(timeoutMs: number): Promise<Pos | null> {
   return new Promise((resolve) => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) return resolve(null)
+
+    // Our own timer as well as the option, because the option is not
+    // enough: while a permission prompt sits unanswered neither callback
+    // fires and the browser's timeout does not start counting. Plenty of
+    // people never tap that prompt — and without this the state picker
+    // reads "Detecting your location…" for as long as the page is open,
+    // which is now the first thing on the panel.
+    let settled = false
+    const finish = (value: Pos | null) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      resolve(value)
+    }
+    const timer = setTimeout(() => finish(null), timeoutMs + 500)
+
     navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      () => resolve(null),
+      (p) => finish({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => finish(null),
       { timeout: timeoutMs, maximumAge: 60_000, enableHighAccuracy: true },
     )
   })
@@ -205,6 +221,20 @@ async function detectAreaFromPosition(
  * The patient-facing home: hero, search, results. Rendered by app/page.tsx,
  * which guards it — a pharmacy owner never reaches this component.
  */
+/**
+ * The question above each step of the search panel.
+ *
+ * Plain questions rather than numbered steps: the order is a suggestion,
+ * not a gate — somebody can type a medicine first and be asked where they
+ * are afterwards, which is deliberate (see needsArea). Numbers would
+ * promise a sequence the panel does not actually enforce.
+ */
+function StepLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{children}</p>
+  )
+}
+
 export default function PatientHome() {
   const [state, setState] = useState<SearchState>({ kind: 'idle' })
   // Viewer's role — hides the "Add Your Pharmacy Outlet" card from accounts
@@ -736,14 +766,21 @@ export default function PatientHome() {
       padded={false}
     >
       <div className="space-y-4 p-5">
+        {/* The panel is two questions and one answer, in that order. It
+            used to be a row of controls, which said nothing about what
+            the app is for — the whole product is "which shop near me has
+            this", and the shape of the box should be that sentence. */}
+        <StepLabel>Where are you?</StepLabel>
+
         {areaChosen && !pickerOpen ? (
           <div className="flex items-center justify-between gap-2 rounded-xl bg-emerald-50 px-3.5 py-2.5 dark:bg-emerald-500/10">
             <p className="flex min-w-0 items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <IconMapPin width={16} height={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+              {/* Broad to narrow, matching the order the pickers ask in. */}
               <span className="truncate">
-                Searching in{' '}
-                <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLga}</span>,{' '}
-                {selectedLabel}
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLabel}</span>
+                <span className="mx-1.5 text-gray-400 dark:text-gray-500">·</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLga}</span>
               </span>
             </p>
             <button
@@ -827,6 +864,11 @@ export default function PatientHome() {
             {locationHint && (
               <p className="text-xs text-amber-700 dark:text-amber-400">{locationHint}</p>
             )}
+            {!needsArea && (
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Or skip this — search a medicine and we&apos;ll ask afterwards.
+              </p>
+            )}
           </>
         )}
 
@@ -863,43 +905,42 @@ export default function PatientHome() {
           </div>
         )}
 
-        <SearchBox
-          onSelect={searchDrug}
-          onNoMatch={logNoMatch}
-          disabled={basket.length >= MAX_DRUGS}
-          inputRef={searchInputRef}
-          placeholder={basket.length > 0 ? 'Add another medicine…' : undefined}
-          clearOnSelect={basket.length > 0}
-        />
+        <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+          <StepLabel>
+            {basket.length > 0 ? 'Add another medicine' : 'What medicine do you need?'}
+          </StepLabel>
 
-        <RecentSearches onPick={(drug) => void searchDrug(drug)} />
+          <SearchBox
+            onSelect={searchDrug}
+            onNoMatch={logNoMatch}
+            disabled={basket.length >= MAX_DRUGS}
+            inputRef={searchInputRef}
+            placeholder={basket.length > 0 ? 'Add another medicine…' : undefined}
+            clearOnSelect={basket.length > 0}
+            stackedAction
+            actionLabel={basket.length > 1 ? 'Find these medicines' : 'Find medicine'}
+            // The quick picks belong between the box and the button: they
+            // are examples of what to type, so they are useless below the
+            // thing that ends the task.
+            footer={
+              <div className="mt-3 flex flex-wrap gap-2">
+                {QUICK_SEARCHES.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => quickSearch(term)}
+                    className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            }
+          />
 
-        <div className="pt-1">
-          <p className="mb-2.5 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            Popular searches
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_SEARCHES.map((term) => (
-              <button
-                key={term}
-                type="button"
-                onClick={() => quickSearch(term)}
-                className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
-              >
-                {term}
-              </button>
-            ))}
-          </div>
+          <RecentSearches onPick={(drug) => void searchDrug(drug)} />
         </div>
 
-        {/* An invitation now, not an instruction: searching works from a
-            cold start, and this only explains why the area will be asked
-            for at the end of it. */}
-        {!detectingState && !areaChosen && !needsArea && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Search a medicine — we&apos;ll ask which area to look in.
-          </p>
-        )}
       </div>
     </Card>
   )

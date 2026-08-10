@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react'
 import { type DrugSuggestion, drugLabel } from '@/lib/types'
 import DispensingBadge from '@/components/DispensingBadge'
 import Button from '@/components/ui/Button'
@@ -42,12 +42,26 @@ type Props = {
    * above, and the next thing the patient does is type another name.
    */
   clearOnSelect?: boolean
+  /** What the action button says. */
+  actionLabel?: string
+  /**
+   * Puts the action full-width under the box instead of beside it, with
+   * `footer` between the two. A button on its own line at the end of the
+   * card is what makes the panel read as a series of questions with one
+   * answer at the bottom, rather than a toolbar.
+   */
+  stackedAction?: boolean
+  /** Sits between the input and a stacked action — the quick picks. */
+  footer?: ReactNode
 }
 
 export default function SearchBox({
   onSelect,
   onNoMatch,
   disabled,
+  actionLabel = 'Search',
+  stackedAction = false,
+  footer,
   inputRef,
   placeholder,
   clearOnSelect,
@@ -157,8 +171,13 @@ export default function SearchBox({
   }
 
   return (
-    <div className="relative">
-      <div className="flex flex-col gap-2 min-[420px]:flex-row">
+    <div>
+      {/* The dropdown is absolutely positioned against this block alone.
+          Anything rendered after it — quick picks, a stacked button —
+          must sit outside, or the suggestions open below them instead of
+          under the box they belong to. */}
+      <div className="relative">
+      <div className={stackedAction ? 'flex gap-2' : 'flex flex-col gap-2 min-[420px]:flex-row'}>
         <div className="relative min-w-0 flex-1">
           <IconSearch
             width={18}
@@ -187,7 +206,11 @@ export default function SearchBox({
             onBlur={() => setTimeout(() => setOpen(false), 150)}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
             ref={inputRef}
-            placeholder={placeholder ?? 'Try "Paracetamol", "Amoxicillin" or "Ventolin"'}
+            // Says what may be typed rather than showing three examples of
+            // it. The quick picks below already give examples, and "brand
+            // or generic" is the thing a patient holding a box needs to
+            // know — the name on it is usually the brand.
+            placeholder={placeholder ?? 'Brand or generic name'}
             className="w-full rounded-xl border-2 border-gray-300 bg-white py-3.5 pl-10 pr-4 text-base text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-950 dark:disabled:bg-gray-800"
             aria-label="Search for a drug"
             autoComplete="off"
@@ -212,7 +235,7 @@ export default function SearchBox({
             disabled={disabled}
             aria-label={listening ? 'Stop listening' : 'Search by voice'}
             aria-pressed={listening}
-            className={`flex min-h-[52px] shrink-0 items-center justify-center rounded-xl border px-4 transition-colors disabled:opacity-50 ${
+            className={`flex min-h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl border transition-colors disabled:opacity-50 ${
               listening
                 ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
                 : 'border-gray-300 text-gray-500 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-emerald-700 dark:hover:text-emerald-400'
@@ -221,9 +244,11 @@ export default function SearchBox({
             <IconMic width={20} height={20} />
           </button>
         )}
-        <Button onClick={submit} disabled={disabled} size="lg" className="w-full shrink-0 min-[420px]:w-auto">
-          Search
-        </Button>
+        {!stackedAction && (
+          <Button onClick={submit} disabled={disabled} size="lg" className="w-full shrink-0 min-[420px]:w-auto">
+            {actionLabel}
+          </Button>
+        )}
       </div>
 
       {listening && (
@@ -284,6 +309,15 @@ export default function SearchBox({
             </li>
           ))}
         </ul>
+      )}
+      </div>
+
+      {footer}
+
+      {stackedAction && (
+        <Button onClick={submit} disabled={disabled} size="lg" className="mt-3 w-full">
+          {actionLabel}
+        </Button>
       )}
     </div>
   )
