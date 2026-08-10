@@ -9,6 +9,8 @@ import {
   registerSchema,
 } from '@/lib/authValidation'
 import { isValidState } from '@/lib/states'
+import { issueVerifyUrl } from '@/lib/emailVerification'
+import { sendVerifyEmail } from '@/lib/mail'
 import { Prisma } from '@/generated/prisma/client'
 
 // Sign-up: email is the only login identifier. accountType picks the role —
@@ -53,6 +55,15 @@ export async function POST(req: NextRequest) {
         state,
       },
     })
+    // Best effort, and never allowed to fail the sign-up: the account
+    // exists and works whether or not this mail leaves the building, and
+    // an unverified account is blocked from nothing (lib/emailVerification).
+    try {
+      await sendVerifyEmail(user.email!, await issueVerifyUrl(user.id, req.nextUrl.origin))
+    } catch (mailError) {
+      console.error('[auth/register] verification email failed:', mailError)
+    }
+
     const res = NextResponse.json(
       { user: { id: user.id, role: user.role, displayName: user.displayName } },
       { status: 201 },

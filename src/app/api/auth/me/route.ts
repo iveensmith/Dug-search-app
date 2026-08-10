@@ -8,7 +8,15 @@ export async function GET(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, email: true, phone: true, displayName: true, role: true, state: true },
+    select: {
+      id: true,
+      email: true,
+      phone: true,
+      displayName: true,
+      role: true,
+      state: true,
+      emailVerifiedAt: true,
+    },
   })
   if (!user) return NextResponse.json({ user: null })
 
@@ -19,5 +27,10 @@ export async function GET(req: NextRequest) {
       ? (await prisma.pharmacy.count({ where: { ownerUserId: user.id } })) > 0
       : false
 
-  return NextResponse.json({ user: { ...user, hasPharmacy } })
+  // A boolean, not the timestamp: the client only ever asks whether, and
+  // when somebody confirmed their address is nobody's business but ours.
+  const { emailVerifiedAt, ...rest } = user
+  return NextResponse.json({
+    user: { ...rest, hasPharmacy, emailVerified: emailVerifiedAt !== null },
+  })
 }

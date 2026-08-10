@@ -49,6 +49,21 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
  * the address is the one who should hear about it, and this is the
  * channel only they can read.
  */
+export async function sendVerifyEmail(to: string, verifyUrl: string): Promise<void> {
+  await sendEmail(
+    to,
+    'Confirm your email for MediQuest',
+    `
+      <p>Welcome to MediQuest.</p>
+      <p><a href="${verifyUrl}">Confirm this email address</a> — the link works for 24 hours.</p>
+      <p>You can keep using MediQuest either way; confirming just means we can
+      reach you if a pharmacist replies or you ever need to reset your password.</p>
+      <p>If you didn't create an account, you can ignore this email.</p>
+    `,
+    `verify link for ${to}: ${verifyUrl}`,
+  )
+}
+
 export async function sendAccountLockedEmail(
   to: string,
   minutes: number,

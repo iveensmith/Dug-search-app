@@ -6,6 +6,7 @@ import Link from 'next/link'
 import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
+import VerifyEmailNotice from '@/components/VerifyEmailNotice'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
@@ -20,6 +21,7 @@ type Me = {
   displayName: string | null
   role: string
   state: string | null
+  emailVerified: boolean
 }
 
 export default function AccountPage() {
@@ -132,6 +134,10 @@ export default function AccountPage() {
         </header>
 
         <div className="space-y-4">
+          {/* Above the account details, because it is about the address
+              shown in them — and a prompt, never a gate. */}
+          <VerifyEmailNotice email={me.email} verified={me.emailVerified} />
+
           <Card>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">

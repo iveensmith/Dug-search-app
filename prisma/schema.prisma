@@ -151,6 +151,13 @@ model User {
   state                  NigerianState? // patient's home state — pre-fills the search state picker
   passwordResetTokenHash String?        @unique // SHA-256 of the emailed token — raw token never stored
   passwordResetExpiresAt DateTime?
+  // Proof the address is really theirs. Null means unverified, which is
+  // every account created before this existed — see the migration for why
+  // that is left alone rather than backfilled, and lib/emailVerification
+  // for why being unverified blocks nothing.
+  emailVerifiedAt        DateTime?
+  emailVerifyTokenHash   String?        @unique // SHA-256, same as the reset token above
+  emailVerifyExpiresAt   DateTime?
   createdAt              DateTime       @default(now())
 
   pharmacy       Pharmacy? // set when role = PHARMACY_OWNER
