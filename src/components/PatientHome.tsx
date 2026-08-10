@@ -279,6 +279,8 @@ export default function PatientHome() {
   // Set when someone searched before choosing an area, so the picker can
   // say why it just appeared instead of seeming to interrupt them.
   const [needsArea, setNeedsArea] = useState(false)
+  // Collapsed once there are results to read; see compactPanel.
+  const [panelExpanded, setPanelExpanded] = useState(false)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [filterDraft, setFilterDraft] = useState<Filters>(NO_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -436,6 +438,13 @@ export default function PatientHome() {
   async function runSearch(drug: DrugSuggestion, forState: NigerianStateValue) {
     const label = drugLabel(drug)
     lastDrugRef.current = drug
+    setPanelExpanded(false)
+    // The hero comes off the page when results replace it, so the
+    // document gets shorter under a scroll position that does not move —
+    // and a patient who searched from halfway down was left looking at
+    // the footer, below the answers they asked for. Collapsing the panel
+    // made the drop bigger, but the fault was always there.
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     setState({ kind: 'loading', label })
     setRoute(null)
     setRouteError('')
@@ -559,6 +568,9 @@ export default function PatientHome() {
     setState({ kind: 'coverage', drugs: [drug], results: [] })
     // The box is above the results; bring it back into view and put the
     // cursor in it, or "add another" leaves them looking at nothing.
+    // Expanded first — focusing an input that is not rendered does
+    // nothing, and the collapsed summary has no input at all.
+    setPanelExpanded(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     setTimeout(() => searchInputRef.current?.focus(), 350)
   }
@@ -583,6 +595,9 @@ export default function PatientHome() {
 
   /** Which nearby pharmacies cover the most of the list, in one trip. */
   async function runCoverageSearch(drugs: DrugSuggestion[], forState: NigerianStateValue) {
+    setPanelExpanded(false)
+    // Same reason as runSearch.
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     setState({ kind: 'coverage', drugs, results: [] })
     setRoute(null)
     setRouteError('')
@@ -756,6 +771,58 @@ export default function PatientHome() {
   const mapCenter = userPos ?? fallbackCenter ?? { lat: 9.082, lng: 8.6753 } // Nigeria's geographic centre — only used before a state is picked
   const selectedLabel = selectedState ? stateLabel(selectedState) : null
   const areaChosen = Boolean(selectedState && selectedLga)
+
+  /**
+   * What the panel has been asked, in one line.
+   *
+   * Used only once results exist, where the full panel is mostly
+   * restating a question that has already been answered — and on a phone
+   * it pushes the answers below the fold, which is the one thing a
+   * search result must never do.
+   */
+  const askedFor =
+    state.kind === 'results'
+      ? state.label
+      : state.kind === 'coverage'
+        ? state.drugs.map(drugLabel).join(', ')
+        : state.kind === 'no-match'
+          ? state.query
+          : state.kind === 'loading'
+            ? state.label
+            : ''
+
+  // Expanded whenever the panel is being used rather than merely
+  // reporting: while adding to a list, while we are asking for an area,
+  // and whenever the patient opens it themselves.
+  const panelOpen = panelExpanded || needsArea || pickerOpen || basket.length > 0
+
+  const compactPanel = (
+    <button
+      type="button"
+      onClick={() => setPanelExpanded(true)}
+      className="mb-4 flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-emerald-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-700"
+    >
+      <span className="flex shrink-0 items-center justify-center rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+        <IconSearch width={16} height={16} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-bold text-gray-900 dark:text-gray-100">
+          {askedFor || 'New search'}
+        </span>
+        {selectedLabel && (
+          <span className="mt-0.5 flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+            <IconMapPin width={12} height={12} className="shrink-0" />
+            <span className="truncate">
+              {selectedLga ? `${selectedLabel} · ${selectedLga}` : selectedLabel}
+            </span>
+          </span>
+        )}
+      </span>
+      <span className="shrink-0 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+        Change
+      </span>
+    </button>
+  )
 
   // The one interactive thing that matters — rendered inside the hero while
   // idle, and above the results once a search has run.
@@ -1204,7 +1271,7 @@ export default function PatientHome() {
         </>
       )}
 
-      {state.kind !== 'idle' && searchPanel}
+      {state.kind !== 'idle' && (panelOpen ? searchPanel : compactPanel)}
 
       {state.kind !== 'idle' &&
         (selectedState && userPos ? (
