@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { LogoMark } from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import WelcomeToast from '@/components/ui/WelcomeToast'
+import CheckEmailBanner from '@/components/ui/CheckEmailBanner'
 import { IconLogOut } from '@/components/ui/icons'
 
 type Props = {
@@ -33,6 +34,7 @@ export default function AppHeader({
   width = 'max-w-2xl',
 }: Props) {
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
       <WelcomeToast />
       <div className={`mx-auto flex w-full ${width} items-center justify-between gap-3 px-4 py-4`}>
@@ -59,5 +61,10 @@ export default function AppHeader({
         </div>
       </div>
     </header>
+    {/* Below the sticky bar, not inside it: it is prominent on arrival and
+        scrolls away like any other content, instead of holding a slice of
+        a phone screen hostage until it is dismissed. */}
+    <CheckEmailBanner />
+    </>
   )
 }

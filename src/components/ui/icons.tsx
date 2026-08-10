@@ -118,6 +118,15 @@ export function IconSend(props: IconProps) {
   )
 }
 
+export function IconMail(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m2 7 10 6 10-6" />
+    </svg>
+  )
+}
+
 export function IconAlertCircle(props: IconProps) {
   return (
     <svg {...base} {...props}>

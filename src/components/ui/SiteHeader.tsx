@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { LogoMark } from '@/components/ui/Logo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import WelcomeToast from '@/components/ui/WelcomeToast'
+import CheckEmailBanner from '@/components/ui/CheckEmailBanner'
 import { DASHBOARD_HREF, DASHBOARD_LABEL } from '@/lib/roles'
 import { logout } from '@/lib/logout'
 import { IconLogOut, IconMenu, IconUser, IconX } from '@/components/ui/icons'
@@ -84,6 +85,7 @@ export default function SiteHeader() {
   const homeHref = me?.role === 'PHARMACY_OWNER' ? '/pharmacy/overview' : '/'
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
       <WelcomeToast />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
@@ -230,5 +232,8 @@ export default function SiteHeader() {
         </nav>
       )}
     </header>
+    {/* Below the sticky bar, not inside it — see AppHeader. */}
+    <CheckEmailBanner />
+    </>
   )
 }

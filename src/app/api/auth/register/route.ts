@@ -58,14 +58,24 @@ export async function POST(req: NextRequest) {
     // Best effort, and never allowed to fail the sign-up: the account
     // exists and works whether or not this mail leaves the building, and
     // an unverified account is blocked from nothing (lib/emailVerification).
+    let verificationEmailSent = false
     try {
-      await sendVerifyEmail(user.email!, await issueVerifyUrl(user.id, req.nextUrl.origin))
+      verificationEmailSent = await sendVerifyEmail(
+        user.email!,
+        await issueVerifyUrl(user.id, req.nextUrl.origin),
+      )
     } catch (mailError) {
       console.error('[auth/register] verification email failed:', mailError)
     }
 
     const res = NextResponse.json(
-      { user: { id: user.id, role: user.role, displayName: user.displayName } },
+      {
+        user: { id: user.id, role: user.role, displayName: user.displayName },
+        // So the app can say "check your inbox" only when there is
+        // something to check. Telling somebody to watch for mail that
+        // never left leaves them refreshing an empty inbox.
+        verificationEmailSent,
+      },
       { status: 201 },
     )
     setSessionCookie(res, await signSession({ userId: user.id, role: user.role }))

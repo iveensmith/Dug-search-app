@@ -11,6 +11,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
 import PasswordInput from '@/components/ui/PasswordInput'
+import { setCheckEmail } from '@/components/ui/CheckEmailBanner'
 
 /**
  * Mirrors the name rule the server enforces (lib/authValidation). The
@@ -56,6 +57,11 @@ function RegisterForm() {
         setError(data.error ?? 'Sign-up failed')
         return
       }
+      // Told once, on whatever page they land on next. Signing up is the
+      // only moment somebody knows to expect an email, and they leave this
+      // form immediately — without this the link sits unopened in an inbox
+      // nobody was asked to check.
+      setCheckEmail(form.email.trim(), data.verificationEmailSent === true)
       // A new patient lands on the search page, which is what the app is
       // for — this used to send them to /prescriptions, so signing up
       // dropped them on the upload form as if that were the point of

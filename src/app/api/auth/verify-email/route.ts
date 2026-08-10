@@ -70,6 +70,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  await sendVerifyEmail(user.email, await issueVerifyUrl(user.id, req.nextUrl.origin))
+  const sent = await sendVerifyEmail(user.email, await issueVerifyUrl(user.id, req.nextUrl.origin))
+  if (!sent) {
+    // "Sent — check your inbox" when nothing left the building is the one
+    // reply that wastes somebody's evening.
+    return NextResponse.json(
+      { error: 'We could not send it just now — try again in a few minutes.' },
+      { status: 502 },
+    )
+  }
   return NextResponse.json({ sent: true })
 }
