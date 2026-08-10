@@ -7,7 +7,8 @@ import SiteHeader from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { Field, Input } from '@/components/ui/Field'
+import { Field } from '@/components/ui/Field'
+import PasswordInput from '@/components/ui/PasswordInput'
 import { HOME_BY_ROLE } from '@/lib/roles'
 
 function ResetPasswordForm() {
@@ -64,9 +65,8 @@ function ResetPasswordForm() {
     <Card>
       <form onSubmit={submit} className="space-y-4">
         <Field label="New password" hint="(min 8 characters)" htmlFor="password">
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -75,9 +75,8 @@ function ResetPasswordForm() {
           />
         </Field>
         <Field label="Confirm password" htmlFor="confirm">
-          <Input
+          <PasswordInput
             id="confirm"
-            type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
@@ -86,7 +85,23 @@ function ResetPasswordForm() {
           />
         </Field>
 
-        {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+        {/* A used or expired link only fails on submit — the page cannot
+            know before then without an endpoint that confirms a token is
+            live, which would itself be a way to test tokens. So when it
+            does fail, give them the way out rather than just the news. */}
+        {error && (
+          <div>
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
+            {/expired|invalid/i.test(error) && (
+              <Link
+                href="/forgot-password"
+                className="mt-1.5 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              >
+                Send me a new link
+              </Link>
+            )}
+          </div>
+        )}
 
         <Button type="submit" loading={busy} className="w-full" size="lg">
           {busy ? 'Saving…' : 'Set new password'}

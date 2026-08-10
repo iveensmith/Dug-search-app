@@ -73,6 +73,25 @@ export function IconUpload(props: IconProps) {
   )
 }
 
+export function IconEye(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+export function IconEyeOff(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M10.6 6.2A9.9 9.9 0 0112 6c6.4 0 10 6 10 6a17.3 17.3 0 01-3.2 3.9M6.5 7.7A17 17 0 002 12s3.6 7 10 7a9.6 9.6 0 004.3-1" />
+      <path d="M9.9 9.9a3 3 0 004.2 4.2" />
+      <path d="M3 3l18 18" />
+    </svg>
+  )
+}
+
 export function IconCamera(props: IconProps) {
   return (
     <svg {...base} {...props}>

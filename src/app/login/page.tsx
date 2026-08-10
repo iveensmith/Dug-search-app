@@ -8,6 +8,7 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
+import PasswordInput from '@/components/ui/PasswordInput'
 import { setWelcomeName } from '@/components/ui/WelcomeToast'
 import { HOME_BY_ROLE } from '@/lib/roles'
 import { IconChevronRight, IconStore, IconUser } from '@/components/ui/icons'
@@ -201,9 +202,8 @@ function LoginForm() {
             </Field>
             <div>
               <Field label="Password" htmlFor="password">
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
+import PasswordInput from '@/components/ui/PasswordInput'
 import { DASHBOARD_HREF, DASHBOARD_LABEL, ROLE_LABEL } from '@/lib/roles'
 import { stateLabel } from '@/lib/states'
 
@@ -177,9 +178,8 @@ export default function AccountPage() {
             <h2 className="mb-3 font-semibold text-gray-900 dark:text-gray-100">Change password</h2>
             <form onSubmit={changePassword} className="space-y-3">
               <Field label="Current password" htmlFor="currentPassword">
-                <Input
+                <PasswordInput
                   id="currentPassword"
-                  type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
@@ -187,9 +187,8 @@ export default function AccountPage() {
                 />
               </Field>
               <Field label="New password" hint="(min 8 characters)" htmlFor="newPassword">
-                <Input
+                <PasswordInput
                   id="newPassword"
-                  type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required

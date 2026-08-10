@@ -9,6 +9,7 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
+import PasswordInput from '@/components/ui/PasswordInput'
 
 /**
  * Mirrors the name rule the server enforces (lib/authValidation). The
@@ -113,9 +114,8 @@ function RegisterForm() {
             />
           </Field>
           <Field label="Password" hint="(min 8 characters)" htmlFor="password">
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               required
