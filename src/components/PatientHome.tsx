@@ -994,10 +994,10 @@ export default function PatientHome() {
                         box on a 390px screen, and losing that contest is
                         the point — searching is still the main act. */}
                     <span className="mt-0.5 block text-sm leading-snug text-gray-600 sm:hidden dark:text-gray-400">
-                      Tap to send a photo of your prescription — a pharmacist will explain.
+                      Tap to send a photo of your prescription — a Pharmacist will explain.
                     </span>
                     <span className="mt-1 hidden text-base leading-relaxed text-gray-600 sm:block dark:text-gray-400">
-                      Send a photo of your prescription and a licensed pharmacist will explain.
+                      Send a photo of your prescription and a licensed Pharmacist will explain.
                     </span>
 
                     {/* Both claims are true of the page this links to: see
