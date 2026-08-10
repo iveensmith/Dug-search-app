@@ -90,6 +90,7 @@ enum InventoryLogSource {
   WEB
   WHATSAPP
   CSV
+  API
 }
 
 enum PrescriptionStatus {
@@ -225,6 +226,7 @@ model Pharmacy {
   reservations Reservation[]
   staff        PharmacyStaff[]
   inventoryLogs InventoryLog[]
+  apiKeys      PharmacyApiKey[]
 
   @@index([verificationStatus])
   @@index([state])
@@ -252,6 +254,36 @@ model PharmacyStaff {
 
   pharmacy Pharmacy       @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
   logs     InventoryLog[]
+
+  @@index([pharmacyId])
+}
+
+/// A key that lets a pharmacy's own software write its stock listings.
+///
+/// The point is the shops that already track stock somewhere else — a POS,
+/// a spreadsheet macro, something a nephew wrote. Retyping a shelf into
+/// this app is the reason inventories here go stale, and the honest fix is
+/// to let whatever already knows the truth send it.
+///
+/// Only the SHA-256 is stored, so this table cannot be read as a list of
+/// working credentials — the raw key is shown to the owner once, at
+/// creation, and never again. Revoked rather than deleted, so an audit
+/// trail keeps the name of the key that made a change.
+model PharmacyApiKey {
+  id         String    @id @default(cuid())
+  pharmacyId String
+  /// What the owner calls it — "Front counter POS", so revoking the right
+  /// one does not require guessing.
+  label      String
+  tokenHash  String    @unique // SHA-256 of the raw key, same as the auth tokens
+  /// First characters of the raw key, kept in the clear so the owner can
+  /// tell two keys apart in a list. Far too short to be guessable.
+  prefix     String
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
 
   @@index([pharmacyId])
 }

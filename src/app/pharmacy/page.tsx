@@ -1151,6 +1151,14 @@ function PharmacyDashboard() {
                     <IconUpload width={16} height={16} />
                     Import from a file
                   </Link>
+                  {/* For the shops whose stock already lives in a POS —
+                      then nobody has to remember to export anything. */}
+                  <Link
+                    href="/pharmacy/api"
+                    className="mt-2 block cursor-pointer text-center text-sm font-semibold text-gray-500 underline underline-offset-2 dark:text-gray-400"
+                  >
+                    Connect your own software
+                  </Link>
                 </>
               ) : (
                 <Card>

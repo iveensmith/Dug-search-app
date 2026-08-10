@@ -23,6 +23,7 @@
 
 import crypto from 'crypto'
 import { prisma } from '@/lib/db'
+import { consumeWindow, type Verdict } from '@/lib/rateLimit'
 
 /* ----------------------------------------------------------------- policy */
 
@@ -75,44 +76,15 @@ export function accountKey(identifier: string, portal: string): string {
 
 /* --------------------------------------------------------------- IP limit */
 
-export type IpVerdict = { allowed: true } | { allowed: false; retryAfterSeconds: number }
+export type IpVerdict = Verdict
 
 /**
  * Counts this request against the address's window and says whether it may
- * proceed.
- *
- * One statement, so two requests arriving together cannot both read the
- * same count and both decide they are the tenth. The window is fixed
- * rather than sliding: at a boundary it will briefly allow up to twice the
- * limit, which for a login form is not worth a sorted-set of timestamps.
+ * proceed. The counting itself lives in lib/rateLimit, which the public
+ * API shares — the policy below is what belongs to sign-in.
  */
 export async function consumeIpRequest(ip: string): Promise<IpVerdict> {
-  const cutoff = new Date(Date.now() - IP_WINDOW_MS)
-
-  const rows = await prisma.$queryRaw<{ count: number; windowStart: Date }[]>`
-    INSERT INTO "AuthThrottle" ("key", "count", "windowStart", "updatedAt")
-    VALUES (${`ip:${ip}`}, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    ON CONFLICT ("key") DO UPDATE SET
-      "count" = CASE
-        WHEN "AuthThrottle"."windowStart" < ${cutoff} THEN 1
-        ELSE "AuthThrottle"."count" + 1
-      END,
-      "windowStart" = CASE
-        WHEN "AuthThrottle"."windowStart" < ${cutoff} THEN CURRENT_TIMESTAMP
-        ELSE "AuthThrottle"."windowStart"
-      END,
-      "updatedAt" = CURRENT_TIMESTAMP
-    RETURNING "count", "windowStart"
-  `
-
-  const row = rows[0]
-  if (!row || row.count <= IP_MAX_REQUESTS) return { allowed: true }
-
-  const resetsAt = row.windowStart.getTime() + IP_WINDOW_MS
-  return {
-    allowed: false,
-    retryAfterSeconds: Math.max(1, Math.ceil((resetsAt - Date.now()) / 1000)),
-  }
+  return consumeWindow(`ip:${ip}`, IP_MAX_REQUESTS, IP_WINDOW_MS)
 }
 
 /* ---------------------------------------------------------- account gate */
