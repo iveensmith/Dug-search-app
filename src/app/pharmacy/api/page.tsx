@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
 import { logout } from '@/lib/logout'
+import WebhookCard from '@/components/WebhookCard'
 import { IconAlertCircle, IconCheck, IconTrash, IconPlus } from '@/components/ui/icons'
 
 type Key = {
@@ -165,6 +166,8 @@ export default function ApiKeysPage() {
             </p>
           )}
         </Card>
+
+        <WebhookCard />
 
         <div className="mt-5">
           <h2 className="px-1 text-sm font-bold text-gray-900 dark:text-gray-100">Your keys</h2>

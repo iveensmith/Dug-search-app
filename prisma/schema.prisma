@@ -227,6 +227,7 @@ model Pharmacy {
   staff        PharmacyStaff[]
   inventoryLogs InventoryLog[]
   apiKeys      PharmacyApiKey[]
+  webhook      WebhookEndpoint?
 
   @@index([verificationStatus])
   @@index([state])
@@ -286,6 +287,61 @@ model PharmacyApiKey {
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
 
   @@index([pharmacyId])
+}
+
+/// Where a pharmacy's own software wants to be told about reservations.
+///
+/// One per pharmacy. The stock API is the shop telling us what it has;
+/// this is the other direction — us telling the shop a patient is on
+/// their way, so a POS can put it on a screen at the counter instead of
+/// somebody watching a dashboard.
+///
+/// `secret` is stored in the clear, unlike an API key, because signing
+/// requires the original value — there is no hash we could sign with. It
+/// is a signing key, not an access credential: holding it lets somebody
+/// forge events *to* the pharmacy, and grants nothing here.
+model WebhookEndpoint {
+  id         String    @id @default(cuid())
+  pharmacyId String    @unique
+  url        String
+  secret     String
+  /// Paused rather than deleted when deliveries keep failing, so an owner
+  /// can see it stopped and why instead of finding an empty screen.
+  active     Boolean   @default(true)
+  lastOkAt   DateTime?
+  createdAt  DateTime  @default(now())
+
+  pharmacy   Pharmacy          @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+}
+
+/// One attempt-tracked event, queued before it is ever sent.
+///
+/// Durable because the alternative is losing the event whenever the
+/// receiver happens to be down, and "the pharmacy never heard" is the
+/// only failure that matters here. Written first, delivered second: a row
+/// that exists but was never sent is recoverable, a send that was never
+/// recorded is not.
+model WebhookDelivery {
+  id          String    @id @default(cuid())
+  endpointId  String
+  event       String
+  payload     String // JSON, exactly as signed — re-serialising would break the signature
+  attempts    Int       @default(0)
+  nextAttemptAt DateTime @default(now())
+  deliveredAt DateTime?
+  /// Set once retries are exhausted; the row is kept as the record that
+  /// this event was lost, which an owner needs to see.
+  failedAt    DateTime?
+  lastStatus  Int?
+  lastError   String?
+  createdAt   DateTime  @default(now())
+
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([endpointId, createdAt])
+  /// The drain query: everything due, oldest first.
+  @@index([deliveredAt, failedAt, nextAttemptAt])
 }
 
 /// Who changed a stock listing, when, and through what.

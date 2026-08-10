@@ -5,6 +5,7 @@ import { requireSession } from '@/lib/auth'
 import { notifyReservationRequested } from '@/lib/notify'
 import { cursorPage, cursorResult } from '@/lib/pagination'
 import { expireLapsedHolds } from '@/lib/expireHolds'
+import { emitReservationEvent } from '@/lib/reservationEvents'
 
 const bodySchema = z.object({
   pharmacyId: z.string().min(1),
@@ -146,6 +147,12 @@ export async function POST(req: NextRequest) {
   await notifyReservationRequested(reservation.id).catch((e) =>
     console.error('[notify] reservation email failed:', e),
   )
+
+  // Same reasoning as the email above, and the same guarantee in the
+  // other direction: the reservation is already saved, this is bounded by
+  // a short timeout, and every failure is swallowed and retried later. A
+  // pharmacy with a broken endpoint cannot cost a patient their hold.
+  await emitReservationEvent(reservation.id, 'reservation.created')
 
   return NextResponse.json({ reservation }, { status: 201 })
 }

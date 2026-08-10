@@ -5,6 +5,7 @@ import { authenticateKey } from '@/lib/apiKeys'
 import { DRUG_FORMS } from '@/lib/drugForms'
 import { logInventoryAction } from '@/lib/inventoryLog'
 import { notifyStockAvailable } from '@/lib/notify'
+import { drainOccasionally } from '@/lib/webhooks'
 
 /**
  * The public stock endpoint: what a pharmacy's own software talks to.
@@ -51,6 +52,10 @@ function fail(status: number, error: string, extra?: Record<string, unknown>) {
 
 export async function GET(req: NextRequest) {
   const auth = await authenticateKey(req)
+  // Without a scheduler, real traffic is the only clock there is — and a
+  // POS polling this is the integration most likely to be waiting on a
+  // retry. Sampled and capped, so it cannot slow the caller down.
+  await drainOccasionally()
   if (!auth.ok) {
     return fail(auth.status, auth.error, auth.retryAfterSeconds ? { retryAfterSeconds: auth.retryAfterSeconds } : undefined)
   }

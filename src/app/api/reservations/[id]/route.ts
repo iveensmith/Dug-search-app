@@ -9,6 +9,7 @@ import {
   isOpen,
   type ReservationStatusValue,
 } from '@/lib/reservations'
+import { emitReservationEvent } from '@/lib/reservationEvents'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -77,6 +78,11 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     },
     select: { id: true, status: true, collectedAt: true, readyAt: true, pharmacyId: true },
   })
+
+  // Both directions are worth sending. A patient cancelling is the shop's
+  // cue to put the pack back; the shop marking it ready is what a POS
+  // would show at the counter. Bounded and swallowed, as everywhere else.
+  await emitReservationEvent(updated.id, 'reservation.updated')
 
   return NextResponse.json({ reservation: updated })
 }

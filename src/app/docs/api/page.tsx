@@ -113,10 +113,72 @@ export default function ApiDocsPage() {
           </li>
         </ul>
 
-        <H2>What we do not do yet</H2>
+        <H2>Webhooks: being told about reservations</H2>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          There are no outbound webhooks — we will not call your system when a patient reserves
-          something. If you need that, say so; it is not built because nobody has asked for it yet.
+          The owner sets a URL under <strong>Pharmacy → Connect your own software</strong>. We POST
+          JSON to it when a patient asks for a hold, and again whenever that reservation changes.
+          The events are <code>reservation.created</code>, <code>reservation.updated</code> and{' '}
+          <code>ping</code>.
+        </p>
+        <Code>{`POST https://your-system.example/mediquest
+X-MediQuest-Event: reservation.created
+X-MediQuest-Delivery: clx987…            # stable across retries — dedupe on it
+X-MediQuest-Signature: t=1786370000,v1=9f86d0…
+
+{
+  "event": "reservation.created",
+  "createdAt": "2026-08-10T14:21:07.114Z",
+  "data": {
+    "reservation": { "id": "clx…", "status": "PENDING", "quantity": 2,
+                     "note": null, "readyAt": null, "collectedAt": null,
+                     "createdAt": "2026-08-10T14:21:07.098Z" },
+    "patient":     { "name": "Ada Obi", "phone": "+2348012345678" },
+    "drug":        { "id": "clx…", "genericName": "Amoxicillin/Clavulanate",
+                     "strength": "625 mg", "form": "TABLET", "brandNames": [] }
+  }
+}`}</Code>
+
+        <H2>Checking the signature</H2>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Anyone can POST to your URL. The signature is how you know we sent it. Sign the raw body
+          — not a re-encoded copy of the parsed JSON, which will not match.
+        </p>
+        <Code>{`const [t, v1] = req.headers['x-mediquest-signature']
+  .split(',').map(p => p.split('=')[1])
+
+const expected = crypto.createHmac('sha256', SECRET)
+  .update(t + '.' + rawBody)          // the bytes as received
+  .digest('hex')
+
+const ok = crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))
+// Reject anything older than five minutes, or a captured request can be
+// replayed at leisure.
+const fresh = Math.abs(Date.now() / 1000 - Number(t)) < 300`}</Code>
+
+        <H2>Delivery, honestly</H2>
+        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-gray-600 dark:text-gray-400">
+          <li>Answer <code>2xx</code> quickly. Anything else counts as a failure.</li>
+          <li>
+            Failures retry six times over about eight hours, then stop. The owner can see which
+            events were lost.
+          </li>
+          <li>
+            <strong>Expect repeats.</strong> If your server is slow to answer we may retry something
+            you already handled — <code>X-MediQuest-Delivery</code> is stable across retries, so
+            store it and ignore ids you have seen.
+          </li>
+          <li>
+            <strong>No delivery-time guarantee.</strong> The first attempt is immediate; retries
+            depend on a scheduler being configured, so treat this as a fast nudge rather than the
+            authoritative record. <code>GET /api/v1/inventory</code> and your own reconciliation
+            remain the source of truth.
+          </li>
+          <li>HTTPS only, and the address must be reachable from the public internet.</li>
+          <li>Redirects are not followed.</li>
+        </ul>
+        <p className="mt-3 text-gray-600 dark:text-gray-400">
+          These payloads carry a patient&apos;s name and phone number. Terminate them somewhere you
+          would be comfortable holding that.
         </p>
       </div>
       <SiteFooter />
