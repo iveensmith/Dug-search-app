@@ -1133,24 +1133,17 @@ export default function PatientHome() {
               </ul>
             </div>
 
-            <div className="relative order-3 pb-4 md:order-none md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
+            <div className="relative pb-16 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
               <HeroGraphic />
-            </div>
-
-            <div className="order-2 md:order-none md:col-start-1 md:row-start-2">
               {/* Was a dashed box captioned "Sample — not live results",
                   which told a first-time visitor they were looking at a
-                  prototype; then a small card floating over the hero art,
-                  where the numbers were too small to read and half of them
-                  did not fit. Now a row of figures directly above the
-                  search, refreshing while the page is open.
-
-                  What has not changed is what may be printed: every number
-                  is counted, and if the network is too small for a count
-                  to reassure, the threshold in NetworkPulse keeps it quiet
-                  rather than dressing it up. */}
+                  prototype. Now the real thing: counts and the latest
+                  confirmation, straight from the database, or nothing at
+                  all if there is nothing true to say yet. */}
               <NetworkPulse />
+            </div>
 
+            <div className="md:col-start-1 md:row-start-2">
               {searchPanel}
 
               {/* The other way in, for someone holding a slip they cannot

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { relativeTime } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
-import { IconCheck } from '@/components/ui/icons'
+import { IconCheck, IconStore } from '@/components/ui/icons'
 
 /**
  * Replaces the mocked-up "Sample — not live results" card with what the
@@ -60,11 +60,9 @@ export default function NetworkPulse() {
     async function load() {
       try {
         // no-store, or the refresh is theatre: the route sets
-        // stale-while-revalidate for the edge, and the browser honours it
-        // too — so every poll after the first was served from cache and
-        // the numbers never moved. Verified by adding a pharmacy with the
-        // page open and watching it stay put. The edge cache still bounds
-        // how much load this can generate.
+        // stale-while-revalidate for the edge and the browser honours it
+        // too, so every poll after the first came from cache and the
+        // numbers never moved. The edge cache still bounds the load.
         const res = await fetch('/api/network-stats', { cache: 'no-store' })
         if (!res.ok) return
         const data = await res.json()
@@ -75,7 +73,7 @@ export default function NetworkPulse() {
     }
     // Deferred a tick so it never competes with the search box for the
     // first paint — this is reassurance, the search is the point.
-    const first = setTimeout(load, 0)
+    const timer = setTimeout(load, 0)
     const refresh = setInterval(load, REFRESH_MS)
     const tick = setInterval(() => setTick((t) => t + 1), TICK_MS)
 
@@ -88,7 +86,7 @@ export default function NetworkPulse() {
 
     return () => {
       cancelled = true
-      clearTimeout(first)
+      clearTimeout(timer)
       clearInterval(refresh)
       clearInterval(tick)
       document.removeEventListener('visibilitychange', onVisible)
@@ -102,56 +100,49 @@ export default function NetworkPulse() {
   if (!quoteCounts && !activity) return null
 
   return (
-    <div className="mb-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm dark:border-emerald-900/60 dark:bg-gray-900">
+    <div className="animate-float absolute -bottom-1 left-0 w-64 select-none rounded-2xl border border-emerald-200 bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 sm:w-72 dark:border-emerald-900/60 dark:bg-gray-900/95">
       <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
         <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
         Live network
       </p>
 
-      {/* The figures at a size worth reading. Still only ever the counted
-          ones — the threshold above decides whether they appear at all,
-          and nothing here rounds, pads or projects. */}
       {quoteCounts && (
-        <dl className="mt-3 grid grid-cols-3 gap-2">
-          {[
-            [stats.pharmacies, stats.pharmacies === 1 ? 'pharmacy' : 'pharmacies'],
-            [stats.states, stats.states === 1 ? 'state' : 'states'],
-            [stats.drugs, stats.drugs === 1 ? 'medicine' : 'medicines'],
-          ].map(([value, label]) => (
-            <div
-              key={label as string}
-              className="rounded-xl bg-emerald-50 px-2 py-2.5 text-center dark:bg-emerald-500/10"
-            >
-              <dd className="text-xl font-bold leading-none text-emerald-800 tabular-nums dark:text-emerald-300">
-                {(value as number).toLocaleString()}
-              </dd>
-              <dt className="mt-1 text-[11px] font-medium text-emerald-800/80 dark:text-emerald-300/80">
-                {label as string}
-              </dt>
-            </div>
-          ))}
-        </dl>
+        <div className="mt-2.5 flex items-start gap-2">
+          <IconStore
+            width={16}
+            height={16}
+            className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+          />
+          <p className="text-sm leading-snug text-gray-700 dark:text-gray-300">
+            <span className="font-bold text-gray-900 dark:text-gray-100">
+              {stats.pharmacies.toLocaleString()}
+            </span>{' '}
+            verified {stats.pharmacies === 1 ? 'pharmacy' : 'pharmacies'} across{' '}
+            <span className="font-bold text-gray-900 dark:text-gray-100">{stats.states}</span>{' '}
+            {stats.states === 1 ? 'state' : 'states'}
+          </p>
+        </div>
       )}
 
       {activity && (
-        <p
-          className={`flex items-start gap-2 text-sm leading-snug text-gray-700 dark:text-gray-300 ${
-            quoteCounts ? 'mt-3' : 'mt-2.5'
-          }`}
-        >
+        <div className={`flex items-start gap-2 ${quoteCounts ? 'mt-2' : 'mt-2.5'}`}>
           <IconCheck
             width={16}
             height={16}
             className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
           />
-          <span>
+          <p className="text-sm leading-snug text-gray-700 dark:text-gray-300">
             Stock confirmed{' '}
-            <span className="font-bold text-gray-900 dark:text-gray-100">
-              in {activity.lga ?? stateLabel(activity.state)}
-            </span>{' '}
+            {activity.lga ? (
+              <span className="font-bold text-gray-900 dark:text-gray-100">in {activity.lga}</span>
+            ) : (
+              <span className="font-bold text-gray-900 dark:text-gray-100">
+                in {stateLabel(activity.state)}
+              </span>
+            )}{' '}
             {relativeTime(activity.at)}
-          </span>
-        </p>
+          </p>
+        </div>
       )}
     </div>
   )
