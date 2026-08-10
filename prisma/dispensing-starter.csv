@@ -1,0 +1,109 @@
+# Dispensing classes — A DRAFT FOR A PHARMACIST TO CHECK, NOT A RULING.
+#
+# Nothing in this file has been applied. It exists so you are editing a
+# list rather than typing one, and every line needs your eye before it
+# goes anywhere near the database — you are the licensed professional,
+# this file was written by a language model, and a wrong class on a real
+# medicine is precisely the harm the feature was built to prevent.
+#
+# Apply with:
+#   DATABASE_URL="…" npm run classify:dispensing -- --apply prisma/dispensing-starter.csv
+# then add --commit once the dry run reads correctly.
+#
+# Names must match Drug.genericName exactly (case-insensitively). Run
+# --report first to see the spellings actually in your catalogue; any
+# line that doesn't match is reported, never guessed at.
+#
+# Classes: POM (prescription required) · PHARMACY_ONLY (no prescription,
+# but handed over by a pharmacist) · OTC (general sale).
+#
+# ---------------------------------------------------------------------
+# UNCONTROVERSIAL — general sale almost anywhere
+# ---------------------------------------------------------------------
+Paracetamol,OTC
+Ibuprofen,OTC
+Aspirin,OTC
+Oral Rehydration Salts,OTC
+Zinc Sulphate,OTC
+Vitamin C,OTC
+Ascorbic Acid,OTC
+Folic Acid,OTC
+Ferrous Sulphate,OTC
+Multivitamin,OTC
+Magnesium Trisilicate,OTC
+Antacid,OTC
+Calamine Lotion,OTC
+Hydrogen Peroxide,OTC
+Methylated Spirit,OTC
+Povidone Iodine,OTC
+Petroleum Jelly,OTC
+#
+# ---------------------------------------------------------------------
+# ANTIBIOTICS — prescription-only under PCN rules. The single biggest
+# reason this feature exists: these are the ones routinely sold without a
+# script, and the ones where that does the most harm.
+# ---------------------------------------------------------------------
+Amoxicillin,POM
+Amoxicillin + Clavulanic Acid,POM
+Ampicillin,POM
+Azithromycin,POM
+Cefuroxime,POM
+Ceftriaxone,POM
+Cefixime,POM
+Ciprofloxacin,POM
+Levofloxacin,POM
+Ofloxacin,POM
+Doxycycline,POM
+Erythromycin,POM
+Metronidazole,POM
+Cloxacillin,POM
+Gentamicin,POM
+Cotrimoxazole,POM
+Nitrofurantoin,POM
+#
+# ---------------------------------------------------------------------
+# LONG-TERM AND INJECTABLE — dosing is individual and getting it wrong
+# is dangerous
+# ---------------------------------------------------------------------
+Insulin,POM
+Metformin,POM
+Glibenclamide,POM
+Glimepiride,POM
+Amlodipine,POM
+Lisinopril,POM
+Losartan,POM
+Nifedipine,POM
+Atenolol,POM
+Hydrochlorothiazide,POM
+Furosemide,POM
+Warfarin,POM
+Salbutamol Inhaler,POM
+Prednisolone,POM
+Carbamazepine,POM
+Phenytoin,POM
+Diazepam,POM
+Tramadol,POM
+Codeine,POM
+Morphine,POM
+#
+# ---------------------------------------------------------------------
+# YOUR CALL — deliberately left out of the list above.
+#
+# For these, formal classification and Nigerian counter practice do not
+# agree, and I am not the person to settle that. Decide each one and add
+# it below with the class you want, or leave it out and it stays silent,
+# which is a perfectly good answer.
+#
+#   Artemether + Lumefantrine (Coartem) and the other ACTs — sold widely
+#     without a script; whether MediQuest should say POM is a policy
+#     decision about what you want the app to encourage.
+#   Chloroquine, Sulfadoxine + Pyrimethamine — same question.
+#   Albendazole, Mebendazole (deworming) — commonly general sale.
+#   Loratadine, Cetirizine, Chlorpheniramine — antihistamines, often OTC.
+#   Omeprazole — OTC in some markets, POM in others.
+#   Diclofenac — stronger NSAID; some registers keep it POM.
+#   Emergency contraception (Levonorgestrel) — access policy as much as
+#     classification, and worth deciding deliberately.
+#   Combined oral contraceptives — likewise.
+#
+# Add your decisions here:

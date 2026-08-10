@@ -15,7 +15,8 @@
     "verify:phase1": "tsx scripts/verify-phase1.ts",
     "postinstall": "prisma generate",
     "vercel-build": "prisma migrate deploy && next build",
-    "audit:passwords": "tsx scripts/audit-password-hashes.ts"
+    "audit:passwords": "tsx scripts/audit-password-hashes.ts",
+    "classify:dispensing": "tsx scripts/classify-dispensing.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
