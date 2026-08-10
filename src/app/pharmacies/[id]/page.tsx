@@ -14,10 +14,17 @@ import StockPulse from '@/components/StockPulse'
 import { drugLabel, directionsUrl, type DrugSuggestion } from '@/lib/types'
 import { stateLabel } from '@/lib/states'
 import { MIN_RATINGS_TO_SCORE, RATING_DIMENSIONS, type RatingSummary } from '@/lib/ratings'
-import { IconMapPin, IconPhone, IconRoute, IconShieldCheck, IconStore } from '@/components/ui/icons'
+import { IconPhone, IconRoute, IconShieldCheck, IconStore } from '@/components/ui/icons'
 
 // Opens only when someone taps "Rate this pharmacy".
 const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog'), { ssr: false })
+
+// Leaflet touches `window` — client-only, and not worth downloading until
+// this page is actually open.
+const PharmacyMap = dynamic(() => import('@/components/PharmacyMap'), {
+  ssr: false,
+  loading: () => <div className="h-full w-full animate-pulse bg-emerald-50 dark:bg-emerald-950/40" />,
+})
 
 type Pharmacy = {
   id: string
@@ -118,6 +125,59 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
   // not blank the page with an error screen.
   const { pharmacy: p, ratings, itemCount, items = [], comments = [] } = data
   const [copied, setCopied] = useState(false)
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null)
+  const [route, setRoute] = useState<{
+    coords: [number, number][]
+    distanceKm: number
+    durationMin: number
+  } | null>(null)
+  const [routing, setRouting] = useState(false)
+  const [routeError, setRouteError] = useState('')
+
+  /**
+   * Draws the way there on the map above, rather than handing the patient
+   * to Google Maps and losing the page they were reading. Google Maps is
+   * still offered underneath for turn-by-turn voice, which this cannot do
+   * — same split as the search results.
+   */
+  async function showRoute() {
+    setRouteError('')
+    setRouting(true)
+    try {
+      const pos =
+        userPos ??
+        (await new Promise<{ lat: number; lng: number } | null>((resolve) => {
+          if (!navigator.geolocation) return resolve(null)
+          navigator.geolocation.getCurrentPosition(
+            (g) => resolve({ lat: g.coords.latitude, lng: g.coords.longitude }),
+            () => resolve(null),
+            { timeout: 10000 },
+          )
+        }))
+      if (!pos) {
+        setRouteError('Turn on location to draw the route, or open Google Maps below.')
+        return
+      }
+      setUserPos(pos)
+      const params = new URLSearchParams({
+        fromLat: String(pos.lat),
+        fromLng: String(pos.lng),
+        toLat: String(p.latitude),
+        toLng: String(p.longitude),
+      })
+      const res = await fetch(`/api/route?${params}`)
+      if (!res.ok) {
+        setRouteError('Could not work out the route — use Google Maps below.')
+        return
+      }
+      const data = await res.json()
+      setRoute({ coords: data.coords, distanceKm: data.distanceKm, durationMin: data.durationMin })
+    } catch {
+      setRouteError('Could not work out the route — use Google Maps below.')
+    } finally {
+      setRouting(false)
+    }
+  }
 
   function call(e: React.MouseEvent) {
     // Desktop has no dialler — copy instead of dead-ending the tap
@@ -132,9 +192,17 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
   return (
     <div className="animate-fade-up py-6">
       <Card padded={false} className="overflow-hidden">
-        <div className="relative grid h-40 place-items-center bg-gradient-to-br from-emerald-600 to-emerald-900">
-          <IconMapPin width={42} height={42} className="text-white/90" />
-          <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-emerald-700">
+        {/* Was a gradient with a pin drawn on it — decoration standing
+            where the actual map belongs. */}
+        <div className="relative h-56 sm:h-64">
+          <PharmacyMap
+            pharmacy={{ latitude: p.latitude, longitude: p.longitude, name: p.name }}
+            userPos={userPos}
+            routeCoords={route?.coords ?? null}
+          />
+          {/* Right-hand side: Leaflet puts its zoom controls top-left,
+              and the badge was sitting under them. */}
+          <span className="pointer-events-none absolute right-4 top-4 z-[500] inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-emerald-700 shadow-md">
             <IconShieldCheck width={13} height={13} />
             PCN verified
           </span>
@@ -153,15 +221,14 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
           </div>
 
           <div className="mt-5 flex gap-2.5">
-            <a
-              href={directionsUrl(p.latitude, p.longitude)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950"
+            <button
+              onClick={showRoute}
+              disabled={routing}
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950"
             >
               <IconRoute width={16} height={16} />
-              Directions
-            </a>
+              {routing ? 'Finding the way…' : route ? 'Route shown above' : 'Directions'}
+            </button>
             <a
               href={`tel:${p.phone.replace(/\s/g, '')}`}
               onClick={call}
@@ -172,6 +239,30 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               {copied ? 'Copied ✓' : 'Call'}
             </a>
           </div>
+
+          {route && (
+            <p className="mt-2.5 text-sm text-emerald-800 dark:text-emerald-300">
+              <span className="font-semibold">
+                {route.distanceKm.toFixed(1)} km · about {route.durationMin} min
+              </span>{' '}
+              driving from where you are
+            </p>
+          )}
+          {routeError && (
+            <p className="mt-2.5 text-sm text-amber-700 dark:text-amber-400">{routeError}</p>
+          )}
+
+          {/* Underneath, not instead of. An in-app line on a map cannot
+              speak turn-by-turn directions while somebody is driving, and
+              that is the one thing Google Maps is genuinely better at. */}
+          <a
+            href={directionsUrl(p.latitude, p.longitude)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2.5 inline-block text-sm font-medium text-gray-500 underline underline-offset-2 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400"
+          >
+            Voice navigation (opens Google Maps)
+          </a>
         </div>
       </Card>
 
