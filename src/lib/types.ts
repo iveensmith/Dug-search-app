@@ -9,6 +9,14 @@ export type DrugSuggestion = {
   packSize?: string | null
   category?: string | null
   dispensing?: string | null // null = unclassified; see lib/dispensing
+  /**
+   * Set when the query matched a brand a pharmacy typed into its own
+   * inventory rather than anything in the drug catalogue. Carried back so
+   * the suggestion can say why a search for "Aquaclav" is answering with
+   * "Amoxicillin/Clavulanate" — without that line the right answer looks
+   * like the wrong one.
+   */
+  stockedAs?: string | null
 }
 
 export type PharmacyResult = {

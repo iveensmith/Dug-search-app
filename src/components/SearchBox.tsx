@@ -254,10 +254,20 @@ export default function SearchBox({
                   <span className="block truncate font-semibold text-gray-900 dark:text-gray-100">
                     {drugLabel(d)}
                   </span>
-                  {d.brandNames.length > 0 && (
-                    <span className="block truncate text-sm text-gray-500 dark:text-gray-400">
-                      {d.brandNames.join(', ')}
+                  {/* Why a search for "Aquaclav" is answering with
+                      "Amoxicillin/Clavulanate". Without this the right
+                      answer reads as the wrong one, and the brand the
+                      patient is holding is the only word they trust. */}
+                  {d.stockedAs ? (
+                    <span className="block truncate text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                      Stocked as {d.stockedAs}
                     </span>
+                  ) : (
+                    d.brandNames.length > 0 && (
+                      <span className="block truncate text-sm text-gray-500 dark:text-gray-400">
+                        {d.brandNames.join(', ')}
+                      </span>
+                    )
                   )}
                 </span>
                 {/* Short form only: the row is already carrying a name, its
