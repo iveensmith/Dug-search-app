@@ -234,8 +234,11 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           <IconClipboardList width={18} height={18} />
           Manage inventory
         </Link>
+        {/* ?add=1, not the bare inventory page: the two buttons pointed
+            at the same URL, so "Add a drug" landed on the same list as
+            "Manage inventory" with the form still closed. */}
         <Link
-          href="/pharmacy"
+          href="/pharmacy?add=1"
           className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-600/60 px-5 py-3 font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
         >
           <IconPlus width={18} height={18} />

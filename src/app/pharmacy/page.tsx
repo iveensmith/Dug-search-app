@@ -642,15 +642,20 @@ function PharmacyDashboard() {
   // navigation this component mounts before the browser URL is updated, so
   // location.search/hash is still the old page's at first render and the
   // tab would silently fall back to Inventory.
-  const tabParam = useSearchParams().get('tab')
+  const params = useSearchParams()
+  const tabParam = params.get('tab')
   const [tab, setTab] = useState<'inventory' | 'reservations' | 'searches' | 'bulk'>(
     tabParam === 'searches' || tabParam === 'reservations' || tabParam === 'bulk'
       ? tabParam
       : 'inventory',
   )
 
-  // add-drug panel
-  const [formOpen, setFormOpen] = useState(false)
+  // add-drug panel. "?add=1" opens it on arrival, which is what the
+  // overview's "Add a drug" button means — it used to link at the bare
+  // inventory page, landing the owner on a list with the form still shut
+  // and nothing to say why they were sent there.
+  const [formOpen, setFormOpen] = useState(params.get('add') === '1')
+  const addFormRef = useRef<HTMLDivElement>(null)
   const [mode, setMode] = useState<'search' | 'new'>('search')
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<DrugSuggestion[]>([])
@@ -781,6 +786,20 @@ function PharmacyDashboard() {
     const timer = setTimeout(load, 0)
     return () => clearTimeout(timer)
   }, [load])
+
+  // Arriving from the overview's "Add a drug": the form sits below the
+  // registration, phone and hours cards, so opening it is not enough —
+  // without this the owner lands at the top of a page that looks
+  // unchanged. Deferred until the dashboard has rendered, or there is
+  // nothing to scroll to yet.
+  useEffect(() => {
+    if (params.get('add') !== '1' || !data) return
+    const timer = setTimeout(() => {
+      addFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      document.getElementById('drug-query')?.focus()
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [params, data])
 
   useEffect(() => {
     const timer = setTimeout(() => loadReservations(), 0)
@@ -1116,6 +1135,7 @@ function PharmacyDashboard() {
                 </Card>
               )}
 
+              <div ref={addFormRef} className="scroll-mt-24">
               {!formOpen ? (
                 <Button onClick={() => setFormOpen(true)} className="w-full">
                   <IconPlus width={16} height={16} />
@@ -1310,6 +1330,7 @@ function PharmacyDashboard() {
                   )}
                 </Card>
               )}
+              </div>
 
               <div className="mt-6">
                 <div className="mb-2 flex items-baseline justify-between">
