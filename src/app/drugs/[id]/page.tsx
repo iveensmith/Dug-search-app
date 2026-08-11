@@ -260,11 +260,11 @@ export default function DrugDetailPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <Suspense>
           <DrugBody id={id} />
         </Suspense>
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

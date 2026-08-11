@@ -116,9 +116,9 @@ export default function AccountPage() {
     return (
       <div className="flex min-h-dvh w-full flex-col">
         <SiteHeader />
-        <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
           <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
-        </div>
+        </main>
         <SiteFooter />
       </div>
     )
@@ -127,7 +127,7 @@ export default function AccountPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">My account</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">Your profile and login details</p>
@@ -212,7 +212,7 @@ export default function AccountPage() {
             </form>
           </Card>
         </div>
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

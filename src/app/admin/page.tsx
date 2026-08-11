@@ -164,7 +164,7 @@ export default function AdminPage() {
       onLogout={logout}
       width="max-w-4xl"
     />
-    <div className="mx-auto w-full max-w-4xl flex-1 px-4 pb-16">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 pb-16">
 
       <nav className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
         {(
@@ -213,7 +213,7 @@ export default function AdminPage() {
         )
       })}
       {tab === 'gaps' && <GapsTab analytics={analytics} />}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

@@ -223,7 +223,7 @@ export default function PharmacyRegisterPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
       <header className="py-10 text-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Add your pharmacy outlet</h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
@@ -558,7 +558,7 @@ export default function PharmacyRegisterPage() {
       </Card>
         </>
       )}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

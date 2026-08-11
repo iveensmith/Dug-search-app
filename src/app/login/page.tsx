@@ -153,7 +153,7 @@ function LoginForm() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="animate-fade-up mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
+      <main className="animate-fade-up mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Welcome back</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -275,7 +275,7 @@ function LoginForm() {
             </>
           )}
         </div>
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

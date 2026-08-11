@@ -28,7 +28,7 @@ export default function ApiDocsPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">Stock API</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
           Send a pharmacy&apos;s stock straight from the software that already tracks it. Everything
@@ -180,7 +180,7 @@ const fresh = Math.abs(Date.now() / 1000 - Number(t)) < 300`}</Code>
           These payloads carry a patient&apos;s name and phone number. Terminate them somewhere you
           would be comfortable holding that.
         </p>
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

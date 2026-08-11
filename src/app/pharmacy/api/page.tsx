@@ -94,7 +94,7 @@ export default function ApiKeysPage() {
         width="max-w-2xl"
       />
 
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <Card className="mt-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             If your shop already tracks stock somewhere — a POS, a spreadsheet macro, something
@@ -207,7 +207,7 @@ export default function ApiKeysPage() {
             </ul>
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }

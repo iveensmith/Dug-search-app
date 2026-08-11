@@ -996,7 +996,7 @@ function PharmacyDashboard() {
       onLogout={logout}
       width="max-w-2xl"
     />
-    <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
 
       {pharmacy.verificationStatus === 'PENDING' && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
@@ -1498,7 +1498,7 @@ function PharmacyDashboard() {
           <DeleteOutletCard pharmacy={pharmacy} />
         </>
       )}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

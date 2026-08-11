@@ -115,14 +115,14 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Choose a new password</h1>
         </div>
         <Suspense>
           <ResetPasswordForm />
         </Suspense>
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

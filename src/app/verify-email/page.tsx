@@ -51,7 +51,7 @@ function VerifyEmailBody() {
   }, [verify])
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-16">
+    <main className="mx-auto w-full max-w-md px-4 py-16">
       <Card className="text-center">
         {state === 'working' && (
           <p className="text-sm text-gray-600 dark:text-gray-400">Confirming your email…</p>
@@ -101,7 +101,7 @@ function VerifyEmailBody() {
           </>
         )}
       </Card>
-    </div>
+    </main>
   )
 }
 

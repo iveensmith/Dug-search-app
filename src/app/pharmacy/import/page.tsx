@@ -142,6 +142,10 @@ export default function ImportPage() {
         width="max-w-2xl"
       />
 
+      {/* The landmark covers the review list and the sticky bar together:
+          the bar is the button that acts on the list, not page furniture,
+          and left outside it was content belonging to no landmark at all. */}
+      <main className="flex flex-1 flex-col">
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         {done !== null ? (
           <Card className="mt-4 text-center">
@@ -232,6 +236,7 @@ export default function ImportPage() {
           </div>
         </div>
       )}
+      </main>
     </div>
   )
 }

@@ -60,7 +60,7 @@ export default function SearchHistoryPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">Search history</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -115,7 +115,7 @@ export default function SearchHistoryPage() {
             noun="searches"
           />
         )}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

@@ -1109,7 +1109,12 @@ export default function PatientHome() {
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
 
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
+      {/* The landmark starts here, not at the results below. The hero, the
+          search box and the marketing sections are the page for a visitor
+          who has not searched yet — with <main> further down they were
+          content belonging to no landmark, and there was nothing for a
+          screen reader to skip the header to. */}
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
       {state.kind === 'idle' && (
         <>
           {/* Three grid children so the illustration can sit between the
@@ -1387,7 +1392,7 @@ export default function PatientHome() {
           </div>
         ) : null)}
 
-      <main className="mt-8 flex-1">
+      <div className="mt-8 flex-1">
         {state.kind === 'idle' && selectedState && (
           <Card padded={false} className="animate-fade-in overflow-hidden">
             {(userPos || locationDenied) && (
@@ -2110,8 +2115,8 @@ export default function PatientHome() {
             )}
           </>
         )}
-      </main>
       </div>
+      </main>
 
       {filtersOpen && (
         <ResultFilters

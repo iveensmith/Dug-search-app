@@ -85,7 +85,7 @@ export default function PharmacistPage() {
       onLogout={logout}
       width="max-w-2xl"
     />
-    <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
 
       <section>
         <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">
@@ -156,7 +156,7 @@ export default function PharmacistPage() {
           noun="requests"
         />
       )}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

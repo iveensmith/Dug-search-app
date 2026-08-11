@@ -30,9 +30,9 @@ export default async function PharmacyRatingsPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10">
         <OwnerRatings />
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

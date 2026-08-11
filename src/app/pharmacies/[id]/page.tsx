@@ -76,7 +76,7 @@ export default function PharmacyDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         {missing ? (
           <div className="py-16 text-center">
             <p className="font-semibold text-gray-900 dark:text-gray-100">Pharmacy not found</p>
@@ -98,7 +98,7 @@ export default function PharmacyDetailPage({ params }: { params: Promise<{ id: s
         ) : (
           <PharmacyBody data={data} onRate={() => setRating(true)} />
         )}
-      </div>
+      </main>
 
       {rating && data && (
         <RatePharmacyDialog
