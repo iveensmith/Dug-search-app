@@ -22,3 +22,23 @@ the owner too, which would lock the app out of its own database.
 
 Six tables were left open this way before anyone noticed (see migration
 20260809210000). Add the line in the same migration that creates the table.
+# Trigram indexes need the schema now
+
+pg_trgm lives in the `extensions` schema, not `public` — Supabase's
+Security Advisor flags extensions in `public`, because that schema is on
+everyone's search_path and an object planted there can be resolved ahead
+of the one a query meant (see migration 20260811100000).
+
+The cost is that `gin_trgm_ops` no longer resolves on its own. A new
+trigram index must name the schema:
+
+```sql
+CREATE INDEX "Thing_name_trgm_idx"
+  ON "Thing" USING gin ("name" extensions.gin_trgm_ops);
+```
+
+Without the prefix the migration fails with `operator class
+"gin_trgm_ops" does not exist for access method "gin"`. The same applies
+to `similarity()`, `%` and `<->` if SQL ever calls them — today nothing
+does; the searches use ILIKE, which the trigram indexes accelerate
+without naming anything.
