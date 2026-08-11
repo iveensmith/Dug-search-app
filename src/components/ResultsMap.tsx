@@ -8,12 +8,16 @@ import { IconPhone } from '@/components/ui/icons'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
 import OpenStatusBadge from '@/components/ui/OpenStatusBadge'
 
+/** Everything the map plots. CoverageResult is a PharmacyResult minus
+ *  stockLevel, which nothing here reads, so one map serves both. */
+type MappableResult = Omit<PharmacyResult, 'stockLevel'>
+
 type Props = {
-  results: PharmacyResult[]
+  results: MappableResult[]
   userPos: { lat: number; lng: number } | null
   center: { lat: number; lng: number }
   route?: ActiveRoute | null
-  onRoute?: (r: PharmacyResult) => void
+  onRoute?: (r: MappableResult) => void
 }
 
 export default function ResultsMap({ results, userPos, center, route, onRoute }: Props) {

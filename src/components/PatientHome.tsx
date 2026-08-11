@@ -723,7 +723,8 @@ export default function PatientHome() {
     }
   }
 
-  async function showRoute(r: PharmacyResult) {
+  /** Takes anything with a position and a name — see MappableResult. */
+  async function showRoute(r: Omit<PharmacyResult, 'stockLevel'>) {
     setRouteBusyId(r.id)
     setRouteError('')
     try {
@@ -1505,11 +1506,66 @@ export default function PatientHome() {
                     </>
                   )}
                 </p>
+                {/* A route needs somewhere to be drawn. Without a map
+                    here, Directions had nowhere in-app to go and left for
+                    Google Maps — the single-medicine results have had
+                    this all along. */}
+                {route && state.results.length > 0 && (
+                  <div className="mb-4 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+                    {/* The map fills its container, so the container is what
+                        gives it a height — without one it collapses to
+                        nothing and the route is drawn into a zero-pixel
+                        box. map-tiles is what keeps the tiles legible in
+                        dark mode. */}
+                    <div className="map-tiles h-[55dvh]">
+                      <ResultsMap
+                        results={state.results}
+                        userPos={userPos}
+                        center={mapCenter}
+                        route={route}
+                        onRoute={showRoute}
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 bg-white px-3.5 py-2.5 dark:border-gray-800 dark:bg-gray-900">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">
+                          {route.pharmacyName}
+                        </span>{' '}
+                        — {route.distanceKm.toFixed(1)} km, about {Math.round(route.durationMin)} min
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {/* Kept, and labelled for what it is: turn-by-turn
+                            voice guidance is not something this map does. */}
+                        <a
+                          href={directionsUrl(route.toLat, route.toLng)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                        >
+                          Voice navigation
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setRoute(null)}
+                          className="cursor-pointer text-sm font-semibold text-gray-600 underline underline-offset-2 dark:text-gray-400"
+                        >
+                          Close map
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {routeError && (
+                  <p className="mb-3 text-sm text-amber-700 dark:text-amber-400">{routeError}</p>
+                )}
+
                 <CoverageResults
                   drugs={state.drugs}
                   results={state.results}
                   onCall={handleCall}
                   copiedPhone={copiedPhone ?? ''}
+                  onDirections={showRoute}
+                  routeBusyId={routeBusyId}
                 />
               </>
             )}

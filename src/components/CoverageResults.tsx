@@ -23,6 +23,8 @@ import { directionsUrl, drugLabel, stockFreshness, type CoverageResult, type Dru
  * is one tap away through the drug name.
  */
 export default function CoverageResults({
+  onDirections,
+  routeBusyId,
   drugs,
   results,
   onCall,
@@ -32,6 +34,10 @@ export default function CoverageResults({
   results: CoverageResult[]
   onCall: (e: React.MouseEvent<HTMLAnchorElement>, phone: string) => void
   copiedPhone: string
+  /** Draws the route on the in-app map. Falls back to a Google Maps link
+   *  when absent, which is what this did everywhere before. */
+  onDirections?: (r: CoverageResult) => void
+  routeBusyId?: string | null
 }) {
   if (results.length === 0) {
     return (
@@ -157,15 +163,31 @@ export default function CoverageResults({
                 <IconPhone width={16} height={16} />
                 {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
               </a>
-              <a
-                href={directionsUrl(r.latitude, r.longitude)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
-              >
-                <IconRoute width={16} height={16} />
-                Directions
-              </a>
+              {/* The multi-medicine results used to send people straight
+                  out to Google Maps while the single-medicine ones drew
+                  the route in the app — same button, same word, two
+                  different behaviours. */}
+              {onDirections ? (
+                <button
+                  type="button"
+                  onClick={() => onDirections(r)}
+                  disabled={routeBusyId === r.id}
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+                >
+                  <IconRoute width={16} height={16} />
+                  {routeBusyId === r.id ? 'Finding…' : 'Directions'}
+                </button>
+              ) : (
+                <a
+                  href={directionsUrl(r.latitude, r.longitude)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+                >
+                  <IconRoute width={16} height={16} />
+                  Directions
+                </a>
+              )}
             </div>
 
             {/* Only worth saying on a shop that is not the best on offer —
