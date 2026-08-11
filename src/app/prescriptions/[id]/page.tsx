@@ -140,22 +140,30 @@ export default function PrescriptionThreadPage() {
 
   if (notFound) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center">
+      <main className="mx-auto max-w-xl px-4 py-16 text-center">
         <p className="text-gray-700 dark:text-gray-300">This conversation doesn&apos;t exist or you can&apos;t view it.</p>
         <Link href="/prescriptions" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
           Back
         </Link>
-      </div>
+      </main>
     )
   }
-  if (!thread) return <p className="py-16 text-center text-gray-500 dark:text-gray-400">Loading conversation…</p>
+  if (!thread)
+    return (
+      <main className="py-16 text-center text-gray-500 dark:text-gray-400">
+        <p>Loading conversation…</p>
+      </main>
+    )
 
   const { upload, messages } = thread
   const backHref = upload.isMine ? '/prescriptions' : '/pharmacist'
 
   return (
     <div className="flex min-h-dvh w-full flex-col">
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-4">
+    {/* The landmark a screen reader jumps to, and what keeps the thread
+        title below a section heading rather than a second site banner —
+        a <header> inside <main> is scoped to its section. */}
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-4">
       {/* The question went through; the recording did not. Said plainly,
           because the alternative is a patient believing a pharmacist has
           heard something that was never delivered. */}
@@ -313,7 +321,7 @@ export default function PrescriptionThreadPage() {
           This conversation is closed.
         </p>
       ) : null}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )

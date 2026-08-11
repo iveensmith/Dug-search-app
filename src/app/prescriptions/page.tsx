@@ -207,7 +207,12 @@ export default function PrescriptionsPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      {/* <main>, not a bare div, and it matters twice. It is the landmark a
+          screen reader jumps to in order to skip the site header, which
+          this page had none of — and it is what stops the page title
+          below being read as a second site banner: a <header> inside
+          <main> is scoped to its section rather than to the document. */}
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
       <header className="py-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Ask a pharmacist</h1>
         <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
@@ -442,7 +447,7 @@ export default function PrescriptionsPage() {
           noun="requests"
         />
       )}
-      </div>
+      </main>
       <SiteFooter />
     </div>
   )
