@@ -14,7 +14,7 @@ import Button from '@/components/ui/Button'
 import { Field, Textarea } from '@/components/ui/Field'
 import { downscaleImage } from '@/lib/downscaleImage'
 import { MAX_REQUEST_BYTES, readErrorMessage } from '@/lib/uploadLimits'
-import { IconClipboardList, IconMic, IconUpload, IconX } from '@/components/ui/icons'
+import { IconCamera, IconClipboardList, IconMic, IconUpload, IconX } from '@/components/ui/icons'
 import AudioNoteRecorder, { type RecordedNote } from '@/components/AudioNoteRecorder'
 import { formatDuration } from '@/lib/audioNotes'
 
@@ -49,6 +49,10 @@ export default function PrescriptionsPage() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null)
+  // The photo as picked. Held here rather than read back off the input at
+  // submit, because there are two inputs now and only one of them holds
+  // it — reading the wrong one refuses a photo the patient can see.
+  const [chosen, setChosen] = useState<File | null>(null)
   // The photo actually sent: the shrunk one when that worked, otherwise
   // whatever was picked.
   const [ready, setReady] = useState<File | null>(null)
@@ -57,6 +61,9 @@ export default function PrescriptionsPage() {
   const [voiceNote, setVoiceNote] = useState<RecordedNote | null>(null)
   const [savedBytes, setSavedBytes] = useState<{ from: number; to: number } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  // Kept apart from fileRef so the camera path and the picker path can
+  // both exist; one input cannot be both at once.
+  const cameraRef = useRef<HTMLInputElement>(null)
 
   const [cursor, setCursor] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -112,6 +119,7 @@ export default function PrescriptionsPage() {
       return file ? { url: URL.createObjectURL(file), name: file.name } : null
     })
     setReady(null)
+    setChosen(file ?? null)
     if (!file) return
 
     setShrinking(true)
@@ -128,14 +136,18 @@ export default function PrescriptionsPage() {
     }
   }
 
+  // Both inputs, always: picking from one after the other leaves a stale
+  // file on the first, and an input that still holds a file will not fire
+  // change when the same file is picked again.
   function clearFile() {
     if (fileRef.current) fileRef.current.value = ''
+    if (cameraRef.current) cameraRef.current.value = ''
     pickFile(undefined)
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    const original = fileRef.current?.files?.[0]
+    const original = chosen
     if (!original) {
       setError('Choose or take a photo of the prescription first')
       return
@@ -207,29 +219,64 @@ export default function PrescriptionsPage() {
 
       <Card className="mt-5">
         <form onSubmit={submit}>
-          {/* htmlFor, not a floating label: without it a screen reader
-              announces this control as an unnamed button, so the one
-              thing the page exists to do has no name. */}
-          <label
-            htmlFor="prescription-photo"
-            className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
+          {/* A heading rather than a <label>: a label points at one control
+              and there are two here. The buttons below carry their own
+              names, so nothing is announced unnamed. */}
+          <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
             Photo of the prescription
-          </label>
+          </p>
           <div className="mb-2">
             <DataPrivacyNote />
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-dashed border-gray-300 p-3 dark:border-gray-700">
-            <IconUpload width={18} height={18} className="shrink-0 text-gray-400 dark:text-gray-500" />
+          {/* Two ways in, because there were not two before. `capture` sends
+              a phone straight to the camera and never offers the gallery
+              or Files — so a prescription already photographed, or sent
+              over WhatsApp, or scanned on a laptop, had no way in at all.
+              Splitting it keeps the one-tap camera path for the common
+              case and stops it being the only case.
+
+              The camera button is hidden where there is unlikely to be a
+              camera to open: on a desktop it would open the same file
+              dialog as the other button, under a name that promises
+              something else. */}
+          <div className="flex flex-col gap-2 rounded-xl border border-dashed border-gray-300 p-3 sm:flex-row dark:border-gray-700">
             <input
-              ref={fileRef}
-              id="prescription-photo"
+              ref={cameraRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               capture="environment"
               onChange={(e) => pickFile(e.target.files?.[0])}
-              className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-700 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-800 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
+              className="hidden"
+              tabIndex={-1}
+              aria-hidden="true"
             />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => pickFile(e.target.files?.[0])}
+              className="hidden"
+              tabIndex={-1}
+              aria-hidden="true"
+            />
+
+            <button
+              type="button"
+              onClick={() => cameraRef.current?.click()}
+              className="hidden flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 [@media(pointer:coarse)]:inline-flex dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+            >
+              <IconCamera width={16} height={16} />
+              Take a photo
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-400 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-600 dark:hover:text-emerald-400"
+            >
+              <IconUpload width={16} height={16} />
+              Choose a saved photo
+            </button>
           </div>
 
           {preview && (
@@ -339,7 +386,7 @@ export default function PrescriptionsPage() {
           </span>
           <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">No questions yet</p>
           <p className="mt-1 max-w-sm text-sm text-gray-600 dark:text-gray-400">
-            Snap a photo of a prescription you don&apos;t follow — dosage, timing, what a drug is
+            Snap or upload a prescription you don&apos;t follow — dosage, timing, what a drug is
             for — and a licensed pharmacist will explain it in plain language.
           </p>
         </div>
