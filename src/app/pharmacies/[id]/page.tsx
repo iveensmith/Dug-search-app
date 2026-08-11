@@ -205,7 +205,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
         <div className="p-5">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">{p.name}</h1>
           <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">{p.address}</p>
-          <p className="mt-0.5 text-sm tabular-nums text-gray-500 dark:text-gray-500">
+          <p className="mt-0.5 text-sm tabular-nums text-gray-500 dark:text-gray-400">
             {p.phone}
             {p.lga ? ` · ${p.lga}` : ''} · {stateLabel(p.state)}
           </p>
@@ -263,7 +263,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
 
       <Card className="mt-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             What patients say
           </p>
           <RatingStars value={ratings.scored ? ratings.overall : null} count={ratings.count} size={16} />
@@ -307,7 +307,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               <li key={c.id}>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   <span className="font-semibold text-gray-900 dark:text-gray-100">{c.author}</span>{' '}
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(c.createdAt).toLocaleDateString()}
                   </span>
                 </p>
@@ -333,7 +333,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
       </Card>
 
       <Card className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Opening hours
         </p>
         <div className="mt-2 flex items-center justify-between py-1">

@@ -53,8 +53,12 @@ function VerifyEmailBody() {
   return (
     <main className="mx-auto w-full max-w-md px-4 py-16">
       <Card className="text-center">
+        {/* The one bold line in each state is what the page is about, so it
+            is the page's heading — there was no h1 at all before, which
+            leaves a screen reader nothing to announce the page by. Tailwind
+            resets heading size and weight, so these look unchanged. */}
         {state === 'working' && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">Confirming your email…</p>
+          <h1 className="text-sm text-gray-600 dark:text-gray-400">Confirming your email…</h1>
         )}
 
         {state === 'done' && (
@@ -62,7 +66,7 @@ function VerifyEmailBody() {
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
               <IconCheck width={22} height={22} />
             </span>
-            <p className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">Email confirmed</p>
+            <h1 className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">Email confirmed</h1>
             <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
               Thanks — we can reach you now if a pharmacist replies, or if you ever need to reset
               your password.
@@ -81,9 +85,9 @@ function VerifyEmailBody() {
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
               <IconAlertCircle width={22} height={22} />
             </span>
-            <p className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">
+            <h1 className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">
               Couldn&apos;t confirm that
-            </p>
+            </h1>
             <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">{error}</p>
             {/* Nothing is lost by this failing — say so, because a page
                 that only reports an error implies something broke that

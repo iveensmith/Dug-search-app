@@ -19,7 +19,7 @@ type Pos = { lat: number; lng: number }
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+    <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
       Loading map…
     </div>
   ),
@@ -308,7 +308,7 @@ export default function PharmacyRegisterPage() {
                   ? 'font-bold text-emerald-700 dark:text-emerald-400'
                   : i < step
                     ? 'text-emerald-700/70 dark:text-emerald-400/70'
-                    : 'text-gray-400 dark:text-gray-500'
+                    : 'text-gray-500 dark:text-gray-400'
               }
             >
               {i < step ? '✓ ' : `${i + 1}. `}

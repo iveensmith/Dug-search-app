@@ -48,9 +48,25 @@ export default function ResultsMap({ results, userPos, center, route, onRoute }:
           pathOptions={{ color: '#059669', weight: 5, opacity: 0.8 }}
         />
       )}
-      {userPos && <Marker position={[userPos.lat, userPos.lng]} icon={userIcon} />}
+      {/* The pharmacy markers open a popup, so they stay interactive and
+          keyboard-reachable — but Leaflet's role="button" arrives without
+          a name unless one is given. The blue dot is not a control. */}
+      {userPos && (
+        <Marker
+          position={[userPos.lat, userPos.lng]}
+          icon={userIcon}
+          title="You are here"
+          interactive={false}
+          keyboard={false}
+        />
+      )}
       {results.map((r) => (
-        <Marker key={r.id} position={[r.latitude, r.longitude]} icon={pharmacyIcon}>
+        <Marker
+          key={r.id}
+          position={[r.latitude, r.longitude]}
+          icon={pharmacyIcon}
+          title={r.name}
+        >
           <Popup>
             <div className="min-w-[180px]">
               <div className="flex items-center justify-between gap-2">

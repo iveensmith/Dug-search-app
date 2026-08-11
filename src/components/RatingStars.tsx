@@ -67,7 +67,7 @@ export default function RatingStars({
         </span>
       )}
       {count !== undefined && (
-        <span className="text-xs text-gray-400 dark:text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           {count === 0 ? 'No ratings yet' : `(${count})`}
         </span>
       )}

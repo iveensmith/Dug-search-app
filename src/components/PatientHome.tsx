@@ -119,7 +119,7 @@ const FAQ = [
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+    <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
       Loading map…
     </div>
   ),
@@ -897,7 +897,7 @@ export default function PatientHome() {
               {/* Broad to narrow, matching the order the pickers ask in. */}
               <span className="truncate">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLabel}</span>
-                <span className="mx-1.5 text-gray-400 dark:text-gray-500">·</span>
+                <span className="mx-1.5 text-gray-500 dark:text-gray-400">·</span>
                 <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLga}</span>
               </span>
             </p>
@@ -1645,7 +1645,7 @@ export default function PatientHome() {
                             {r.lga ? `${r.lga} · ` : ''}
                             {r.distanceKm.toFixed(1)} km away
                           </p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             Stock updated {relativeTime(r.stockUpdatedAt)}
                           </p>
                         </div>

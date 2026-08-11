@@ -128,7 +128,7 @@ export default function OwnerRatings() {
               <div>
                 <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">
                   {summary.overall!.toFixed(1)}
-                  <span className="ml-1 text-base font-medium text-gray-400 dark:text-gray-500">
+                  <span className="ml-1 text-base font-medium text-gray-500 dark:text-gray-400">
                     / 5
                   </span>
                 </p>
@@ -208,7 +208,7 @@ export default function OwnerRatings() {
                   ) : (
                     // Worth saying rather than leaving a gap: a bare score
                     // still counts towards the average above.
-                    <p className="mt-2 text-sm italic text-gray-400 dark:text-gray-500">
+                    <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
                       Scored without a comment
                     </p>
                   )}

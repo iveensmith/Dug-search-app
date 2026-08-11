@@ -93,7 +93,7 @@ export default function ResultFilters({
           </button>
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Distance
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">
@@ -104,7 +104,7 @@ export default function ResultFilters({
           ))}
         </div>
 
-        <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Only show
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">

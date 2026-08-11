@@ -21,7 +21,7 @@ const STATE_STORAGE_KEY = 'mediquest_state'
 function Spec({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-gray-200 p-3.5 dark:border-gray-800">
-      <span className="block text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <span className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {label}
       </span>
       <strong className="mt-1 block text-sm text-gray-900 dark:text-gray-100">{value}</strong>
@@ -178,7 +178,7 @@ function DrugBody({ id }: { id: string }) {
       <DispensingNote value={drug.dispensing} />
 
       <Card className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {areaLabel ? `Where to get it in ${areaLabel}` : 'Where to get it'}
         </p>
 
@@ -222,7 +222,7 @@ function DrugBody({ id }: { id: string }) {
 
       {siblings.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Other strengths and forms
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

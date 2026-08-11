@@ -239,7 +239,7 @@ function PharmaciesTab({
               <div className="min-w-0">
                 <p className="font-semibold text-gray-900 dark:text-gray-100">{p.name}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{p.address}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   {stateLabel(p.state)} · PCN: {p.pcnLicenseNumber} · {p.phone} · owner:{' '}
                   {p.ownerEmail ?? p.ownerPhone} ·{' '}
                   {p.inventoryCount} drugs listed

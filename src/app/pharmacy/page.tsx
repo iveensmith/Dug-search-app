@@ -1202,7 +1202,7 @@ function PharmacyDashboard() {
                                     )}
                                   </div>
                                   {already && (
-                                    <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">Already listed</span>
+                                    <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">Already listed</span>
                                   )}
                                 </button>
                               </li>
@@ -1379,7 +1379,7 @@ function PharmacyDashboard() {
                               {item.brand ?? (item.drug.brandNames.length > 0 ? item.drug.brandNames.join(', ') : null) ?? 'No brand noted'}
                             </p>
                             {item.expiryDate && (
-                              <p className={`text-xs ${isExpired(item.expiryDate) ? 'font-medium text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                              <p className={`text-xs ${isExpired(item.expiryDate) ? 'font-medium text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                                 {isExpired(item.expiryDate) ? 'Expired ' : 'Expires '}
                                 {new Date(item.expiryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>

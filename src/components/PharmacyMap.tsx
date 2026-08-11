@@ -53,8 +53,27 @@ export default function PharmacyMap({
       {routeCoords && routeCoords.length > 0 && (
         <Polyline positions={routeCoords} pathOptions={{ color: '#059669', weight: 5, opacity: 0.8 }} />
       )}
-      {userPos && <Marker position={[userPos.lat, userPos.lng]} icon={userIcon} />}
-      <Marker position={[pharmacy.latitude, pharmacy.longitude]} icon={pharmacyIcon} />
+      {/* Leaflet gives every marker role="button" and a tab stop, so each
+          one needs a name — an unlabelled button is all a screen reader
+          would announce. Neither marker here does anything when pressed
+          (this map has no popups), so they are marked non-interactive as
+          well: a tab stop that leads nowhere is worse than no tab stop. */}
+      {userPos && (
+        <Marker
+          position={[userPos.lat, userPos.lng]}
+          icon={userIcon}
+          title="You are here"
+          interactive={false}
+          keyboard={false}
+        />
+      )}
+      <Marker
+        position={[pharmacy.latitude, pharmacy.longitude]}
+        icon={pharmacyIcon}
+        title={pharmacy.name}
+        interactive={false}
+        keyboard={false}
+      />
     </MapContainer>
   )
 }
