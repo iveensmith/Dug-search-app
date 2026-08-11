@@ -148,26 +148,64 @@ export type StorageInfo = {
   dir?: string
   missing: string[]
   serverless: boolean
+  /** The project origin actually used, once corrected. Not a secret — it is
+   *  the same URL a browser-side Supabase client would ship publicly. */
+  url?: string
+  /** What had to be trimmed off SUPABASE_URL, if anything. */
+  corrected?: string
 }
 
 const SUPABASE_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_STORAGE_BUCKET'] as const
+
+/**
+ * The project URL, and only the project URL.
+ *
+ * supabase-js appends `/storage/v1/object/...` itself, so anything already
+ * carrying a path doubles it and the API answers "Invalid path specified
+ * in request URL" — a message that says nothing about where it came from.
+ * The Supabase dashboard offers several URLs for one project and only the
+ * bare origin is the right one here; the S3 connection endpoint
+ * (`…/storage/v1/s3`) is the easiest of the others to pick up by mistake.
+ *
+ * So the two unambiguous wrong shapes are corrected rather than passed
+ * through: a trailing storage path, which this client would never want,
+ * and repeated trailing slashes, which produce a doubled leading slash.
+ */
+export function normaliseSupabaseUrl(raw: string): { url: string; corrected?: string } {
+  const trimmed = raw.trim().replace(/\/+$/, '')
+  const withoutStorage = trimmed.replace(/\/storage\/v1(\/s3)?$/, '')
+  const url = withoutStorage.replace(/\/+$/, '')
+  if (url === raw) return { url }
+  return { url, corrected: `"${raw}" → "${url}"` }
+}
 
 export const storageInfo: StorageInfo = (() => {
   const missing = SUPABASE_VARS.filter((v) => !process.env[v])
   // Vercel sets VERCEL=1 on every deployment, including previews.
   const serverless = !!process.env.VERCEL
   if (missing.length === 0) {
-    return { kind: 'supabase', bucket: process.env.SUPABASE_STORAGE_BUCKET, missing, serverless }
+    const { url, corrected } = normaliseSupabaseUrl(process.env.SUPABASE_URL!)
+    return {
+      kind: 'supabase',
+      bucket: process.env.SUPABASE_STORAGE_BUCKET!.trim(),
+      missing,
+      serverless,
+      url,
+      corrected,
+    }
   }
   return { kind: 'disk', dir: process.env.UPLOADS_DIR ?? './storage/uploads', missing, serverless }
 })()
 
 function buildStorage(): StorageAdapter {
   if (storageInfo.kind === 'supabase') {
+    if (storageInfo.corrected) {
+      console.warn(`[storage] SUPABASE_URL carried a path or trailing slash: ${storageInfo.corrected}`)
+    }
     return new SupabaseStorage(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      process.env.SUPABASE_STORAGE_BUCKET!,
+      storageInfo.url!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!.trim(),
+      storageInfo.bucket!,
     )
   }
   if (storageInfo.serverless) {

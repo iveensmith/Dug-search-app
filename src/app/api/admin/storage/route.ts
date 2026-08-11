@@ -32,6 +32,8 @@ export async function GET(req: NextRequest) {
           } not set on this deployment, so uploads are being written to a read-only disk. Set them in your hosting environment and redeploy.`
         : storageInfo.kind === 'disk'
           ? `Writing to local disk at ${storageInfo.dir}, and that write failed.`
+          : /invalid path/i.test(result.error ?? '')
+          ? `The request URL was malformed, which means SUPABASE_URL is not the bare project URL. It should be https://<project-ref>.supabase.co with no path — not the S3 connection endpoint, which ends in /storage/v1/s3.`
           : `The bucket "${storageInfo.bucket}" rejected the ${result.step}. If the message mentions mime or content type, add image/webp and the audio types to the bucket's allowed list.`
 
   return NextResponse.json({
