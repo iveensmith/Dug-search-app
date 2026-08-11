@@ -132,14 +132,76 @@ class SupabaseStorage implements StorageAdapter {
   }
 }
 
-function buildStorage(): StorageAdapter {
-  const supabaseUrl = process.env.SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const bucket = process.env.SUPABASE_STORAGE_BUCKET
-  if (supabaseUrl && serviceRoleKey && bucket) {
-    return new SupabaseStorage(supabaseUrl, serviceRoleKey, bucket)
+/**
+ * Which adapter is live, and why — for the diagnostics endpoint.
+ *
+ * `missing` names the Supabase variables that are absent. On a serverless
+ * host that list is the whole explanation for a failing upload: the
+ * fallback writes to the project directory, which is read-only
+ * everywhere except /tmp, so every single put throws EROFS. That used to
+ * be indistinguishable from a bucket problem, because both surfaced as
+ * the same 502 with the same sentence for the patient.
+ */
+export type StorageInfo = {
+  kind: 'supabase' | 'disk'
+  bucket?: string
+  dir?: string
+  missing: string[]
+  serverless: boolean
+}
+
+const SUPABASE_VARS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_STORAGE_BUCKET'] as const
+
+export const storageInfo: StorageInfo = (() => {
+  const missing = SUPABASE_VARS.filter((v) => !process.env[v])
+  // Vercel sets VERCEL=1 on every deployment, including previews.
+  const serverless = !!process.env.VERCEL
+  if (missing.length === 0) {
+    return { kind: 'supabase', bucket: process.env.SUPABASE_STORAGE_BUCKET, missing, serverless }
   }
-  return new LocalDiskStorage(process.env.UPLOADS_DIR ?? './storage/uploads')
+  return { kind: 'disk', dir: process.env.UPLOADS_DIR ?? './storage/uploads', missing, serverless }
+})()
+
+function buildStorage(): StorageAdapter {
+  if (storageInfo.kind === 'supabase') {
+    return new SupabaseStorage(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.SUPABASE_STORAGE_BUCKET!,
+    )
+  }
+  if (storageInfo.serverless) {
+    // Said once, at startup, where it is findable — rather than only as a
+    // per-request stack trace after a patient has already lost a photo.
+    console.error(
+      `[storage] No bucket configured (missing ${storageInfo.missing.join(', ')}). ` +
+        'Falling back to local disk, which is read-only on this host — every upload will fail.',
+    )
+  }
+  return new LocalDiskStorage(storageInfo.dir!)
 }
 
 export const storage: StorageAdapter = buildStorage()
+
+/**
+ * Proves the configured storage actually works, by writing a small object,
+ * reading it back and deleting it. Returns the raw error, because the
+ * whole point is to see the message the upload path swallows.
+ */
+export async function selfTest(): Promise<{ ok: boolean; step: string; error?: string }> {
+  let key: string | null = null
+  try {
+    key = await storage.put(Buffer.from('mediquest storage check'), 'image/webp')
+  } catch (e) {
+    return { ok: false, step: 'write', error: e instanceof Error ? e.message : String(e) }
+  }
+  try {
+    const got = await storage.get(key)
+    if (!got) return { ok: false, step: 'read', error: 'stored object could not be read back' }
+  } catch (e) {
+    return { ok: false, step: 'read', error: e instanceof Error ? e.message : String(e) }
+  } finally {
+    await storage.delete(key).catch(() => {})
+  }
+  return { ok: true, step: 'done' }
+}
