@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import { IconSend } from '@/components/ui/icons'
 import AudioNoteRecorder, { type RecordedNote } from '@/components/AudioNoteRecorder'
 import AudioNotePlayer from '@/components/AudioNotePlayer'
+import PrescriptionImage from '@/components/PrescriptionImage'
 
 type Thread = {
   upload: {
@@ -207,18 +208,13 @@ export default function PrescriptionThreadPage() {
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Uploaded prescription
         </p>
-        {/* Below the fold — the header, status and note come first. The
-            width/height reserve its space so the conversation underneath
-            doesn't jump down the page when the photo arrives. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        {/* Below the fold — the header, status and note come first. Both
+            sides of the conversation get the same viewer: the pharmacist
+            needs to read the handwriting to answer, and the patient needs
+            to check what they sent was legible. */}
+        <PrescriptionImage
           src={`/api/prescriptions/${upload.id}/image`}
           alt="Uploaded prescription"
-          loading="lazy"
-          decoding="async"
-          width={1600}
-          height={1600}
-          className="max-h-80 w-full rounded-lg object-contain"
         />
         {upload.patientNote && (
           <p className="mt-2 rounded-lg bg-gray-50 p-2 text-sm text-gray-700 dark:bg-white/5 dark:text-gray-300">
