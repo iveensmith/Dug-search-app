@@ -178,7 +178,12 @@ export default function PrescriptionsPage() {
       setNote('')
       setVoiceNote(null)
       clearFile()
-      router.push(`/prescriptions/${data.upload.id}`)
+      // The question was sent, but without the recording. Said on the
+      // thread they are about to land on, because the alternative is a
+      // patient assuming a pharmacist heard something they never got.
+      router.push(
+        `/prescriptions/${data.upload.id}${data.audioFailed ? '?voiceNoteFailed=1' : ''}`,
+      )
     } catch {
       // Only a genuine fetch failure reaches here now.
       setError('Could not reach MediQuest — check your connection and try again')

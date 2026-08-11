@@ -74,6 +74,18 @@ export default function PrescriptionThreadPage() {
     bottomRef.current?.scrollIntoView({ block: 'end' })
   }, [thread?.messages.length])
 
+  // Set when the question was sent but the recording could not be stored.
+  const [voiceNoteFailed, setVoiceNoteFailed] = useState(false)
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('voiceNoteFailed')) return
+    // Read once from the URL the previous page navigated to — not derived
+    // from any prop or state, so there is no loop.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVoiceNoteFailed(true)
+    // Taken back out so a reload or a shared link does not repeat it.
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [])
+
   async function send(e: React.FormEvent) {
     e.preventDefault()
     if (!text.trim() && !voiceNote) return
@@ -144,6 +156,18 @@ export default function PrescriptionThreadPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-4">
+      {/* The question went through; the recording did not. Said plainly,
+          because the alternative is a patient believing a pharmacist has
+          heard something that was never delivered. */}
+      {voiceNoteFailed && (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+          <p className="font-bold">Your voice note did not attach</p>
+          <p className="mt-1">
+            Everything else was sent. Record it again in a message below, or type your question —
+            the pharmacist has not heard it yet.
+          </p>
+        </div>
+      )}
       <header className="flex items-center justify-between gap-3 py-4">
         <div className="min-w-0">
           <h1 className="truncate font-bold text-gray-900 dark:text-gray-50">

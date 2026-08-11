@@ -61,21 +61,69 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const key = await storage.put(normalised, STORED_IMAGE_TYPE)
-  if (audio instanceof File && audioType) {
-    audioKey = await storage.put(Buffer.from(await audio.arrayBuffer()), audioType)
+  // The photo is the submission. If it cannot be stored there is nothing
+  // to send, and the patient deserves better than a bare 500 — the real
+  // reason (a bucket that does not exist, a MIME type it will not accept,
+  // a size limit) is in the log line below, greppable as [prescriptions].
+  let key: string
+  try {
+    key = await storage.put(normalised, STORED_IMAGE_TYPE)
+  } catch (e) {
+    console.error('[prescriptions] image upload failed:', e)
+    return NextResponse.json(
+      { error: 'We could not store your photo just now. Try again in a moment.' },
+      { status: 502 },
+    )
   }
 
-  const upload = await prisma.prescriptionUpload.create({
-    data: {
-      patientUserId: session.userId,
-      imageKey: key,
-      patientNote: typeof note === 'string' && note.trim() ? note.trim().slice(0, 1000) : null,
-      audioKey,
-      audioDurationSec: audioKey ? clampReportedDuration(form.get('audioDuration')) : null,
+  // The voice note is optional, so a failure here must not throw away a
+  // photo and a typed question that were fine. It used to: the image was
+  // already in the bucket, the audio upload threw, the request 500'd, and
+  // everything the patient had entered was lost — including the recording
+  // they cannot easily make again. Now the query goes through without it
+  // and the reply says so.
+  let audioFailed = false
+  if (audio instanceof File && audioType) {
+    try {
+      audioKey = await storage.put(Buffer.from(await audio.arrayBuffer()), audioType)
+    } catch (e) {
+      console.error('[prescriptions] voice note upload failed:', e)
+      audioFailed = true
+    }
+  }
+
+  let upload
+  try {
+    upload = await prisma.prescriptionUpload.create({
+      data: {
+        patientUserId: session.userId,
+        imageKey: key,
+        patientNote: typeof note === 'string' && note.trim() ? note.trim().slice(0, 1000) : null,
+        audioKey,
+        audioDurationSec: audioKey ? clampReportedDuration(form.get('audioDuration')) : null,
+      },
+    })
+  } catch (e) {
+    // Nothing points at these objects now, and they are a photograph of
+    // somebody's prescription. Take them back out.
+    console.error('[prescriptions] record failed, removing stored files:', e)
+    await storage.delete(key).catch(() => {})
+    if (audioKey) await storage.delete(audioKey).catch(() => {})
+    return NextResponse.json(
+      { error: 'We could not save your question just now. Try again in a moment.' },
+      { status: 502 },
+    )
+  }
+
+  return NextResponse.json(
+    {
+      upload: { id: upload.id, status: upload.status },
+      // The client says this out loud rather than leaving somebody to
+      // notice their recording is missing from the thread.
+      audioFailed,
     },
-  })
-  return NextResponse.json({ upload: { id: upload.id, status: upload.status } }, { status: 201 })
+    { status: 201 },
+  )
 }
 
 // GET: role-aware list
