@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { consumeWindow } from '@/lib/rateLimit'
+import { clientIp } from '@/lib/loginThrottle'
 
 // Free OSRM routing over OpenStreetMap — no account, no API key.
 // The public demo server is fine for one-city MVP traffic; point OSRM_URL
 // at a self-hosted instance (or an OpenRouteService proxy) before scale.
 const OSRM_BASE = process.env.OSRM_URL ?? 'https://router.project-osrm.org'
+
+/**
+ * Metered, because this is an open door onto somebody else's free server.
+ *
+ * No key is needed to call it, which is exactly why it needs a limit: an
+ * unauthenticated endpoint that forwards to a shared public service can be
+ * used to run traffic through us, and the demo server blocks the sender —
+ * meaning directions stop working for every patient. The same reasoning
+ * put a cap on /api/geocode.
+ *
+ * A patient drawing routes to a handful of pharmacies stays well inside
+ * this; nothing that looks like a person hits 30 in a minute.
+ */
+const MAX_REQUESTS = 30
+const WINDOW_MS = 60 * 1000
 
 const paramsSchema = z.object({
   fromLat: z.coerce.number().min(-90).max(90),
@@ -14,6 +31,14 @@ const paramsSchema = z.object({
 })
 
 export async function GET(req: NextRequest) {
+  const verdict = await consumeWindow(`route:${clientIp(req)}`, MAX_REQUESTS, WINDOW_MS)
+  if (!verdict.allowed) {
+    return NextResponse.json(
+      { error: 'Too many route requests — try again in a moment' },
+      { status: 429, headers: { 'Retry-After': String(verdict.retryAfterSeconds) } },
+    )
+  }
+
   const parsed = paramsSchema.safeParse(Object.fromEntries(req.nextUrl.searchParams.entries()))
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid coordinates' }, { status: 400 })
