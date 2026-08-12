@@ -1120,7 +1120,7 @@ export default function PatientHome() {
               headline and the search box on mobile, while explicit
               row/column placement keeps the two-column layout on desktop
               (copy + search stacked left, illustration right). */}
-          <section className="animate-fade-up grid items-center gap-y-10 py-12 md:grid-cols-2 md:gap-x-16 md:py-20">
+          <section className="animate-fade-up grid items-center gap-y-10 py-12 md:grid-cols-2 md:items-start md:gap-x-16 md:py-20">
             <div className="md:col-start-1 md:row-start-1">
               <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
@@ -1152,7 +1152,7 @@ export default function PatientHome() {
               </ul>
             </div>
 
-            <div className="relative pb-16 md:col-start-2 md:row-span-2 md:row-start-1 md:pb-12">
+            <div className="relative pb-16 md:col-start-2 md:row-start-1 md:pb-0">
               <HeroGraphic />
               {/* Was a dashed box captioned "Sample — not live results",
                   which told a first-time visitor they were looking at a
@@ -1162,7 +1162,7 @@ export default function PatientHome() {
               <NetworkPulse />
             </div>
 
-            <div className="md:col-start-1 md:row-start-2">
+            <div className="md:col-span-2 md:col-start-1 md:row-start-2">
               {searchPanel}
 
               {/* The other way in, for someone holding a slip they cannot
