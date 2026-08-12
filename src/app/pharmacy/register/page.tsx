@@ -155,12 +155,12 @@ export default function PharmacyRegisterPage() {
     setGeocodeNote('')
     try {
       const q = `${text}, ${stateLabel(selectedState)}, Nigeria`
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
-      )
+      // Through our own server, which identifies itself to the map service
+      // the way its usage policy asks — a browser cannot set a User-Agent.
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
       const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) {
-        setPosition({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) })
+      if (data?.match) {
+        setPosition({ lat: data.match.lat, lng: data.match.lng })
         setPinConfirmed(false)
         setGeocodeNote('Found a match — now move the map so the pin sits on your shopfront')
       } else {

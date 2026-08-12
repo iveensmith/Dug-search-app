@@ -197,12 +197,11 @@ async function detectAreaFromPosition(
   pos: Pos,
 ): Promise<{ state: NigerianStateValue; lga: string | null } | null> {
   try {
-    const res = await fetch(
-      // addressdetails is the default for /reverse, but stated rather
-      // than assumed — the structured fields are the whole point of the
-      // call. zoom=10 asks for administrative detail around LGA level.
-      `https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&zoom=10&lat=${pos.lat}&lon=${pos.lng}`,
-    )
+    // Through our own server, not straight to Nominatim: this is a GPS fix
+    // accurate to a few metres, and sending it from the browser hands a
+    // third party both the coordinates and the patient's IP address.
+    const res = await fetch(`/api/geocode?lat=${pos.lat}&lon=${pos.lng}`)
+    if (!res.ok) return null
     const data = await res.json()
     const stateName: string | undefined = data?.address?.state
     const state = stateName ? matchStateName(stateName) : null
@@ -211,7 +210,7 @@ async function detectAreaFromPosition(
     // Matching lives in lib/detectLga, where it can be tested against real
     // response shapes — the alternative is standing in 774 places.
     const { lgasForState } = await loadLgas()
-    const lga = pickLga(data?.address, data?.display_name, lgasForState(state))
+    const lga = pickLga(data?.address, data?.displayName, lgasForState(state))
     return { state, lga }
   } catch {
     return null
