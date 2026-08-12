@@ -30,8 +30,29 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# --- Secrets -----------------------------------------------------------
+# Anything below is either a credential or a common place to keep one.
+# Nothing here has ever been committed and nothing should be; if you need
+# to share a value, put a placeholder in .env.example instead.
+#
+# The negation must stay LAST in this file: gitignore takes the final
+# matching pattern, so a stray `.env*` further down re-ignores the one
+# file that is meant to be tracked. That had happened.
 .env*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+.npmrc
+.netrc
+.pgpass
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
+secrets.json
+secrets.ya?ml
 !.env.example
 
 # local Claude Code permission settings
@@ -53,6 +74,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel
-.env*
