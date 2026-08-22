@@ -45,7 +45,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-open-sans);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -56,7 +56,11 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  /* The fallback list is a real fallback, not decoration: it is what a
+     patient reads for the first few hundred milliseconds, and on a slow
+     Nigerian connection sometimes for longer. Segoe UI and Roboto are the
+     nearest humanist sans faces already on Windows and Android. */
+  font-family: var(--font-open-sans), "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

@@ -1,16 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Open_Sans } from "next/font/google";
 import "./globals.css";
 import TabBar from "@/components/ui/TabBar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// The app's one typeface. `display: swap` so text is readable in the
+// fallback while the file loads rather than invisible — this is a page
+// people open to find medicine, sometimes on a slow connection.
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
+// Open Sans has no monospace companion, and four places genuinely need
+// one: API keys, webhook payloads, event names and the temporary password
+// an admin reads out. Those are strings people transcribe by hand, where
+// a proportional face makes 0 and O, and 1 and l, the same shape. So the
+// mono stays a mono; everything else is Open Sans.
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -55,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${openSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

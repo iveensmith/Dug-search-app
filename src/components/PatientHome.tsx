@@ -1323,7 +1323,10 @@ export default function PatientHome() {
                   className="rounded-[1.75rem] bg-white p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.12)] ring-1 ring-gray-100 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_20px_40px_-12px_rgba(5,150,105,0.22)] dark:bg-gray-900 dark:shadow-none dark:ring-gray-800"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-[2.5rem] font-black leading-none tracking-tighter text-emerald-600/25 dark:text-emerald-400/25">
+                    {/* extrabold, not black: Open Sans stops at 800, and
+                        asking for 900 gets a synthesised weight that reads
+                        as a smeared version of the same thing. */}
+                    <span className="text-[2.5rem] font-extrabold leading-none tracking-tighter text-emerald-600/25 dark:text-emerald-400/25">
                       0{i + 1}
                     </span>
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">

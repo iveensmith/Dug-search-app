@@ -43,7 +43,7 @@ export default function NetworkPulse({ showCounts = true }: Props) {
   if (!quoteCounts && !activity) return null
 
   return (
-    <div className="animate-float absolute -bottom-1 left-0 w-64 select-none rounded-2xl border border-emerald-200 bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 sm:w-72 md:-left-4 dark:border-emerald-900/60 dark:bg-gray-900/95">
+    <div className="animate-float absolute -bottom-1 left-0 w-64 select-none rounded-2xl border border-emerald-200 bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:left-2 sm:w-80 md:-left-4 dark:border-emerald-900/60 dark:bg-gray-900/95">
       <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
         <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
         Live network
