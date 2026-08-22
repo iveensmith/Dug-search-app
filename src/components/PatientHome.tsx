@@ -1457,6 +1457,24 @@ export default function PatientHome() {
           results, the panel above them and the location line all belong
           inside the same measure the bands centre their own content on. */}
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-6">
+      {/*
+        The page's heading once the hero is gone.
+
+        Searching replaces the whole idle fragment, and the <h1> lived in
+        it — so from the moment anybody used this page it had no level-one
+        heading at all, which is the landmark a screen reader user lands on
+        to find out what they are looking at. It is visually hidden because
+        the compact panel above already shows the medicine and the area in
+        the design's own terms; this is the same fact, said once, in the
+        structure.
+      */}
+      {state.kind !== 'idle' && (
+        <h1 className="sr-only">
+          {state.kind === 'no-match'
+            ? `No medicine matching ${state.query}`
+            : [askedFor, selectedLga || selectedLabel].filter(Boolean).join(' in ')}
+        </h1>
+      )}
       {state.kind !== 'idle' && (panelOpen ? searchPanel : compactPanel)}
 
       {state.kind !== 'idle' &&

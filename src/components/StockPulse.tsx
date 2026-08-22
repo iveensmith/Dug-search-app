@@ -3,7 +3,13 @@ import { stockFreshness } from '@/lib/types'
 const TONES = {
   fresh: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
   aging: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-  stale: 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400',
+  // gray-600, not gray-500. Muted is the point of this tone — a claim
+  // nobody has confirmed in a while should not shout — but gray-500 on
+  // gray-100 measures 4.45:1, which is under AA by a hair, and "we are
+  // not sure this is still true" is not information to hide from someone
+  // who cannot read low-contrast text. gray-600 is 6.87:1 and still reads
+  // as the quiet one next to the emerald and amber tones.
+  stale: 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400',
 } as const
 
 const DOTS = {
