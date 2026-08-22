@@ -1132,8 +1132,15 @@ export default function PatientHome() {
             escape.
           */}
           <section className="relative bg-emerald-50 dark:bg-emerald-950/25">
-          <div className="mx-auto w-full max-w-5xl px-4">
-          <div className="animate-fade-up pt-10 md:w-[50%] md:pt-16 lg:w-[52%]">
+          {/*
+            A flex column on a phone purely so the photo can be reordered
+            above the copy while staying after it in the DOM, where the
+            desktop layout needs it. From `md` the container is a plain
+            block again and the `order-*` classes go inert, so document
+            order governs and the photo is absolutely positioned anyway.
+          */}
+          <div className="mx-auto flex w-full max-w-5xl flex-col px-4 md:block">
+          <div className="animate-fade-up order-2 pt-8 md:w-[50%] md:pt-16 lg:w-[52%]">
               <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                 Nationwide Pharmacy Network
               </p>
@@ -1169,21 +1176,27 @@ export default function PatientHome() {
                 ))}
               </ul>
 
-              {/* Counted, not claimed — see NetworkStatsRow. It disappears
-                  rather than shrink a number. */}
-              <NetworkStatsRow />
           </div>
 
-          <div className="mt-9 md:w-[50%] lg:w-[52%]">
+          {/* Counted, not claimed — see NetworkStatsRow. It disappears
+              rather than shrink a number.
+
+              Its own child rather than part of the copy above, so a phone
+              can drop it below the search box. Three figures are
+              reassurance; they are not worth 85px between somebody and the
+              only control on the page. */}
+          <div className="order-4 mt-8 md:order-none md:mt-0 md:w-[50%] lg:w-[52%]">
+            <NetworkStatsRow />
+          </div>
+
+          <div className="order-3 mt-9 md:w-[50%] lg:w-[52%]">
             {searchPanel}
           </div>
 
           {/*
             The photo. Pinned to the section's right half from `md` up; on
-            a phone it is a banner, and it comes *after* the search box
-            rather than before it. A 256px picture between the headline and
-            the one control on the page costs a phone a whole extra scroll
-            to reach the thing it came for.
+            a phone it leads the page as a banner under the header, with
+            the copy, the search box and then the figures below it.
 
             It is a sibling of the copy rather than a child of it, and that
             is load-bearing: the copy block carries `animate-fade-up`, and
@@ -1193,14 +1206,14 @@ export default function PatientHome() {
             and the photo landed on top of the headline. Nothing between
             here and the section is positioned or transformed.
           */}
-          <div className="relative -mx-4 mt-10 h-64 sm:h-72 md:absolute md:inset-y-0 md:left-auto md:right-0 md:mx-0 md:mt-0 md:h-auto md:w-[44%] lg:w-[46%]">
+          <div className="relative order-1 -mx-4 h-60 sm:h-72 md:absolute md:inset-y-0 md:left-auto md:right-0 md:mx-0 md:h-auto md:w-[44%] lg:w-[46%]">
             {/* The live card comes with it — see HeroPanel, which anchors
                 the card differently against a photograph than against the
                 stand-in illustration. */}
             <HeroPanel />
           </div>
 
-          <div className="pb-12 md:pb-20" />
+          <div className="order-5 pb-12 md:pb-20" />
           </div>
           </section>
 
