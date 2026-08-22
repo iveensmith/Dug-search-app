@@ -22,6 +22,7 @@ import SavedDrugs from '@/components/SavedDrugs'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import HeroPanel from '@/components/ui/HeroPanel'
+import NetworkPulse from '@/components/NetworkPulse'
 import NetworkStatsRow from '@/components/NetworkStatsRow'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -1133,21 +1134,30 @@ export default function PatientHome() {
           */}
           <section className="relative bg-emerald-50 dark:bg-emerald-950/25">
           {/*
-            A flex column on a phone purely so the photo can be reordered
-            above the copy while staying after it in the DOM, where the
-            desktop layout needs it. From `md` the container is a plain
-            block again and the `order-*` classes go inert, so document
-            order governs and the photo is absolutely positioned anyway.
+            On a phone the photograph is the band's background and the copy
+            sits on it, so everything in the flow needs a stacking context
+            above it — hence `relative z-10` here and `z-0` on the picture.
+            From `md` the picture goes back to its own half of the screen
+            and none of this applies.
           */}
-          <div className="mx-auto flex w-full max-w-5xl flex-col px-4 md:block">
-          <div className="animate-fade-up order-2 pt-8 md:w-[50%] md:pt-16 lg:w-[52%]">
-              <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+          <div className="relative z-10 mx-auto w-full max-w-5xl px-4">
+          <div className="animate-fade-up pt-10 md:w-[50%] md:pt-16 lg:w-[52%]">
+              {/*
+                Light type below `md`, dark from `md` up. The photo is only
+                the background on a phone; on a desktop this copy is on
+                mint and has to go back to reading as ink on paper. Every
+                colour here is paired, and the pairs are what keep both
+                halves legible — see the scrim in HeroPanel, which is heavy
+                enough to hold white text over the brightest part of the
+                picture at better than 9:1.
+              */}
+              <p className="text-sm font-semibold text-emerald-300 md:text-emerald-700 md:dark:text-emerald-400">
                 Nationwide Pharmacy Network
               </p>
-              <h1 className="mt-4 text-[2.7rem] font-bold leading-[1.05] tracking-tight text-gray-900 sm:text-[3.25rem] dark:text-gray-50">
+              <h1 className="mt-4 text-[2.7rem] font-bold leading-[1.05] tracking-tight text-white sm:text-[3.25rem] md:text-gray-900 md:dark:text-gray-50">
                 Find Medicine In Stock Near You
               </h1>
-              <p className="mt-5 text-[1.05rem] leading-relaxed text-gray-600 dark:text-gray-400">
+              <p className="mt-5 text-[1.05rem] leading-relaxed text-emerald-50 md:text-gray-600 md:dark:text-gray-400">
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
@@ -1160,43 +1170,49 @@ export default function PatientHome() {
                   into. A quiet row under a rule rather than three pills —
                   the pills competed with the search panel, and the panel
                   has to win. */}
-              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-emerald-200/80 pt-5 dark:border-emerald-900/60">
+              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/25 pt-5 md:border-emerald-200/80 md:dark:border-emerald-900/60">
                 {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
                   <li
                     key={label}
-                    className="flex items-start gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300"
+                    className="flex items-start gap-1.5 text-xs font-semibold text-white md:text-gray-700 md:dark:text-gray-300"
                   >
                     <Icon
                       width={14}
                       height={14}
-                      className="mt-px shrink-0 text-emerald-600 dark:text-emerald-400"
+                      className="mt-px shrink-0 text-emerald-300 md:text-emerald-600 md:dark:text-emerald-400"
                     />
                     {label}
                   </li>
                 ))}
               </ul>
 
+              {/* Counted, not claimed — see NetworkStatsRow. It disappears
+                  rather than shrink a number. */}
+              <NetworkStatsRow />
           </div>
 
-          {/* Counted, not claimed — see NetworkStatsRow. It disappears
-              rather than shrink a number.
-
-              Its own child rather than part of the copy above, so a phone
-              can drop it below the search box. Three figures are
-              reassurance; they are not worth 85px between somebody and the
-              only control on the page. */}
-          <div className="order-4 mt-8 md:order-none md:mt-0 md:w-[50%] lg:w-[52%]">
-            <NetworkStatsRow />
-          </div>
-
-          <div className="order-3 mt-9 md:w-[50%] lg:w-[52%]">
+          <div className="mt-9 md:w-[50%] lg:w-[52%]">
             {searchPanel}
           </div>
 
+          {/* The phone's copy of the live card. On a desktop it overlaps
+              the photograph's corner from inside HeroPanel; here the
+              photograph is the whole band, so the card sits under the
+              search panel as an ordinary block instead of hiding behind
+              it. Only one of the two is ever displayed, and they share a
+              single fetch — see lib/networkStats. */}
+          <div className="mt-4 md:hidden">
+            <NetworkPulse showCounts={false} placement="inline" />
+          </div>
+
+          <div className="pb-12 md:pb-20" />
+          </div>
+
           {/*
-            The photo. Pinned to the section's right half from `md` up; on
-            a phone it leads the page as a banner under the header, with
-            the copy, the search box and then the figures below it.
+            The photo. The whole band's background on a phone; its own half
+            of the screen, running to the viewport's right edge, from `md`
+            up. Absolute in both cases, so it adds no height either way and
+            the search box stays where a thumb can reach it.
 
             It is a sibling of the copy rather than a child of it, and that
             is load-bearing: the copy block carries `animate-fade-up`, and
@@ -1206,14 +1222,10 @@ export default function PatientHome() {
             and the photo landed on top of the headline. Nothing between
             here and the section is positioned or transformed.
           */}
-          <div className="relative order-1 -mx-4 h-60 sm:h-72 md:absolute md:inset-y-0 md:left-auto md:right-0 md:mx-0 md:h-auto md:w-[44%] lg:w-[46%]">
-            {/* The live card comes with it — see HeroPanel, which anchors
-                the card differently against a photograph than against the
-                stand-in illustration. */}
+          <div className="absolute inset-0 z-0 md:left-auto md:right-0 md:w-[44%] lg:w-[46%]">
+            {/* The live card comes with it — see HeroPanel, which also
+                owns the scrim that makes the copy legible on a phone. */}
             <HeroPanel />
-          </div>
-
-          <div className="order-5 pb-12 md:pb-20" />
           </div>
           </section>
 

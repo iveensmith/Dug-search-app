@@ -33,15 +33,18 @@ export default function NetworkStatsRow() {
     // Three columns rather than a wrapping row: wrapped, the third figure
     // dropped onto its own line and cost a phone another 90px above the
     // search box, which is the one thing that must not be pushed down.
-    <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-emerald-200/70 pt-5 md:mt-9 md:gap-8 md:pt-6 dark:border-emerald-900/60">
+    // Light type below `md`, dark from `md` up: on a phone this sits on
+    // the hero photograph, on a desktop it sits on mint. Same pairing as
+    // the copy above it — see the scrim in HeroPanel.
+    <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-white/25 pt-5 md:mt-9 md:gap-8 md:border-emerald-200/70 md:pt-6 md:dark:border-emerald-900/60">
       {items.map(({ value, label }) => (
         // Reversed so the figure reads first while the markup keeps the
         // order a definition list requires: term, then description.
         <div key={label} className="flex flex-col-reverse">
-          <dt className="mt-1 text-[0.7rem] font-semibold leading-tight text-gray-600 sm:text-xs dark:text-gray-400">
+          <dt className="mt-1 text-[0.7rem] font-semibold leading-tight text-emerald-50 sm:text-xs md:text-gray-600 md:dark:text-gray-400">
             {label}
           </dt>
-          <dd className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl md:text-4xl dark:text-gray-50">
+          <dd className="text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl md:text-gray-900 md:dark:text-gray-50">
             {value.toLocaleString()}
           </dd>
         </div>

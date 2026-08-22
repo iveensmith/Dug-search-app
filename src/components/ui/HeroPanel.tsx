@@ -47,24 +47,41 @@ export default function HeroPanel() {
           sizes="(min-width: 768px) 50vw, 100vw"
           placeholder="blur"
           priority
-          // Two crops, because the frame changes shape. Tall beside the
-          // copy, the whole height fits and only the sides are trimmed.
-          // As a wide banner on a phone it is the height that gets cut, so
-          // the anchor moves up to keep his head and the phone in frame
-          // rather than centring on his chest.
-          className="object-cover object-[54%_8%] md:object-[54%_28%]"
+          // Both frames are far taller than they are wide, so the height
+          // fills and only the sides are trimmed; the anchor is horizontal
+          // in both, sitting slightly right of centre to keep him and the
+          // phone in shot rather than half a concrete wall.
+          className="object-cover object-[52%_35%] md:object-[54%_28%]"
         />
-        {/* The brand wash, which is what makes a grey concrete wall belong
-            to this page. Deeper in dark mode, where a bright photograph
-            beside dark type is the one thing that breaks the layout. */}
+        {/*
+          Two different jobs for the same overlay.
+
+          On a phone the picture is the whole band's background and the
+          headline sits on it, so this is a scrim and it has to carry the
+          type. 65% of emerald-950 is about the lightest it can be and
+          still clear AA against white — measured on the rendered page, by
+          sampling the brightest pixel behind the copy, rather than
+          reasoned about. A photograph's local contrast varies across the
+          frame in a way a flat background never does, so the number that
+          matters is the worst pixel, not the average.
+
+          From `md` the copy moves off the picture onto mint and this goes
+          back to being a brand wash: enough to make a grey concrete wall
+          belong to this page, not enough to hide anybody's face.
+        */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-emerald-800/25 dark:bg-emerald-950/60"
+          className="absolute inset-0 bg-emerald-950/65 md:bg-emerald-800/25 md:dark:bg-emerald-950/60"
         />
       </div>
 
-      {/* Outside the masked box, or the fade would eat the card too. */}
-      <NetworkPulse showCounts={false} />
+      {/* Outside the masked box, or the fade would eat the card too.
+          Desktop only: on a phone the picture is the whole band and has no
+          corner to hang a card off, so PatientHome renders an inline one
+          under the search panel instead. */}
+      <div className="hidden md:block">
+        <NetworkPulse showCounts={false} />
+      </div>
     </div>
   )
 }
