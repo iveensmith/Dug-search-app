@@ -106,11 +106,17 @@ export default function SiteHeader() {
                 key={link.href}
                 href={link.href}
                 onClick={link.href === '/' ? handleHomeClick : undefined}
-                className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
+                // Sentence case, and the current page carries a rule under
+                // it. Small caps made three ordinary phrases shout, and
+                // colour alone was the only thing marking which page you
+                // were on — which is nothing at all to a reader who cannot
+                // separate those two greens.
+                className={`border-b-2 pb-0.5 text-sm font-semibold transition-colors ${
                   active
-                    ? 'text-emerald-700 dark:text-emerald-400'
-                    : 'text-gray-600 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400'
+                    ? 'border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400'
+                    : 'border-transparent text-gray-600 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400'
                 }`}
+                aria-current={active ? 'page' : undefined}
               >
                 {link.label}
               </Link>
@@ -141,7 +147,7 @@ export default function SiteHeader() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
+              className="flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-600 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-400 dark:hover:text-emerald-400"
             >
               <IconUser width={17} height={17} />
               Log in

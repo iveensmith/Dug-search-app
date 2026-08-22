@@ -21,8 +21,7 @@ import { pickLga } from '@/lib/detectLga'
 import SavedDrugs from '@/components/SavedDrugs'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
-import HeroFigure from '@/components/ui/HeroFigure'
-import NetworkPulse from '@/components/NetworkPulse'
+import HeroPanel from '@/components/ui/HeroPanel'
 import NetworkStatsRow from '@/components/NetworkStatsRow'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -1124,29 +1123,24 @@ export default function PatientHome() {
               carries the max width. A band cannot be edge-to-edge from
               inside a 64rem column, and the alternation is most of what
               makes the layout read as designed rather than assembled. */}
-          <section className="rounded-b-[2rem] bg-emerald-50/80 md:rounded-b-[3.5rem] dark:bg-emerald-950/25">
+          {/*
+            The photograph takes its own half of the screen and runs to the
+            viewport's right edge, so this section is the positioning
+            context and the container inside it deliberately is not — an
+            `absolute right-0` nested in a 64rem column would stop at the
+            column, which is the whole thing the layout is trying to
+            escape.
+          */}
+          <section className="relative bg-emerald-50 dark:bg-emerald-950/25">
           <div className="mx-auto w-full max-w-5xl px-4">
-          {/* Three grid children so the illustration can sit between the
-              headline and the search box on mobile, while explicit
-              row/column placement keeps the two-column layout on desktop
-              (copy + search stacked left, illustration right). */}
-          <div className="animate-fade-up grid items-center gap-y-10 pb-14 pt-10 md:grid-cols-2 md:items-start md:gap-x-14 md:pb-20 md:pt-16">
-            <div className="md:col-start-1 md:row-start-1">
-              {/* A pill with a lit dot, rather than the italic line that
-                  was here. The dot is the same one the live-network card
-                  uses, so the two read as the same claim at two sizes. */}
-              <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-emerald-800 ring-1 ring-emerald-200/80 dark:bg-white/5 dark:text-emerald-300 dark:ring-emerald-800/80">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                Nationwide pharmacy network
+          <div className="animate-fade-up pt-10 md:w-[50%] md:pt-16 lg:w-[52%]">
+              <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                Nationwide Pharmacy Network
               </p>
-              <h1 className="mt-5 text-[2.6rem] font-bold leading-[1.06] tracking-tight text-gray-900 sm:text-[3.4rem] dark:text-gray-50">
-                Find medicine{' '}
-                <span className="whitespace-nowrap text-emerald-700 dark:text-emerald-400">
-                  in stock
-                </span>{' '}
-                near you
+              <h1 className="mt-4 text-[2.7rem] font-bold leading-[1.05] tracking-tight text-gray-900 sm:text-[3.25rem] dark:text-gray-50">
+                Find Medicine In Stock Near You
               </h1>
-              <p className="mt-5 max-w-md text-[1.05rem] leading-relaxed text-gray-600 dark:text-gray-400">
+              <p className="mt-5 text-[1.05rem] leading-relaxed text-gray-600 dark:text-gray-400">
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
@@ -1156,40 +1150,62 @@ export default function PatientHome() {
                   to explain itself; this is the compressed version, for
                   someone deciding in three seconds whether a health site
                   they have never heard of is worth typing a drug name
-                  into. */}
-              <ul className="mt-7 flex flex-wrap gap-2">
+                  into. A quiet row under a rule rather than three pills —
+                  the pills competed with the search panel, and the panel
+                  has to win. */}
+              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-emerald-200/80 pt-5 dark:border-emerald-900/60">
                 {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
                   <li
                     key={label}
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-gray-800 shadow-sm ring-1 ring-emerald-100 dark:bg-white/5 dark:text-gray-200 dark:ring-emerald-900/60"
+                    className="flex items-start gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300"
                   >
-                    <Icon width={14} height={14} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    <Icon
+                      width={14}
+                      height={14}
+                      className="mt-px shrink-0 text-emerald-600 dark:text-emerald-400"
+                    />
                     {label}
                   </li>
                 ))}
               </ul>
 
-              {/* Counted, not claimed — see NetworkStatsRow. It fills the
-                  space the reference gives a row of round numbers, and
-                  disappears rather than shrink one. */}
+              {/* Counted, not claimed — see NetworkStatsRow. It disappears
+                  rather than shrink a number. */}
               <NetworkStatsRow />
-            </div>
+          </div>
 
-            <div className="relative flex justify-center pb-16 md:col-start-2 md:row-start-1 md:justify-end md:pb-8">
-              <HeroFigure />
-              {/* Was a dashed box captioned "Sample — not live results",
-                  which told a first-time visitor they were looking at a
-                  prototype. Now the real thing: counts and the latest
-                  confirmation, straight from the database, or nothing at
-                  all if there is nothing true to say yet. The counts are
-                  in the stat row opposite, so here it says only what that
-                  row cannot: what happened most recently. */}
-              <NetworkPulse showCounts={false} />
-            </div>
+          <div className="mt-9 md:w-[50%] lg:w-[52%]">
+            {searchPanel}
+          </div>
 
-            <div className="md:col-span-2 md:col-start-1 md:row-start-2">
-              {searchPanel}
+          {/*
+            The photo. Pinned to the section's right half from `md` up; on
+            a phone it is a banner, and it comes *after* the search box
+            rather than before it. A 256px picture between the headline and
+            the one control on the page costs a phone a whole extra scroll
+            to reach the thing it came for.
 
+            It is a sibling of the copy rather than a child of it, and that
+            is load-bearing: the copy block carries `animate-fade-up`, and
+            an element with a transform animation becomes the containing
+            block for absolutely positioned descendants. Nested inside it,
+            `right-0` stopped at the copy column instead of the viewport
+            and the photo landed on top of the headline. Nothing between
+            here and the section is positioned or transformed.
+          */}
+          <div className="relative -mx-4 mt-10 h-64 sm:h-72 md:absolute md:inset-y-0 md:left-auto md:right-0 md:mx-0 md:mt-0 md:h-auto md:w-[44%] lg:w-[46%]">
+            {/* The live card comes with it — see HeroPanel, which anchors
+                the card differently against a photograph than against the
+                stand-in illustration. */}
+            <HeroPanel />
+          </div>
+
+          <div className="pb-12 md:pb-20" />
+          </div>
+          </section>
+
+          <section className="reveal">
+            <div className="mx-auto w-full max-w-5xl px-4 pt-12 md:pt-16">
               {/* The other way in, for someone holding a slip they cannot
                   read. It sits under the search box because searching is
                   still the main act — but it was a thin one-line row, easy
@@ -1299,8 +1315,6 @@ export default function PatientHome() {
                 </ul>
               </div>
             </div>
-          </div>
-          </div>
           </section>
 
           <section className="reveal">
