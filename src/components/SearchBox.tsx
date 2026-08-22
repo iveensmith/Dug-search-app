@@ -325,8 +325,10 @@ export default function SearchBox({
 
       {footer}
 
+      {/* Pill-shaped: this is the home page's one primary action, and it
+          takes the shape the rest of that page's buttons now have. */}
       {stackedAction && (
-        <Button onClick={submit} disabled={disabled} size="lg" className="mt-3 w-full">
+        <Button onClick={submit} disabled={disabled} size="lg" shape="pill" className="mt-3 w-full">
           {actionLabel}
         </Button>
       )}

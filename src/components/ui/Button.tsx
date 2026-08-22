@@ -16,8 +16,21 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
  */
 export type ButtonAccent = 'emerald' | 'deep'
 
+/**
+ * `rounded` is the default everything has always had; `pill` is the fully
+ * rounded shape the home page's primary actions use. A separate prop
+ * rather than a className override, for the reason spelled out above: two
+ * radius utilities in one class list are settled by emission order.
+ */
+export type ButtonShape = 'rounded' | 'pill'
+
+const shapes: Record<ButtonShape, string> = {
+  rounded: 'rounded-xl',
+  pill: 'rounded-full',
+}
+
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+  'inline-flex items-center justify-center gap-2 font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 
 const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline', string>> = {
   emerald: {
@@ -58,6 +71,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
   size?: ButtonSize
   accent?: ButtonAccent
+  shape?: ButtonShape
   loading?: boolean
 }
 
@@ -66,21 +80,22 @@ export function buttonClass(
   size: ButtonSize = 'md',
   className = '',
   accent: ButtonAccent = 'emerald',
+  shape: ButtonShape = 'rounded',
 ) {
   const look =
     variant === 'ghost' || variant === 'destructive' ? variants[variant] : accented[accent][variant]
-  return `${base} ${look} ${sizes[size]} ${className}`.trim()
+  return `${base} ${shapes[shape]} ${look} ${sizes[size]} ${className}`.trim()
 }
 
 const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = 'primary', size = 'md', accent = 'emerald', loading, disabled, className = '', children, ...props },
+  { variant = 'primary', size = 'md', accent = 'emerald', shape = 'rounded', loading, disabled, className = '', children, ...props },
   ref,
 ) {
   return (
     <button
       ref={ref}
       disabled={disabled || loading}
-      className={buttonClass(variant, size, className, accent)}
+      className={buttonClass(variant, size, className, accent, shape)}
       {...props}
     >
       {loading && (

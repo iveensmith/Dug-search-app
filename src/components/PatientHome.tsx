@@ -21,8 +21,9 @@ import { pickLga } from '@/lib/detectLga'
 import SavedDrugs from '@/components/SavedDrugs'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
-import HeroGraphic from '@/components/ui/HeroGraphic'
+import HeroFigure from '@/components/ui/HeroFigure'
 import NetworkPulse from '@/components/NetworkPulse'
+import NetworkStatsRow from '@/components/NetworkStatsRow'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
@@ -879,10 +880,11 @@ export default function PatientHome() {
   const searchPanel = (
     <Card
       id="search"
-      className="mb-4 scroll-mt-24 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:shadow-black/20 dark:ring-emerald-900/40"
+      radius="lg"
+      className="mb-4 scroll-mt-24 border-transparent shadow-[0_2px_4px_rgba(16,24,40,0.04),0_24px_48px_-16px_rgba(6,78,59,0.18)] ring-1 ring-emerald-100 dark:border-gray-800 dark:shadow-black/20 dark:ring-emerald-900/40"
       padded={false}
     >
-      <div className="space-y-4 p-5">
+      <div className="space-y-4 p-5 sm:p-6">
         {/* The panel is two questions and one answer, in that order. It
             used to be a row of controls, which said nothing about what
             the app is for — the whole product is "which shop near me has
@@ -973,7 +975,7 @@ export default function PatientHome() {
               type="button"
               onClick={detectMyArea}
               disabled={locating}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
             >
               <IconMapPin width={15} height={15} />
               {locating ? 'Finding you…' : 'Use my location'}
@@ -1113,22 +1115,38 @@ export default function PatientHome() {
           who has not searched yet — with <main> further down they were
           content belonging to no landmark, and there was nothing for a
           screen reader to skip the header to. */}
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
+      <main className="flex w-full flex-1 flex-col pb-10">
       {state.kind === 'idle' && (
         <>
+          {/* The page is now a stack of full-width bands that alternate
+              between a mint field and the page background, each holding
+              its own centred container — which is why <main> no longer
+              carries the max width. A band cannot be edge-to-edge from
+              inside a 64rem column, and the alternation is most of what
+              makes the layout read as designed rather than assembled. */}
+          <section className="rounded-b-[2rem] bg-emerald-50/80 md:rounded-b-[3.5rem] dark:bg-emerald-950/25">
+          <div className="mx-auto w-full max-w-5xl px-4">
           {/* Three grid children so the illustration can sit between the
               headline and the search box on mobile, while explicit
               row/column placement keeps the two-column layout on desktop
               (copy + search stacked left, illustration right). */}
-          <section className="animate-fade-up grid items-center gap-y-10 py-12 md:grid-cols-2 md:items-start md:gap-x-16 md:py-20">
+          <div className="animate-fade-up grid items-center gap-y-10 pb-14 pt-10 md:grid-cols-2 md:items-start md:gap-x-14 md:pb-20 md:pt-16">
             <div className="md:col-start-1 md:row-start-1">
-              <p className="text-sm font-semibold italic text-emerald-700 dark:text-emerald-400">
-                Nationwide Pharmacy Network
+              {/* A pill with a lit dot, rather than the italic line that
+                  was here. The dot is the same one the live-network card
+                  uses, so the two read as the same claim at two sizes. */}
+              <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-emerald-800 ring-1 ring-emerald-200/80 dark:bg-white/5 dark:text-emerald-300 dark:ring-emerald-800/80">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                Nationwide pharmacy network
               </p>
-              <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50">
-                Find Medicine In Stock Near You
+              <h1 className="mt-5 text-[2.6rem] font-bold leading-[1.06] tracking-tight text-gray-900 sm:text-[3.4rem] dark:text-gray-50">
+                Find medicine{' '}
+                <span className="whitespace-nowrap text-emerald-700 dark:text-emerald-400">
+                  in stock
+                </span>{' '}
+                near you
               </h1>
-              <p className="mt-5 max-w-md leading-relaxed text-gray-600 dark:text-gray-400">
+              <p className="mt-5 max-w-md text-[1.05rem] leading-relaxed text-gray-600 dark:text-gray-400">
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
@@ -1139,27 +1157,34 @@ export default function PatientHome() {
                   someone deciding in three seconds whether a health site
                   they have never heard of is worth typing a drug name
                   into. */}
-              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
+              <ul className="mt-7 flex flex-wrap gap-2">
                 {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
                   <li
                     key={label}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300"
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-gray-800 shadow-sm ring-1 ring-emerald-100 dark:bg-white/5 dark:text-gray-200 dark:ring-emerald-900/60"
                   >
                     <Icon width={14} height={14} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
                     {label}
                   </li>
                 ))}
               </ul>
+
+              {/* Counted, not claimed — see NetworkStatsRow. It fills the
+                  space the reference gives a row of round numbers, and
+                  disappears rather than shrink one. */}
+              <NetworkStatsRow />
             </div>
 
-            <div className="relative pb-16 md:col-start-2 md:row-start-1 md:pb-0">
-              <HeroGraphic />
+            <div className="relative flex justify-center pb-16 md:col-start-2 md:row-start-1 md:justify-end md:pb-8">
+              <HeroFigure />
               {/* Was a dashed box captioned "Sample — not live results",
                   which told a first-time visitor they were looking at a
                   prototype. Now the real thing: counts and the latest
                   confirmation, straight from the database, or nothing at
-                  all if there is nothing true to say yet. */}
-              <NetworkPulse />
+                  all if there is nothing true to say yet. The counts are
+                  in the stat row opposite, so here it says only what that
+                  row cannot: what happened most recently. */}
+              <NetworkPulse showCounts={false} />
             </div>
 
             <div className="md:col-span-2 md:col-start-1 md:row-start-2">
@@ -1254,13 +1279,13 @@ export default function PatientHome() {
                   compete with the thing we actually want tapped — this is
                   reassurance you read on the way past. */}
               <div className="mt-6 rounded-3xl border border-gray-200/90 bg-white/70 p-5 backdrop-blur-sm dark:border-gray-800/90 dark:bg-gray-900/50">
-                {/* One column, not two. The hero puts this card in a
-                    464px-wide grid column at every desktop size, and two
-                    columns inside that wrapped every label onto a second
-                    line — "PCN-verified / pharmacies". A breakpoint would
-                    not have caught it, because the viewport is wide even
-                    when the card is not. */}
-                <ul className="space-y-3">
+                {/* Four across once there is room. It was one column for
+                    as long as this card lived in a 464px-wide grid column,
+                    where two wrapped every label onto a second line —
+                    "PCN-verified / pharmacies". The card spans the full
+                    measure now, so the row fits and the stack of four
+                    would just be a tall list of short lines. */}
+                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {TRUST_BADGES.map(({ label, Icon }) => (
                     <li key={label} className="flex items-center gap-3">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -1274,41 +1299,57 @@ export default function PatientHome() {
                 </ul>
               </div>
             </div>
+          </div>
+          </div>
           </section>
 
-          <section className="reveal border-t border-gray-200/80 py-16 md:py-24 dark:border-gray-800/80">
-            <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+          <section className="reveal">
+            <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
+            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               How it works
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-center text-sm text-gray-600 dark:text-gray-400">
-              Three steps between you and your medicine.
             </p>
-            <ol className="mt-10 grid gap-5 sm:grid-cols-3">
+            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl dark:text-gray-50">
+              Three steps between you and your medicine
+            </h2>
+            {/* Numbered rather than iconed-and-numbered: the step number is
+                the thing that says "there are only three of these", which
+                is the whole reassurance this section exists to give. The
+                icon stays, smaller, as a label for the step. */}
+            <ol className="mt-12 grid gap-6 sm:grid-cols-3">
               {HOW_IT_WORKS.map(({ icon: Icon, title, text }, i) => (
                 <li
                   key={title}
-                  className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-7 dark:border-gray-800 dark:bg-gray-900"
+                  className="rounded-[1.75rem] bg-white p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.12)] ring-1 ring-gray-100 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_20px_40px_-12px_rgba(5,150,105,0.22)] dark:bg-gray-900 dark:shadow-none dark:ring-gray-800"
                 >
-                  <span className="absolute right-5 top-4 text-4xl font-black text-emerald-100 dark:text-emerald-500/15">
-                    {i + 1}
-                  </span>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                    <Icon width={20} height={20} />
-                  </span>
-                  <p className="mt-5 font-bold text-gray-900 dark:text-gray-50">{title}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[2.5rem] font-black leading-none tracking-tighter text-emerald-600/25 dark:text-emerald-400/25">
+                      0{i + 1}
+                    </span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      <Icon width={18} height={18} />
+                    </span>
+                  </div>
+                  <p className="mt-5 text-lg font-bold text-gray-900 dark:text-gray-50">{title}</p>
                   <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{text}</p>
                 </li>
               ))}
             </ol>
+            </div>
           </section>
 
           {/* Native <details> so the accordion works before hydration and
               stays keyboard- and screen-reader-correct for free. */}
-          <section className="reveal border-t border-gray-200/80 py-16 md:py-24 dark:border-gray-800/80">
-            <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+          <section className="reveal rounded-[2rem] bg-emerald-50/80 md:rounded-[3.5rem] dark:bg-emerald-950/25">
+            <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
+            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               Questions
+            </p>
+            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl dark:text-gray-50">
+              The things people ask before they trust us
             </h2>
-            <div className="mx-auto mt-10 max-w-2xl space-y-3">
+            <div className="mx-auto mt-12 max-w-2xl space-y-3">
               {FAQ.map(({ q, a }) => (
                 <details
                   key={q}
@@ -1326,14 +1367,16 @@ export default function PatientHome() {
                 </details>
               ))}
             </div>
+            </div>
           </section>
 
           {/* Owner recruitment — only for signed-out visitors, matching the
               header: a signed-in patient can't register a premises, so
               offering them one would be a dead end. */}
           {viewerLoaded && !viewerRole && (
-            <section className="reveal pb-16 md:pb-24">
-              <div className="rounded-3xl bg-emerald-600 p-8 shadow-lg shadow-emerald-600/20 sm:p-12 dark:bg-emerald-700">
+            <section className="reveal">
+              <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
+              <div className="rounded-[2rem] bg-emerald-700 p-8 shadow-xl shadow-emerald-800/25 sm:rounded-[2.5rem] sm:p-12 dark:bg-emerald-800">
                 <h2 className="max-w-lg text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
                   Run a pharmacy? Put your shelf on the map.
                 </h2>
@@ -1348,25 +1391,30 @@ export default function PatientHome() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/pharmacy/register"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-base font-semibold text-emerald-700 shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-emerald-50 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-600"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-base font-semibold text-emerald-800 shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-emerald-50 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
                   >
                     <IconStore width={18} height={18} />
                     Register your pharmacy
                   </Link>
                   <Link
                     href="/login"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold text-white transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-600"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3.5 text-base font-semibold text-white transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
                   >
                     Already listed? Sign in
                     <IconChevronRight width={18} height={18} />
                   </Link>
                 </div>
               </div>
+              </div>
             </section>
           )}
         </>
       )}
 
+      {/* Everything past the idle marketing bands is one column again —
+          results, the panel above them and the location line all belong
+          inside the same measure the bands centre their own content on. */}
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-6">
       {state.kind !== 'idle' && (panelOpen ? searchPanel : compactPanel)}
 
       {state.kind !== 'idle' &&
@@ -2114,6 +2162,7 @@ export default function PatientHome() {
             )}
           </>
         )}
+      </div>
       </div>
       </main>
 
