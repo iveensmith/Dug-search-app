@@ -76,9 +76,11 @@ export default function PharmacyDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      {/* Full width so the band behind the map card can run edge to edge.
+          Every branch below puts the reading measure back. */}
+      <main className="w-full flex-1 pb-16">
         {missing ? (
-          <div className="py-16 text-center">
+          <div className="mx-auto w-full max-w-2xl px-4 py-16 text-center">
             <p className="font-semibold text-gray-900 dark:text-gray-100">Pharmacy not found</p>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               It may not be verified yet, or the link is out of date.
@@ -185,8 +187,18 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
   }
 
   return (
-    <div className="animate-fade-up py-6">
-      <Card padded={false} className="overflow-hidden">
+    <div className="animate-fade-up">
+      {/*
+        The map card sits on a mint field rather than opening straight onto
+        the page colour. This page's heading is the shop's name under its
+        own map, which is a stronger opening than a title band would be —
+        putting one above it would print the name twice — so the band goes
+        behind the card instead and the page still starts the way the rest
+        of the site does.
+      */}
+      <div className="bg-emerald-50 py-8 dark:bg-emerald-950/25">
+      <div className="mx-auto w-full max-w-2xl px-4">
+      <Card padded={false} radius="lg" className="overflow-hidden">
         {/* Was a gradient with a pin drawn on it — decoration standing
             where the actual map belongs. */}
         <div className="relative h-56 sm:h-64">
@@ -219,7 +231,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
             <button
               onClick={showRoute}
               disabled={routing}
-              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950"
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950"
             >
               <IconRoute width={16} height={16} />
               {routing ? 'Finding the way…' : route ? 'Route shown above' : 'Directions'}
@@ -228,7 +240,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               href={`tel:${p.phone.replace(/\s/g, '')}`}
               onClick={call}
               aria-label={`Call ${p.name}`}
-              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+              className="flex items-center justify-center gap-2 rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
             >
               <IconPhone width={16} height={16} />
               {copied ? 'Copied ✓' : 'Call'}
@@ -260,8 +272,11 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
           </a>
         </div>
       </Card>
+      </div>
+      </div>
 
-      <Card className="mt-4">
+      <div className="mx-auto w-full max-w-2xl px-4 pt-8">
+      <Card radius="lg">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             What patients say
@@ -327,12 +342,12 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
           </ul>
         )}
 
-        <Button variant="secondary" size="sm" className="mt-4 w-full" onClick={onRate}>
+        <Button variant="secondary" size="sm" shape="pill" className="mt-4 w-full" onClick={onRate}>
           Rate this pharmacy
         </Button>
       </Card>
 
-      <Card className="mt-4">
+      <Card radius="lg" className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Opening hours
         </p>
@@ -347,6 +362,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
         </p>
       </Card>
 
+      </div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import PrescriptionDisclaimer from '@/components/PrescriptionDisclaimer'
 import DataPrivacyNote from '@/components/DataPrivacyNote'
 import SiteHeader from '@/components/ui/SiteHeader'
+import PageHeader from '@/components/ui/PageHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import LoadMore from '@/components/ui/LoadMore'
 import Card from '@/components/ui/Card'
@@ -211,18 +212,20 @@ export default function PrescriptionsPage() {
           screen reader jumps to in order to skip the site header, which
           this page had none of — and it is what stops the page title
           below being read as a second site banner: a <header> inside
-          <main> is scoped to its section rather than to the document. */}
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-      <header className="py-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Ask a pharmacist</h1>
-        <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
-          Upload a prescription you don&apos;t understand — a licensed pharmacist will explain it
-        </p>
-      </header>
+          <main> is scoped to its section rather than to the document.
 
+          Full width, with the measure put back on the container below, so
+          the title band can run edge to edge the way the home page's do. */}
+      <main className="w-full flex-1 pb-16">
+      <PageHeader
+        title="Ask A Pharmacist"
+        lede="Upload a prescription you don't understand — a licensed pharmacist will explain it."
+      />
+
+      <div className="mx-auto w-full max-w-2xl px-4 pt-8">
       <PrescriptionDisclaimer />
 
-      <Card className="mt-5">
+      <Card radius="lg" className="mt-5">
         <form onSubmit={submit}>
           {/* A heading rather than a <label>: a label points at one control
               and there are two here. The buttons below carry their own
@@ -447,6 +450,7 @@ export default function PrescriptionsPage() {
           noun="requests"
         />
       )}
+      </div>
       </main>
       <SiteFooter />
     </div>

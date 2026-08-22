@@ -4,6 +4,7 @@ import { use, useEffect, useMemo, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import SiteHeader from '@/components/ui/SiteHeader'
+import PageHeader from '@/components/ui/PageHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import StockPulse from '@/components/StockPulse'
@@ -12,7 +13,7 @@ import { type DrugSuggestion, type PharmacyResult } from '@/lib/types'
 import DispensingBadge from '@/components/DispensingBadge'
 import { dispensingClass } from '@/lib/dispensing'
 import { isValidState, stateLabel } from '@/lib/states'
-import { IconAlertCircle, IconPill, IconStore } from '@/components/ui/icons'
+import { IconAlertCircle, IconStore } from '@/components/ui/icons'
 
 type Payload = { drug: DrugSuggestion; stockedBy: PharmacyResult[]; siblings: DrugSuggestion[] }
 
@@ -107,23 +108,25 @@ function DrugBody({ id }: { id: string }) {
 
   if (missing) {
     return (
-      <div className="py-16 text-center">
-        <p className="font-semibold text-gray-900 dark:text-gray-100">Medicine not found</p>
-        <Link
-          href="/"
-          className="mt-3 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
-        >
-          Back to search
-        </Link>
-      </div>
+      <>
+        <PageHeader title="Medicine Not Found" />
+        <div className="mx-auto w-full max-w-2xl px-4 pt-8">
+          <Link
+            href="/"
+            className="text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+          >
+            Back to search
+          </Link>
+        </div>
+      </>
     )
   }
 
   if (!data) {
     return (
-      <div className="space-y-4 py-8">
-        <div className="h-56 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800" />
-        <div className="h-40 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800" />
+      <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-8">
+        <div className="h-56 animate-pulse rounded-3xl bg-gray-100 dark:bg-gray-800" />
+        <div className="h-40 animate-pulse rounded-3xl bg-gray-100 dark:bg-gray-800" />
       </div>
     )
   }
@@ -136,11 +139,15 @@ function DrugBody({ id }: { id: string }) {
     : null
 
   return (
-    <div className="animate-fade-up py-6">
-      <Card>
-        <div className="grid h-32 place-items-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-          <IconPill width={48} height={48} />
-        </div>
+    <div className="animate-fade-up">
+      {/* The medicine's name is the page, so it goes in the band rather
+          than a third of the way down the first card — and the badges go
+          with it, because "prescription only" is the thing that decides
+          whether the rest of the page is any use. */}
+      <PageHeader
+        title={drug.genericName}
+        lede={drug.brandNames.length > 0 ? `Also sold as ${drug.brandNames.join(' · ')}` : undefined}
+      >
         {(drug.category || drug.dispensing) && (
           <div className="mt-5 flex flex-wrap items-center gap-2">
             {drug.category && (
@@ -151,14 +158,15 @@ function DrugBody({ id }: { id: string }) {
             <DispensingBadge value={drug.dispensing} className="px-3 py-1 font-bold" />
           </div>
         )}
-        <h1 className={`text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50 ${drug.category || drug.dispensing ? 'mt-2.5' : 'mt-5'}`}>
-          {drug.genericName}
-        </h1>
-        {drug.brandNames.length > 0 && (
-          <p className="mt-1 text-gray-600 dark:text-gray-400">Also sold as {drug.brandNames.join(' · ')}</p>
-        )}
+      </PageHeader>
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+      <div className="mx-auto w-full max-w-2xl px-4 pt-8">
+      {/* The pill graphic that used to head this card is gone. It was
+          standing in for a page title, and the title is in the band now —
+          left where it was it is a 128px empty rectangle above the only
+          facts on the page. */}
+      <Card radius="lg">
+        <div className="grid grid-cols-2 gap-3">
           <Spec label="Strength" value={drug.strength} />
           <Spec label="Form" value={drug.form.charAt(0) + drug.form.slice(1).toLowerCase()} />
           {drug.packSize && <Spec label="Pack size" value={drug.packSize} />}
@@ -177,7 +185,7 @@ function DrugBody({ id }: { id: string }) {
           that decides whether the journey is worth making at all. */}
       <DispensingNote value={drug.dispensing} />
 
-      <Card className="mt-4">
+      <Card radius="lg" className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {areaLabel ? `Where to get it in ${areaLabel}` : 'Where to get it'}
         </p>
@@ -246,11 +254,12 @@ function DrugBody({ id }: { id: string }) {
 
       <Link
         href="/"
-        className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+        className="mt-6 flex items-center justify-center gap-2 rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
       >
         <IconStore width={16} height={16} />
         Search another medicine
       </Link>
+      </div>
     </div>
   )
 }
@@ -260,7 +269,10 @@ export default function DrugDetailPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+      {/* Full width so the title band can run edge to edge, the way the
+          home page's bands do. DrugBody puts the reading measure back on
+          everything underneath. */}
+      <main className="w-full flex-1 pb-16">
         <Suspense>
           <DrugBody id={id} />
         </Suspense>

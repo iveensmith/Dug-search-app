@@ -1364,8 +1364,16 @@ export default function PatientHome() {
                   <div className="flex items-center gap-3">
                     {/* extrabold, not black: Open Sans stops at 800, and
                         asking for 900 gets a synthesised weight that reads
-                        as a smeared version of the same thing. */}
-                    <span className="text-[2.5rem] font-extrabold leading-none tracking-tighter text-emerald-600/25 dark:text-emerald-400/25">
+                        as a smeared version of the same thing.
+
+                        Full strength, not the 25% watermark it was. At
+                        that opacity it measured 1.36:1 against the card —
+                        large text needs 3:1, and a step number nobody can
+                        read is not a decoration, it is the one thing that
+                        says how far through the three steps you are. Solid
+                        emerald-600 is 3.77:1 and looks more like the
+                        reference besides. */}
+                    <span className="text-[2.5rem] font-extrabold leading-none tracking-tighter text-emerald-600 dark:text-emerald-400">
                       0{i + 1}
                     </span>
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
