@@ -1209,10 +1209,10 @@ export default function PatientHome() {
           </div>
 
           {/*
-            The photo. The whole band's background on a phone; its own half
-            of the screen, running to the viewport's right edge, from `md`
-            up. Absolute in both cases, so it adds no height either way and
-            the search box stays where a thumb can reach it.
+            The photo. The band's background at every width — HeroPanel
+            decides how much of it the picture actually covers and where it
+            dissolves. Absolute, so it adds no height and the search box
+            stays where a thumb can reach it.
 
             It is a sibling of the copy rather than a child of it, and that
             is load-bearing: the copy block carries `animate-fade-up`, and
@@ -1222,7 +1222,7 @@ export default function PatientHome() {
             and the photo landed on top of the headline. Nothing between
             here and the section is positioned or transformed.
           */}
-          <div className="absolute inset-0 z-0 md:left-auto md:right-0 md:w-[44%] lg:w-[46%]">
+          <div className="absolute inset-0 z-0">
             {/* The live card comes with it — see HeroPanel, which also
                 owns the scrim that makes the copy legible on a phone. */}
             <HeroPanel />

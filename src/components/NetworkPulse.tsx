@@ -38,7 +38,7 @@ import { IconCheck, IconStore } from '@/components/ui/icons'
 type Placement = 'float' | 'inline'
 
 const PLACEMENT: Record<Placement, string> = {
-  float: 'animate-float absolute bottom-3 left-0 w-64 sm:left-2 sm:w-80 md:-bottom-1 md:-left-4',
+  float: 'animate-float absolute bottom-3 left-0 w-64 sm:left-2 sm:w-80 md:bottom-8 md:left-auto md:right-8 md:w-80',
   inline: 'w-full',
 }
 
