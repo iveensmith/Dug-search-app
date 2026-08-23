@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { limitPublicRead } from '@/lib/publicReadLimit'
 
 /**
  * What the network actually is, right now, for the landing page.
@@ -20,7 +21,13 @@ import { prisma } from '@/lib/db'
  * carries — when some pharmacy last confirmed stock — is not meaningfully
  * staler at sixty seconds.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Counted from the database on every request, and requested on every
+  // home page load, so it is the cheapest thing here to hammer and the
+  // most expensive to serve.
+  const limited = await limitPublicRead(req, 'netstats')
+  if (limited) return limited
+
   const [pharmacies, states, drugs, latest] = await Promise.all([
     prisma.pharmacy.count({ where: { verificationStatus: 'APPROVED' } }),
     prisma.pharmacy.findMany({

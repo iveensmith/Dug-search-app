@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { findPharmaciesWithDrug } from '@/lib/geo'
 import { isValidState, stateCenter } from '@/lib/states'
 import { isValidLga } from '@/lib/lgas'
+import { limitPublicRead } from '@/lib/publicReadLimit'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -20,6 +21,9 @@ const paramsSchema = z.object({
  * can't say who stocks it nearby.
  */
 export async function GET(req: NextRequest, ctx: RouteContext) {
+  const limited = await limitPublicRead(req, 'drugread')
+  if (limited) return limited
+
   const { id } = await ctx.params
   const parsed = paramsSchema.safeParse(Object.fromEntries(req.nextUrl.searchParams.entries()))
   if (!parsed.success) {

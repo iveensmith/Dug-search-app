@@ -5,6 +5,7 @@ import { getSession } from '@/lib/auth'
 import { findPharmaciesWithDrug, findGenericSubstitutes } from '@/lib/geo'
 import { isValidState, stateCenter } from '@/lib/states'
 import { isValidLga } from '@/lib/lgas'
+import { limitPublicRead } from '@/lib/publicReadLimit'
 
 const paramsSchema = z.object({
   drugId: z.string().min(1).optional(),
@@ -20,6 +21,9 @@ const paramsSchema = z.object({
 // matched — either way the search is logged so coverage gaps show up in
 // admin analytics.
 export async function GET(req: NextRequest) {
+  const limited = await limitPublicRead(req, 'search')
+  if (limited) return limited
+
   // Patient search isn't for pharmacy owner accounts — they manage stock
   // from their dashboard instead (mirrors the hidden search UI on the home
   // page, so the API can't be used to sidestep it).

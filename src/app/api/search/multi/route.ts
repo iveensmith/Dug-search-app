@@ -6,6 +6,7 @@ import { findPharmaciesStockingAny } from '@/lib/geo'
 import { isValidState, stateCenter } from '@/lib/states'
 import { isValidLga } from '@/lib/lgas'
 import { MAX_DRUGS } from '@/lib/searchLimits'
+import { limitPublicRead } from '@/lib/publicReadLimit'
 
 /**
  * One trip, several medicines: which nearby pharmacies cover the most of a
@@ -32,6 +33,9 @@ const paramsSchema = z.object({
 })
 
 export async function GET(req: NextRequest) {
+  const limited = await limitPublicRead(req, 'searchmulti')
+  if (limited) return limited
+
   // Same gate as the single-drug search: this is a patient tool, and an
   // owner account has its own dashboard for stock questions.
   const session = await getSession(req)

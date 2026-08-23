@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import type { DrugSuggestion } from '@/lib/types'
+import { limitPublicRead } from '@/lib/publicReadLimit'
 
 /**
  * Autocomplete: generic name, catalogue brand name, or the brand a
@@ -22,6 +23,9 @@ import type { DrugSuggestion } from '@/lib/types'
  * back to scanning every drug on every keystroke.
  */
 export async function GET(req: NextRequest) {
+  const limited = await limitPublicRead(req, 'drugsearch')
+  if (limited) return limited
+
   const q = req.nextUrl.searchParams.get('q')?.trim() ?? ''
   if (q.length < 2) return NextResponse.json({ drugs: [] })
 
