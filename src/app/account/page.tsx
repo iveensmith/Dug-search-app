@@ -10,6 +10,7 @@ import VerifyEmailNotice from '@/components/VerifyEmailNotice'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
+import { NAME_PATTERN, filterNameInput } from '@/lib/nameInput'
 import PasswordInput from '@/components/ui/PasswordInput'
 import { DASHBOARD_HREF, DASHBOARD_LABEL, ROLE_LABEL } from '@/lib/roles'
 import { stateLabel } from '@/lib/states'
@@ -166,10 +167,12 @@ export default function AccountPage() {
                 <Input
                   id="displayName"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  onChange={(e) => setDisplayName(filterNameInput(e.target.value))}
                   required
                   minLength={2}
                   maxLength={80}
+                  pattern={NAME_PATTERN}
+                  title="Letters, spaces, hyphens and apostrophes"
                 />
               </Field>
               {nameError && <p className="text-sm font-medium text-danger-ink">{nameError}</p>}

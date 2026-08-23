@@ -15,6 +15,7 @@ import DispensingBadge from '@/components/DispensingBadge'
 import Badge, { type BadgeTone } from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
+import { NAME_PATTERN, filterNameInput } from '@/lib/nameInput'
 
 type AdminPharmacy = {
   id: string
@@ -335,8 +336,12 @@ function PharmacistsTab({
               <Input
                 id="pharmacist-name"
                 value={form.displayName}
-                onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, displayName: filterNameInput(e.target.value) }))
+                }
                 required
+                pattern={NAME_PATTERN}
+                title="Letters, spaces, hyphens and apostrophes"
               />
             </Field>
             <Field label="Email" htmlFor="pharmacist-email">

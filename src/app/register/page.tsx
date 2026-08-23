@@ -13,17 +13,7 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import PasswordInput from '@/components/ui/PasswordInput'
 import { setCheckEmail } from '@/components/ui/CheckEmailBanner'
 
-/**
- * Mirrors the name rule the server enforces (lib/authValidation). The
- * server rejects a bad name with one deliberately vague message, so this
- * is where someone finds out *which* box needs fixing — the browser marks
- * the field before the form is ever sent.
- */
-// The hyphen is escaped deliberately: browsers compile `pattern` with the
-// regex `v` flag, where a bare `.-` inside a character class is an invalid
-// punctuator sequence — the pattern then fails to compile and is ignored
-// wholesale, silently, taking the rest of the rule with it.
-const NAME_PATTERN = "[\\p{L}\\p{M}][\\p{L}\\p{M} '.\\-]*"
+import { NAME_PATTERN, filterNameInput } from '@/lib/nameInput'
 
 function RegisterForm() {
   const router = useRouter()
@@ -101,7 +91,9 @@ function RegisterForm() {
               <Input
                 id="firstName"
                 value={form.firstName}
-                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, firstName: filterNameInput(e.target.value) }))
+                }
                 autoComplete="given-name"
                 maxLength={40}
                 pattern={NAME_PATTERN}
@@ -112,7 +104,9 @@ function RegisterForm() {
               <Input
                 id="lastName"
                 value={form.lastName}
-                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, lastName: filterNameInput(e.target.value) }))
+                }
                 autoComplete="family-name"
                 maxLength={40}
                 pattern={NAME_PATTERN}

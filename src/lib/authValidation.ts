@@ -23,6 +23,7 @@
  */
 
 import { z } from 'zod'
+import { NAME_ALLOWED } from '@/lib/nameInput'
 
 /* ---------------------------------------------------------------- limits */
 
@@ -53,12 +54,10 @@ const MAX_NAME = 80
 /** C0/C1 control characters — never typed, only ever pasted or scripted. */
 const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/
 
-/**
- * Anything a name genuinely needs: letters in any script (Nigerian names
- * are not ASCII-only), combining marks, spaces, and the three pieces of
- * punctuation that show up in real names — Ade-Bello, N'Diaye, Jr.
- */
-const NAME_ALLOWED = /^[\p{L}\p{M}][\p{L}\p{M} '.-]*$/u
+// NAME_ALLOWED now lives in lib/nameInput, because the forms filter their
+// inputs against the same rule as they are typed. One definition: a client
+// that is looser than this schema is a form that accepts a name and then
+// has it refused on submit.
 
 /**
  * Strips markup from a display name and normalises the whitespace.
