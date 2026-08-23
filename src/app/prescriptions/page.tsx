@@ -409,7 +409,14 @@ export default function PrescriptionsPage() {
                   <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-md">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-ink">
-                        {u.patientNote ?? (u.hasAudio ? 'Voice note' : 'Prescription question')}
+                        {/* "Prescription", not "Prescription question": the
+                            row shares its width with the status badge, so
+                            this box is 134px on a 390px phone and 104px on
+                            a 360px one. The longer string needed 149px and
+                            was truncating to "Prescription questio…". The
+                            heading above the list already says these are
+                            questions. */}
+                        {u.patientNote ?? (u.hasAudio ? 'Voice note' : 'Prescription')}
                       </p>
                       <p className="flex items-center gap-1.5 truncate text-xs text-faint">
                         {/* A marker, not a player. The list is a summary,
