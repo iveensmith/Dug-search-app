@@ -1931,8 +1931,18 @@ export default function PatientHome() {
 
         {state.kind === 'results' && results.length > 0 && (
           <>
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="min-w-0 text-sm text-muted">
+            {/* Stacked on a phone, side by side from `sm`.
+                Side by side, this sentence is min-w-0 next to shrink-0
+                controls, so it gets whatever is left — 149px at 390 and
+                119px at 360. A medicine name is one long unbreakable
+                token ("Amoxicillin/Clavulanate"), so instead of wrapping
+                it overflowed its own box by 21px and 51px and ran under
+                the Filters button. The boxes never intersected, which is
+                why this looked fine to a hit-test and wrong to a person.
+                break-words is the second half: stacked it has room, but
+                a longer name on a narrower phone would spill again. */}
+            <div className="mb-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <p className="min-w-0 break-words text-sm text-muted">
                 <span className="font-semibold text-ink">{results.length}</span>{' '}
                 {activeFilterCount(filters) > 0 ? ` of ${allResults.length} ` : ' '}
                 {results.length === 1 ? 'pharmacy has' : 'pharmacies have'}{' '}
@@ -2143,19 +2153,28 @@ export default function PatientHome() {
                       </p>
                     )}
 
-                    <div className="mt-4 flex gap-2.5">
+                    {/* Wraps, and every button sizes from content.
+                        A flex item's min-width is auto, so the old flex-1
+                        on Directions could not shrink below its 141px
+                        content width: Call + Details + Directions came to
+                        ~353px against ~248px of card at 320, and the green
+                        button hung off the right edge. flex-auto lets the
+                        row break onto a second line exactly when the three
+                        stop fitting, and share the width evenly when they
+                        do fit. */}
+                    <div className="mt-4 flex flex-wrap gap-2.5">
                       <a
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
                         onClick={(e) => handleCall(e, r.phone)}
                         aria-label={`Call ${r.name}`}
-                        className="flex items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
+                        className="flex flex-auto items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
                       >
                         <IconPhone width={16} height={16} />
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
                       <Link
                         href={`/pharmacies/${r.id}`}
-                        className="flex items-center justify-center rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
+                        className="flex flex-auto items-center justify-center rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
                       >
                         Details
                       </Link>
@@ -2164,7 +2183,7 @@ export default function PatientHome() {
                         size="md"
                         onClick={() => showRoute(r)}
                         loading={routeBusyId === r.id}
-                        className="flex-1"
+                        className="flex-auto"
                       >
                         <IconRoute width={16} height={16} />
                         {routeBusyId === r.id ? 'Loading route…' : 'Directions'}

@@ -153,12 +153,20 @@ export default function CoverageResults({
               </p>
             )}
 
-            <div className="mt-4 flex gap-2.5">
+            {/* flex-wrap with flex-auto, not flex-1. A flex item's
+                min-width is auto, so flex-1 (basis 0) cannot shrink
+                "Directions" below its 141px content width — two of
+                them overflowed the card at 360 and under, and pushed
+                the whole page into a horizontal scroll. flex-auto
+                sizes from content, so the pair wraps onto two rows
+                exactly when they no longer fit and stays side by side
+                when they do. */}
+            <div className="mt-4 flex flex-wrap gap-2.5">
               <a
                 href={`tel:${r.phone.replace(/\s/g, '')}`}
                 onClick={(e) => onCall(e, r.phone)}
                 aria-label={`Call ${r.name}`}
-                className="flex flex-1 items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
+                className="flex flex-auto items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
               >
                 <IconPhone width={16} height={16} />
                 {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
@@ -172,7 +180,7 @@ export default function CoverageResults({
                   type="button"
                   onClick={() => onDirections(r)}
                   disabled={routeBusyId === r.id}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover disabled:opacity-60"
+                  className="flex flex-auto cursor-pointer items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover disabled:opacity-60"
                 >
                   <IconRoute width={16} height={16} />
                   {routeBusyId === r.id ? 'Finding…' : 'Directions'}
@@ -182,7 +190,7 @@ export default function CoverageResults({
                   href={directionsUrl(r.latitude, r.longitude)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-1 items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover"
+                  className="flex flex-auto items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover"
                 >
                   <IconRoute width={16} height={16} />
                   Directions
