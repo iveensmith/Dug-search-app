@@ -49,9 +49,16 @@ export default function AppHeader({
         >
           <LogoMark size="sm" />
         </Link>
+        {/* Two lines, not one with an ellipsis. On a phone this column is
+            about 175px wide, and a title like "Connect your own software"
+            needs 254px in Poppins — no type size closes that gap, so a
+            single line could only ever hide half the heading. Clamped at
+            two so a long title cannot keep growing a sticky bar, and a
+            step smaller below `sm` to buy back some of the width Poppins
+            costs over the Open Sans this replaced. */}
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold text-ink">{title}</h1>
-          {subtitle && <p className="truncate text-sm text-muted">{subtitle}</p>}
+          <h1 className="line-clamp-2 text-base font-bold text-ink sm:text-lg">{title}</h1>
+          {subtitle && <p className="line-clamp-2 text-sm text-muted">{subtitle}</p>}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">

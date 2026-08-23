@@ -94,7 +94,13 @@ function ActionCardBody({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-semibold text-ink">{title}</span>
-        <span className="block truncate text-sm text-faint">{subtitle}</span>
+        {/* Wraps rather than truncates. Both subtitles are literals a few
+            words long, so there is no runaway string to guard against —
+            and Poppins runs about a quarter wider than the Open Sans this
+            replaced, which was enough to start clipping "…takes a minute"
+            on a phone. The two cards are stacked, so an uneven height
+            costs nothing. */}
+        <span className="block text-sm text-faint">{subtitle}</span>
       </span>
       <IconChevronRight
         width={18}
