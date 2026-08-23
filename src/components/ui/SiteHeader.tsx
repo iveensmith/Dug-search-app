@@ -86,16 +86,16 @@ export default function SiteHeader() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
+    <header className="sticky top-0 z-50 border-b border-line bg-surface/80 backdrop-blur-sm">
       <WelcomeToast />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link
           href={homeHref}
           onClick={handleHomeClick}
-          className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
+          className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-lg"
         >
           <LogoMark size="sm" />
-          <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-50">MediQuest</span>
+          <span className="text-lg font-bold tracking-tight text-ink">MediQuest</span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -113,8 +113,8 @@ export default function SiteHeader() {
                 // separate those two greens.
                 className={`border-b-2 pb-0.5 text-sm font-semibold transition-colors ${
                   active
-                    ? 'border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400'
-                    : 'border-transparent text-gray-600 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400'
+                    ? 'border-brand text-brand-ink'
+                    : 'border-transparent text-muted hover:text-brand-ink'
                 }`}
                 aria-current={active ? 'page' : undefined}
               >
@@ -127,18 +127,18 @@ export default function SiteHeader() {
         <div className="hidden items-center gap-4 md:flex">
           <ThemeToggle />
           {!checked ? (
-            <div className="h-5 w-16 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-5 w-16 animate-pulse rounded bg-sunken" />
           ) : me ? (
             <>
               <Link
                 href="/account"
-                className="text-sm font-semibold text-gray-700 transition-colors hover:text-emerald-700 dark:text-gray-300 dark:hover:text-emerald-400"
+                className="text-sm font-semibold text-muted transition-colors hover:text-brand-ink"
               >
                 {me.displayName ? `Hi, ${me.displayName.split(' ')[0]}` : DASHBOARD_LABEL[me.role]}
               </Link>
               <button
                 onClick={signOut}
-                className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-gray-500 transition-colors hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-faint transition-colors hover:text-danger"
               >
                 <IconLogOut width={16} height={16} />
                 Log out
@@ -147,7 +147,7 @@ export default function SiteHeader() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-600 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-400 dark:hover:text-emerald-400"
+              className="flex items-center gap-1.5 rounded-full border border-line-strong px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand-ink"
             >
               <IconUser width={17} height={17} />
               Log in
@@ -159,7 +159,7 @@ export default function SiteHeader() {
           <ThemeToggle />
           <button
             onClick={() => setOpen((v) => !v)}
-            className="cursor-pointer rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+            className="cursor-pointer rounded-lg p-2 text-muted hover:bg-sunken"
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
           >
@@ -172,7 +172,7 @@ export default function SiteHeader() {
         <div className="px-4 pb-2.5 md:hidden">
           <Link
             href="/account"
-            className="text-sm font-semibold text-emerald-700 dark:text-emerald-400"
+            className="text-sm font-semibold text-brand-ink"
           >
             Hi, {me.displayName.split(' ')[0]} 👋
           </Link>
@@ -180,7 +180,7 @@ export default function SiteHeader() {
       )}
 
       {open && (
-        <nav className="animate-fade-in border-t border-gray-200 px-4 pb-4 pt-2 md:hidden dark:border-gray-800">
+        <nav className="animate-fade-in border-t border-line px-4 pb-4 pt-2 md:hidden">
           <ul className="space-y-1">
             {navLinks.map((link) => (
               <li key={link.href}>
@@ -192,8 +192,8 @@ export default function SiteHeader() {
                   }}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-semibold uppercase tracking-wide ${
                     pathname === link.href
-                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-                      : 'text-gray-700 dark:text-gray-300'
+                      ? 'bg-brand-soft text-brand-ink'
+                      : 'text-muted'
                   }`}
                 >
                   {link.label}
@@ -206,7 +206,7 @@ export default function SiteHeader() {
                   <Link
                     href={DASHBOARD_HREF[me.role]}
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-muted"
                   >
                     <IconUser width={16} height={16} />
                     {DASHBOARD_LABEL[me.role]}
@@ -215,7 +215,7 @@ export default function SiteHeader() {
                 <li>
                   <button
                     onClick={signOut}
-                    className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 dark:text-red-400"
+                    className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-danger"
                   >
                     <IconLogOut width={16} height={16} />
                     Log out
@@ -227,7 +227,7 @@ export default function SiteHeader() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-muted"
                 >
                   <IconUser width={16} height={16} />
                   Log in
