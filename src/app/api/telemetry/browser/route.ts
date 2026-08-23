@@ -61,6 +61,25 @@ export async function POST(req: NextRequest) {
       create: { day, bucket, count: 1 },
       update: { count: { increment: 1 } },
     })
+
+    // Nothing else prunes AuthThrottle, and until now nothing needed to:
+    // rows only appeared for people trying to sign in. This endpoint fires
+    // for every visitor, so it would leave one row per unique IP forever —
+    // on a free-tier database, for a counter that stops mattering after an
+    // hour. So clear the expired ones occasionally: 1-in-50 keeps it near
+    // free while still running often enough to keep up with traffic.
+    //
+    // Scoped to `browserstat:` keys on purpose. The login rows next to
+    // them carry lockouts and progressive delays, and deleting one of
+    // those hands an attacker a fresh allowance.
+    if (Math.random() < 0.02) {
+      await prisma.authThrottle.deleteMany({
+        where: {
+          key: { startsWith: 'browserstat:' },
+          windowStart: { lt: new Date(Date.now() - HOUR_MS) },
+        },
+      })
+    }
   } catch {
     // A telemetry write is never worth failing a request over.
   }
