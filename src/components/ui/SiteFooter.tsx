@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { LogoMark } from '@/components/ui/Logo'
 import { IconMessageCircle } from '@/components/ui/icons'
+import { LEGAL_PAGES } from '@/lib/legalPages'
 
 // PLACEHOLDER — no mailbox is receiving this yet. Swap it for the real
 // support address once one exists; this constant is the only place it
@@ -60,10 +61,27 @@ export default function SiteFooter() {
         </div>
       </div>
 
+      {/* The policies sit on the bottom rule rather than in the columns
+          above: they belong on every page, but they are not one of the
+          things somebody came here to do. */}
       <div className="border-t border-emerald-700/60 dark:border-emerald-900">
-        <p className="mx-auto w-full max-w-6xl px-4 py-4 text-xs text-emerald-200">
-          © {new Date().getFullYear()} MediQuest. Not a substitute for professional medical advice.
-        </p>
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-emerald-200">
+            © {new Date().getFullYear()} MediQuest. Not a substitute for professional medical advice.
+          </p>
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+            {LEGAL_PAGES.map((page) => (
+              <li key={page.href}>
+                <Link
+                  href={page.href}
+                  className="text-emerald-100/90 underline-offset-4 hover:text-white hover:underline"
+                >
+                  {page.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </footer>
   )

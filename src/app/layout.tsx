@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import TabBar from "@/components/ui/TabBar";
+import AppAlive from "@/components/ui/AppAlive";
 
 // The app's one typeface. `display: swap` so text is readable in the
 // fallback while the file loads rather than invisible — this is a page
@@ -103,37 +104,23 @@ const OLD_BROWSER_SCRIPT = `
       };
     }
 
-    // The floor is what the bundle is compiled to, which is ES2018 — see
-    // the browserslist in package.json. Object spread stands in for it:
-    // an engine that parses this parses the bundle.
-    //
-    // It used to test optional chaining, which the bundle no longer
-    // contains, and CSS color-mix, which turned out to prove nothing —
-    // Tailwind already wraps every color-mix in @supports with a plain
-    // fallback, so a browser without it renders fine. That check fired on
-    // phones where the app worked, which is worse than not checking.
-    var jsOk = true;
-    try { new Function('return {...{a:1}}'); } catch (e) { jsOk = false; }
-
     // Kept only to tell "works fully" from "works, minus some colour" in
     // the numbers. Nothing is shown to the visitor for this one.
     var cssOk = true;
     if (window.CSS && CSS.supports) {
       cssOk = CSS.supports('color', 'color-mix(in oklab, red, blue)');
     }
-    var bucket = !jsOk ? 'js_too_old' : (!cssOk ? 'css_too_old' : 'supported');
 
     // Reported for every visit, including the ones that work — a count of
     // failures with no denominator cannot say whether it is 1% or 30%.
     // Once per session, so a person browsing ten pages counts once.
-    // sendBeacon survives the page being closed; XHR is the fallback for
-    // anything too old to have it, which is the population being counted.
-    var sent = false;
-    try {
-      sent = !!sessionStorage.getItem('mq-browser-reported');
-      if (!sent) sessionStorage.setItem('mq-browser-reported', '1');
-    } catch (e) {}
-    if (!sent) {
+    var report = function (bucket) {
+      var sent = false;
+      try {
+        sent = !!sessionStorage.getItem('mq-browser-reported');
+        if (!sent) sessionStorage.setItem('mq-browser-reported', '1');
+      } catch (e) {}
+      if (sent) return;
       var body = '{"bucket":"' + bucket + '"}';
       var posted = false;
       try {
@@ -150,11 +137,8 @@ const OLD_BROWSER_SCRIPT = `
           xhr.send(body);
         } catch (e) {}
       }
-    }
+    };
 
-    // Only when the app genuinely cannot run. Missing colour functions are
-    // not worth a red banner on a page that works.
-    if (jsOk) return;
     var show = function () {
       if (!document.body || document.getElementById('mq-old-browser')) return;
       var bar = document.createElement('div');
@@ -181,8 +165,36 @@ const OLD_BROWSER_SCRIPT = `
       // left the banner sitting on top of the header.
       document.documentElement.style.paddingTop = bar.offsetHeight + 'px';
     };
-    if (document.body) show();
-    else document.addEventListener('DOMContentLoaded', show);
+    // Decided after the load event, not on a timer from the start: load
+    // waits for the bundle to finish downloading, which on a slow
+    // connection is the long part. Once it has fired the script has either
+    // parsed or it has not, and a couple of seconds is plenty to tell
+    // which — so a browser on a bad connection is not accused of being old.
+    var decide = function () {
+      if (window.__mqAlive) { report(cssOk ? 'supported' : 'css_too_old'); return; }
+      report('js_too_old');
+      show();
+      // One last look. If the app was merely very slow, take the warning
+      // back down rather than leave it contradicting a working page.
+      var retries = 0;
+      var recheck = setInterval(function () {
+        retries++;
+        if (window.__mqAlive) {
+          var bar = document.getElementById('mq-old-browser');
+          if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+          document.documentElement.style.paddingTop = '';
+          clearInterval(recheck);
+        } else if (retries > 10) {
+          clearInterval(recheck);
+        }
+      }, 1000);
+    };
+    var armed = false;
+    var arm = function () { if (armed) return; armed = true; setTimeout(decide, 2500); };
+    if (document.readyState === 'complete') arm();
+    else window.addEventListener('load', arm);
+    // If the load event never fires at all, decide anyway rather than never.
+    setTimeout(arm, 25000);
   } catch (e) {}
 })();
 `;
@@ -205,6 +217,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
         <TabBar />
+        {/* Sets window.__mqAlive; the head script reads it. */}
+        <AppAlive />
       </body>
     </html>
   );
