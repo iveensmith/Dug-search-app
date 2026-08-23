@@ -120,7 +120,7 @@ export default function WebhookCard() {
       </p>
 
       {secret && (
-        <div className="mt-3 rounded-xl border border-emerald-300 bg-emerald-50/60 p-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+        <div className="mt-3 rounded-full border border-emerald-300 bg-emerald-50/60 p-3 dark:border-emerald-800 dark:bg-emerald-950/30">
           <p className="flex items-center gap-2 text-sm font-bold text-emerald-900 dark:text-emerald-300">
             <IconCheck width={15} height={15} />
             Saved. Here is your signing secret

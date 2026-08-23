@@ -37,7 +37,9 @@ export default async function PharmacyOverviewPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-10">
+      {/* Full width so the greeting band runs edge to edge; OwnerHome puts
+          the measure back on everything under it. */}
+      <main className="flex w-full flex-1 flex-col pb-10">
         <OwnerHome displayName={user?.displayName ?? null} />
       </main>
       <SiteFooter />

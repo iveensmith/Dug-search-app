@@ -30,7 +30,9 @@ export default async function PharmacyRatingsPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10">
+      {/* Full width so the title band runs edge to edge; OwnerRatings puts
+          the measure back on everything under it. */}
+      <main className="w-full flex-1 pb-10">
         <OwnerRatings />
       </main>
       <SiteFooter />

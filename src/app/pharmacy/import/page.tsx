@@ -192,7 +192,7 @@ export default function ImportPage() {
                 </Button>
                 <button
                   onClick={downloadTemplate}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
                 >
                   <IconDownload width={16} height={16} />
                   Example file
