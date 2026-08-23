@@ -25,46 +25,62 @@ export type ButtonAccent = 'emerald' | 'deep'
 export type ButtonShape = 'rounded' | 'pill'
 
 const shapes: Record<ButtonShape, string> = {
-  rounded: 'rounded-xl',
+  rounded: 'rounded-control',
   pill: 'rounded-full',
 }
 
+/**
+ * Focus is drawn once, here, from the `focus` token — not per variant.
+ * A focus ring that changes colour with the button it sits on is a ring
+ * people have to re-learn on every screen.
+ */
 const base =
-  'inline-flex items-center justify-center gap-2 font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+  'inline-flex items-center justify-center gap-2 font-semibold ' +
+  'transition-[color,background-color,border-color,box-shadow,transform] duration-150 ' +
+  'active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ' +
+  'focus-visible:ring-offset-2 focus-visible:ring-offset-canvas'
 
 const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline', string>> = {
   emerald: {
+    // `bg-brand` / `text-on-brand` already carry the light↔dark swap: the
+    // token resolves to emerald-700-on-white in light and emerald-500-with-
+    // dark-text in dark, so there is no `dark:` class left to keep in sync.
     primary:
-      'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800 hover:shadow-md hover:shadow-emerald-700/25 active:bg-emerald-900 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:active:bg-emerald-400 dark:text-emerald-950 dark:hover:shadow-emerald-400/20 focus-visible:ring-emerald-500',
+      'bg-brand text-on-brand shadow-card hover:bg-brand-hover hover:shadow-brand active:bg-brand-press',
     secondary:
-      'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25 focus-visible:ring-emerald-500',
+      'bg-brand-soft text-brand-ink hover:bg-brand-soft/70 active:bg-brand-soft',
     outline:
-      'border border-emerald-600/60 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10 focus-visible:ring-emerald-500',
+      'border border-brand/60 text-brand-ink hover:bg-brand-soft active:bg-brand-soft',
   },
   // Same hue, several steps darker. White text rather than the near-black
   // the light variant uses — emerald-800 is dark enough that dark text on
   // it fails contrast.
   deep: {
     primary:
-      'bg-emerald-800 text-white shadow-sm hover:bg-emerald-900 hover:shadow-md hover:shadow-emerald-800/25 active:bg-emerald-950 dark:bg-emerald-700 dark:hover:bg-emerald-700 dark:active:bg-emerald-700 dark:text-white dark:hover:shadow-emerald-700/25 focus-visible:ring-emerald-700',
+      'bg-brand-800 text-white shadow-card hover:bg-brand-900 hover:shadow-brand active:bg-brand-950 dark:bg-brand-700 dark:hover:bg-brand-600 dark:active:bg-brand-800',
     secondary:
-      'bg-emerald-100 text-emerald-900 hover:bg-emerald-200 dark:bg-emerald-800/35 dark:text-emerald-100 dark:hover:bg-emerald-800/50 focus-visible:ring-emerald-700',
+      'bg-brand-100 text-brand-900 hover:bg-brand-200 dark:bg-brand-800/35 dark:text-brand-100 dark:hover:bg-brand-800/50',
     outline:
-      'border border-emerald-800/60 text-emerald-800 hover:bg-emerald-50 dark:border-emerald-600/60 dark:text-emerald-300 dark:hover:bg-emerald-700/15 focus-visible:ring-emerald-700',
+      'border border-brand-800/60 text-brand-800 hover:bg-brand-50 dark:border-brand-600/60 dark:text-brand-300 dark:hover:bg-brand-700/15',
   },
 }
 
 const variants: Record<'ghost' | 'destructive', string> = {
-  ghost:
-    'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10 focus-visible:ring-gray-400',
+  ghost: 'text-muted hover:bg-sunken hover:text-ink active:bg-sunken',
   destructive:
-    'border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/50 focus-visible:ring-red-500',
+    'border border-danger/40 text-danger-ink hover:bg-danger-soft active:bg-danger-soft',
 }
 
+/**
+ * Heights are floors, not fixed: `min-h` lets a button that wraps to two
+ * lines grow instead of clipping. 44px on `md` is the WCAG 2.2 target-size
+ * minimum, which the old `py-2.5` (≈38px) missed.
+ */
 const sizes: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2.5 text-sm',
-  lg: 'px-5 py-3 text-base',
+  sm: 'min-h-9 px-3.5 py-2 text-caption',
+  md: 'min-h-11 px-5 py-2.5 text-body',
+  lg: 'min-h-13 px-6 py-3 text-body-lg',
 }
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -95,6 +111,7 @@ const Button = forwardRef<HTMLButtonElement, Props>(function Button(
     <button
       ref={ref}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       className={buttonClass(variant, size, className, accent, shape)}
       {...props}
     >
