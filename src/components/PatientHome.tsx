@@ -1157,9 +1157,23 @@ export default function PatientHome() {
               {/* text-white, not text-on-brand: below `md` this sits on the
                   photograph and has to stay white in both themes, and
                   --on-brand is near-black in dark. Only the `md:` half,
-                  which sits on mint, is a token. */}
-              <h1 className="mt-4 text-[2.7rem] font-bold leading-[1.05] tracking-tight text-white sm:text-[3.25rem] md:text-ink">
-                Find Medicine In Stock Near You
+                  which sits on mint, is a token.
+
+                  "In Stock" carries the colour because it is the part that
+                  says what this is for — every pharmacy has medicine, the
+                  question is which one has it today. The accent takes the
+                  same pair as the eyebrow above: emerald-300 while it is on
+                  the photograph, brand-ink once it is on mint. */}
+              <h1 className="mt-4 text-balance text-[2.7rem] font-bold leading-[1.05] tracking-tight text-white sm:text-[3.25rem] md:text-ink">
+                Find Medicine{' '}
+                {/* nowrap so the line never breaks between "In" and
+                    "Stock" — it did, and a coloured phrase split across
+                    two lines reads as two unrelated highlights. Two short
+                    words, so it cannot overflow a phone. */}
+                <span className="whitespace-nowrap text-emerald-300 md:text-brand-ink">
+                  In Stock
+                </span>{' '}
+                Near You
               </h1>
               <p className="mt-5 text-[1.05rem] leading-relaxed text-emerald-50 md:text-muted">
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
@@ -1361,7 +1375,8 @@ export default function PatientHome() {
               How it works
             </p>
             <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
-              Three steps between you and your medicine
+              Three steps between you and{' '}
+              <span className="text-brand-ink">your medicine</span>
             </h2>
             {/* Numbered rather than iconed-and-numbered: the step number is
                 the thing that says "there are only three of these", which
@@ -1409,7 +1424,8 @@ export default function PatientHome() {
               Questions
             </p>
             <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
-              The things people ask before they trust us
+              The things people ask before they{' '}
+              <span className="text-brand-ink">trust us</span>
             </h2>
             <div className="mx-auto mt-12 max-w-2xl space-y-3">
               {FAQ.map(({ q, a }) => (
