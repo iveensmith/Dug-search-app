@@ -136,6 +136,8 @@
   --brand-hover: #065f46;
   --brand-press: #064e3b;
   --brand-soft: #ecfdf5;
+  --brand-deep: #047857;
+  --on-brand-deep: #ffffff;
   --brand-ink: #047857;
 
   /* Lines */
@@ -189,6 +191,8 @@
   --dark-brand-hover: #34d399;
   --dark-brand-press: #6ee7b7;
   --dark-brand-soft: #0d2b21;
+  --dark-brand-deep: #065f46;
+  --dark-on-brand-deep: #ffffff;
   --dark-brand-ink: #34d399;
   --dark-line: #2a3733;
   --dark-line-soft: #1c2622;
@@ -229,6 +233,8 @@
     --brand-hover: var(--dark-brand-hover);
     --brand-press: var(--dark-brand-press);
     --brand-soft: var(--dark-brand-soft);
+    --brand-deep: var(--dark-brand-deep);
+    --on-brand-deep: var(--dark-on-brand-deep);
     --brand-ink: var(--dark-brand-ink);
     --line: var(--dark-line);
     --line-soft: var(--dark-line-soft);
@@ -270,6 +276,8 @@
   --brand-hover: var(--dark-brand-hover);
   --brand-press: var(--dark-brand-press);
   --brand-soft: var(--dark-brand-soft);
+  --brand-deep: var(--dark-brand-deep);
+  --on-brand-deep: var(--dark-on-brand-deep);
   --brand-ink: var(--dark-brand-ink);
   --line: var(--dark-line);
   --line-soft: var(--dark-line-soft);
@@ -309,6 +317,8 @@
   --brand-hover: #065f46;
   --brand-press: #064e3b;
   --brand-soft: #ecfdf5;
+  --brand-deep: #047857;
+  --on-brand-deep: #ffffff;
   --brand-ink: #047857;
   --line: #e1e7e4;
   --line-soft: #eef2f0;
@@ -357,6 +367,8 @@
   --color-brand-hover: var(--brand-hover);
   --color-brand-press: var(--brand-press);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-deep: var(--brand-deep);
+  --color-on-brand-deep: var(--on-brand-deep);
   --color-brand-ink: var(--brand-ink);
 
   --color-line: var(--line);

@@ -1430,8 +1430,8 @@ export default function PatientHome() {
           {viewerLoaded && !viewerRole && (
             <section className="reveal">
               <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-              <div className="rounded-[2rem] bg-brand p-8 shadow-xl shadow-emerald-800/25 sm:rounded-[2.5rem] sm:p-12">
-                <h2 className="max-w-lg text-2xl font-bold leading-tight tracking-tight text-on-brand sm:text-3xl">
+              <div className="rounded-[2rem] bg-brand-deep p-8 shadow-xl shadow-emerald-800/25 sm:rounded-[2.5rem] sm:p-12">
+                <h2 className="max-w-lg text-2xl font-bold leading-tight tracking-tight text-on-brand-deep sm:text-3xl">
                   Run a pharmacy? Put your shelf on the map.
                 </h2>
                 <p className="mt-3.5 max-w-xl leading-relaxed text-emerald-50">
@@ -1441,18 +1441,24 @@ export default function PatientHome() {
                 {/* Colours are written out rather than taken from
                     buttonClass(): the variants there assume a light page
                     background, and on emerald their text colours collide
-                    with the overrides. */}
+                    with the overrides.
+
+                    They are also raw rather than tokens, and that is the
+                    point: this panel is deep green in both themes, so a
+                    button on it must not follow the theme. bg-surface
+                    turned the primary action near-black in dark and left
+                    it quieter than the outlined link beside it. */}
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/pharmacy/register"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-surface px-6 py-3.5 text-base font-semibold text-brand-ink shadow-card transition-[background-color,box-shadow,transform] duration-150 hover:bg-brand-soft hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-base font-semibold text-emerald-800 shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-emerald-50 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
                   >
                     <IconStore width={18} height={18} />
                     Register your pharmacy
                   </Link>
                   <Link
                     href="/login"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3.5 text-base font-semibold text-on-brand transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3.5 text-base font-semibold text-on-brand-deep transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
                   >
                     Already listed? Sign in
                     <IconChevronRight width={18} height={18} />

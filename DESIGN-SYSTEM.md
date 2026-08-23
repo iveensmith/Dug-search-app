@@ -35,7 +35,9 @@ Every semantic token generates `bg-*`, `text-*`, `border-*` and `ring-*` in one 
 `text-ink` primary · `text-muted` secondary · `text-faint` tertiary · `text-on-brand` on brand fills · `text-brand-ink` brand-coloured text
 
 ### Brand
-`bg-brand` · `bg-brand-hover` · `bg-brand-press` · `bg-brand-soft`
+`bg-brand` · `bg-brand-hover` · `bg-brand-press` · `bg-brand-soft` · `bg-brand-deep`
+
+`bg-brand-deep` is the surface counterpart of the `deep` button accent — emerald-700 light, emerald-800 dark — for a panel that should read as a deeper green than the ordinary brand fill. It pairs with `text-on-brand-deep`, which stays white in both themes because emerald-800 is dark enough that the near-black `--on-brand` fails against it.
 
 Light resolves to emerald-700 with white text; dark to emerald-500 with near-black text. **The token already handles the swap — don't add a `dark:` class next to it.**
 
