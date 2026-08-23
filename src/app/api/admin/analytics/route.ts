@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const session = await requireSession(req, ['ADMIN'])
   if (session instanceof NextResponse) return session
 
-  const [totals, stockGaps, unmatchedQueries] = await Promise.all([
+  const [totals, stockGaps, unmatchedQueries, browsers] = await Promise.all([
     prisma.$queryRaw<{ total: bigint; noResults: bigint }[]>`
       SELECT COUNT(*) AS "total",
              COUNT(*) FILTER (WHERE NOT "hadResults") AS "noResults"
@@ -36,9 +36,19 @@ export async function GET(req: NextRequest) {
       ORDER BY COUNT(*) DESC
       LIMIT 50
     `,
+    // Visits by how much of the app the browser could run, last 30 days.
+    // Counters only — see BROWSERS.md for what the buckets mean and why
+    // "supported" is counted alongside the failures.
+    prisma.$queryRaw<{ bucket: string; visits: bigint }[]>`
+      SELECT "bucket", SUM("count") AS "visits"
+      FROM "BrowserSupportStat"
+      WHERE "day" >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY "bucket"
+    `,
   ])
 
   return NextResponse.json({
+    browserSupport: browsers.map((b) => ({ bucket: b.bucket, visits: Number(b.visits) })),
     totalSearches: Number(totals[0]?.total ?? 0),
     noResultSearches: Number(totals[0]?.noResults ?? 0),
     stockGaps: stockGaps.map((g) => ({ ...g, searches: Number(g.searches) })),

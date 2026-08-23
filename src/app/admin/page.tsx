@@ -54,6 +54,7 @@ type AdminPharmacist = {
 }
 
 type Analytics = {
+  browserSupport: { bucket: string; visits: number }[]
   totalSearches: number
   noResultSearches: number
   stockGaps: { drugId: string; genericName: string; strength: string; form: string; searches: number; lastSearched: string }[]
@@ -666,6 +667,8 @@ function GapsTab({ analytics }: { analytics: Analytics | null }) {
         </Card>
       </div>
 
+      <BrowserSupport rows={analytics.browserSupport} />
+
       <section>
         <h2 className="mb-2 font-semibold text-ink">Drugs searched but out of stock everywhere</h2>
         <p className="mb-3 text-sm text-muted">
@@ -707,5 +710,54 @@ function GapsTab({ analytics }: { analytics: Analytics | null }) {
         )}
       </section>
     </div>
+  )
+}
+
+const BUCKET_LABEL: Record<string, string> = {
+  supported: 'Runs fully',
+  css_too_old: 'Runs, colours broken',
+  js_too_old: 'Cannot run at all',
+}
+
+/**
+ * What share of visits arrive on a browser this app cannot fully run.
+ *
+ * The reason it shows a percentage and not just the counts: the decision
+ * this informs — whether to leave Tailwind v4 to reach older Safari — turns
+ * on the proportion, and "412 visits" means nothing without the total.
+ * BROWSERS.md has what each bucket is and what it would cost to move it.
+ */
+function BrowserSupport({ rows }: { rows: { bucket: string; visits: number }[] }) {
+  const total = rows.reduce((n, r) => n + r.visits, 0)
+  return (
+    <section>
+      <h2 className="mb-2 font-semibold text-ink">Browsers, last 30 days</h2>
+      <p className="mb-3 text-sm text-muted">
+        Counted per visit, once a session. Nothing about who — see BROWSERS.md.
+      </p>
+      {total === 0 ? (
+        <Card>
+          <p className="text-sm text-faint">
+            No visits recorded yet. This starts filling once the build with the
+            browser check is deployed.
+          </p>
+        </Card>
+      ) : (
+        <Card className="divide-y divide-line">
+          {(['js_too_old', 'css_too_old', 'supported'] as const).map((bucket) => {
+            const visits = rows.find((r) => r.bucket === bucket)?.visits ?? 0
+            const pct = Math.round((visits / total) * 1000) / 10
+            return (
+              <div key={bucket} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                <span className="min-w-0 text-sm font-medium text-ink">{BUCKET_LABEL[bucket]}</span>
+                <span className="shrink-0 text-sm text-muted">
+                  <span className="font-bold text-ink">{pct}%</span> · {visits}
+                </span>
+              </div>
+            )
+          })}
+        </Card>
+      )}
+    </section>
   )
 }

@@ -87,12 +87,44 @@ const THEME_INIT_SCRIPT = `
 const OLD_BROWSER_SCRIPT = `
 (function () {
   try {
-    var ok = true;
-    try { new Function('var o={};return o?.a'); } catch (e) { ok = false; }
-    if (ok && window.CSS && CSS.supports) {
-      if (!CSS.supports('color', 'color-mix(in oklab, red, blue)')) ok = false;
+    var jsOk = true;
+    try { new Function('var o={};return o?.a'); } catch (e) { jsOk = false; }
+    var cssOk = true;
+    if (window.CSS && CSS.supports) {
+      cssOk = CSS.supports('color', 'color-mix(in oklab, red, blue)');
     }
-    if (ok) return;
+    var bucket = !jsOk ? 'js_too_old' : (!cssOk ? 'css_too_old' : 'supported');
+
+    // Reported for every visit, including the ones that work — a count of
+    // failures with no denominator cannot say whether it is 1% or 30%.
+    // Once per session, so a person browsing ten pages counts once.
+    // sendBeacon survives the page being closed; XHR is the fallback for
+    // anything too old to have it, which is the population being counted.
+    var sent = false;
+    try {
+      sent = !!sessionStorage.getItem('mq-browser-reported');
+      if (!sent) sessionStorage.setItem('mq-browser-reported', '1');
+    } catch (e) {}
+    if (!sent) {
+      var body = '{"bucket":"' + bucket + '"}';
+      var posted = false;
+      try {
+        if (navigator.sendBeacon) {
+          posted = navigator.sendBeacon('/api/telemetry/browser',
+            new Blob([body], { type: 'application/json' }));
+        }
+      } catch (e) {}
+      if (!posted) {
+        try {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/api/telemetry/browser', true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(body);
+        } catch (e) {}
+      }
+    }
+
+    if (jsOk && cssOk) return;
     var show = function () {
       if (!document.body || document.getElementById('mq-old-browser')) return;
       var bar = document.createElement('div');

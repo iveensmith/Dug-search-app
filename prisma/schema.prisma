@@ -594,3 +594,21 @@ model AuthThrottle {
 
   @@index([updatedAt]) // for pruning rows that have gone quiet
 }
+
+/// How many visits arrive on a browser this app cannot fully run.
+///
+/// Counters, not events. There is one row per day per bucket and nothing
+/// else — no address, no user agent, no session, no user. The question
+/// this exists to answer is "is it worth supporting older Safari", and a
+/// daily count answers it; anything finer would be collecting health-app
+/// visitors' details to settle a build decision. See BROWSERS.md.
+///
+/// `supported` is recorded too, and deliberately: a count of failures
+/// without a denominator cannot tell you whether it is 1% or 30%.
+model BrowserSupportStat {
+  day    DateTime // midnight UTC — a date, kept as a timestamp for Prisma
+  bucket String // 'supported' | 'css_too_old' | 'js_too_old'
+  count  Int      @default(0)
+
+  @@id([day, bucket])
+}

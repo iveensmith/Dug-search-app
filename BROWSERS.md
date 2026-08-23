@@ -70,6 +70,35 @@ Three things about it are deliberate:
   the tree, and the banner vanishes. That would have hit exactly the
   devices new enough to run React but too old for the stylesheet.
 
+## Measuring how much this actually costs
+
+Admin → **Search gaps** → *Browsers, last 30 days* shows the split, as a
+percentage and a count:
+
+| Row | Bucket | Who |
+|---|---|---|
+| Cannot run at all | `js_too_old` | iPhone 6 and older |
+| Runs, colours broken | `css_too_old` | iPhone 6s, 7, SE (1st gen) |
+| Runs fully | `supported` | iPhone 8 and newer |
+
+The head script posts one of those three words to
+`POST /api/telemetry/browser`, once per session. That is the entire
+payload — the table has no column for an address, a user agent, a session
+or a user, so there is nothing to leak and nothing to correlate. For an
+app whose visitors are looking up their own medicines, that limit is the
+point, not an oversight.
+
+`supported` is recorded alongside the failures on purpose: the decision
+below turns on the proportion, and a count of failures with no
+denominator cannot tell you whether it is 1% or 30%.
+
+The endpoint has to be open — the browsers worth hearing from are the
+ones that cannot sign in, and in the worst case cannot run React — so it
+is built to be dull: three literal values accepted, a 64-byte body cap, a
+bounded counter increment, 60 posts per IP per hour, and always 204 so a
+prober learns nothing. The worst an abuser achieves is a wrong number in
+the decision below.
+
 ## Lowering the floor, if that ever matters
 
 Raising reach past iPhone 8 is not a small change:
