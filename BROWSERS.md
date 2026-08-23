@@ -71,23 +71,31 @@ which would have thrown at runtime, are polyfilled in the head script.
 | iPhone 6s / 7 / SE (1st gen) | 15.8 | Runs; a few flat fills instead of translucent |
 | iPhone 8 and newer | 16.7+ | Everything |
 
-## The warning banner
+## There is no warning banner
 
-`OLD_BROWSER_SCRIPT` in `src/app/layout.tsx` now shows a banner only when
-the engine cannot parse ES2018 — that is, when the bundle genuinely will
-not run. Missing colour functions do not earn one.
+There was, briefly, and it was a mistake twice over.
 
-Three things about it are deliberate:
+The first version tested CSS `color-mix()`. Tailwind already guards every
+use of it with an `@supports` fallback, so a browser without it renders
+fine — and the banner appeared on phones where the app was working. A
+photo of a real handset, page rendering correctly with a red bar across
+the top, is what showed it.
 
-- **It is ES5.** No `const`, arrow, or template literal. A browser that
-  cannot parse the warning cannot be warned by it. Checked by parsing the
-  emitted script with acorn at `ecmaVersion: 5`.
-- **It is styled inline.** If the stylesheet is the broken thing, the
-  banner cannot rely on it.
-- **It attaches to `<html>`, not `<body>`.** Inserted at
-  `DOMContentLoaded` it lands before React hydrates, and React treats an
-  unexpected first child of `<body>` as a mismatch — it throws, rebuilds
-  the tree, and the banner vanishes.
+The second tested syntax with `new Function`. The CSP added at the same
+time has no `'unsafe-eval'`, so that constructor throws in every browser;
+the check read the exception as "too old" and warned *everyone*. It was
+missed in testing because Playwright's `page.evaluate` runs in an
+isolated world that page CSP does not apply to, so the call worked there
+and nowhere else.
+
+It was removed rather than fixed a third time. The banner answered a
+question this app no longer has: with the bundle compiled to ES2018 and
+the stylesheet no longer depending on cascade layers, old phones run
+this. Telling them otherwise was the only broken thing left.
+
+The count stays — it is invisible, it is what tells you whether
+supporting anything older is worth doing, and it never told a patient
+their working app was broken.
 
 ## Measuring how much this actually costs
 
