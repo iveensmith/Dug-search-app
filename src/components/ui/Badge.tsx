@@ -2,18 +2,24 @@ import { type ReactNode } from 'react'
 
 export type BadgeTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'brand'
 
+/**
+ * Each tone is a soft fill plus its own readable ink, both from tokens, so
+ * a badge carries the same contrast in light and dark without a `dark:`
+ * class on every line. `brand` stays solid — it is the one tone that is a
+ * claim rather than a status.
+ */
 const tones: Record<BadgeTone, string> = {
-  success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
-  warning: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
-  danger: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400',
-  info: 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
-  neutral: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300',
-  brand: 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950',
+  success: 'bg-ok-soft text-ok-ink',
+  warning: 'bg-warn-soft text-warn-ink',
+  danger: 'bg-danger-soft text-danger-ink',
+  info: 'bg-info-soft text-info-ink',
+  neutral: 'bg-sunken text-muted',
+  brand: 'bg-brand text-on-brand',
 }
 
 export default function Badge({ tone = 'neutral', className = '', children }: { tone?: BadgeTone; className?: string; children: ReactNode }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label ${tones[tone]} ${className}`}>
       {children}
     </span>
   )

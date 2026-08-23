@@ -8,25 +8,35 @@ import { type HTMLAttributes } from 'react'
  * use; `md` is what everything else has always had.
  */
 const radii = {
-  md: 'rounded-2xl',
-  lg: 'rounded-3xl',
+  md: 'rounded-card',
+  lg: 'rounded-sheet',
 } as const
 
 type Props = HTMLAttributes<HTMLDivElement> & {
   padded?: boolean
   radius?: keyof typeof radii
+  /**
+   * Cards that are themselves links or buttons get a hover lift. Static
+   * content cards don't — movement on something you can't press reads as
+   * a bug, not polish.
+   */
+  interactive?: boolean
 }
 
 export default function Card({
   padded = true,
   radius = 'md',
+  interactive = false,
   className = '',
   children,
   ...props
 }: Props) {
+  const lift = interactive
+    ? 'transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raised active:translate-y-0 active:shadow-card'
+    : ''
   return (
     <div
-      className={`${radii[radius]} border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900 ${padded ? 'p-4' : ''} ${className}`}
+      className={`${radii[radius]} border border-line bg-surface shadow-card ${lift} ${padded ? 'p-4' : ''} ${className}`}
       {...props}
     >
       {children}

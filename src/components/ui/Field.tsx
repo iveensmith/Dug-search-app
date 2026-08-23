@@ -1,9 +1,19 @@
 import { type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes, type ReactNode, forwardRef } from 'react'
 
+/**
+ * 48px min-height (`min-h-12`) rather than a fixed py: comfortably above
+ * the 44px touch minimum, and it holds when a select's option text is
+ * taller than expected. `text-base` stays — anything under 16px makes iOS
+ * Safari zoom the page on focus, which on a one-handed search is jarring.
+ */
 export const controlClass =
-  'w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900 dark:disabled:bg-gray-800 dark:disabled:text-gray-500'
+  'w-full min-h-12 rounded-field border border-line bg-surface px-4 py-3 text-base text-ink ' +
+  'outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-faint ' +
+  'focus:border-focus focus:ring-2 focus:ring-focus/25 ' +
+  'disabled:bg-sunken disabled:text-faint disabled:cursor-not-allowed ' +
+  'aria-[invalid=true]:border-danger aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-danger/20'
 
-export const labelClass = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300'
+export const labelClass = 'mb-1.5 block text-caption font-semibold text-muted'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className = '', ...props }, ref) {
@@ -23,7 +33,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
           {children}
         </select>
         <svg
-          className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+          className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-faint"
           viewBox="0 0 20 20"
           fill="none"
           stroke="currentColor"
@@ -49,18 +59,30 @@ type FieldProps = {
   label: ReactNode
   hint?: ReactNode
   htmlFor: string
+  /**
+   * When set, the message is rendered below the control and wired to it via
+   * aria-describedby, so a screen reader announces the problem with the
+   * field rather than leaving it as loose text on the page. Pass
+   * aria-invalid on the control itself to get the red border.
+   */
+  error?: ReactNode
   children: ReactNode
 }
 
 /** Label + control wrapper — pass the same `id` to the control inside. */
-export function Field({ label, hint, htmlFor, children }: FieldProps) {
+export function Field({ label, hint, htmlFor, error, children }: FieldProps) {
   return (
     <div>
       <label className={labelClass} htmlFor={htmlFor}>
         {label}
-        {hint && <span className="ml-1 font-normal text-gray-500 dark:text-gray-400">{hint}</span>}
+        {hint && <span className="ml-1 font-normal text-faint">{hint}</span>}
       </label>
       {children}
+      {error && (
+        <p id={`${htmlFor}-error`} className="mt-1.5 text-caption text-danger-ink">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
