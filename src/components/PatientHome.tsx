@@ -120,7 +120,7 @@ const FAQ = [
 const ResultsMap = dynamic(() => import('@/components/ResultsMap'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+    <div className="flex h-full items-center justify-center text-sm text-faint">
       Loading map…
     </div>
   ),
@@ -232,7 +232,7 @@ async function detectAreaFromPosition(
  */
 function StepLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{children}</p>
+    <p className="text-sm font-bold text-ink">{children}</p>
   )
 }
 
@@ -851,17 +851,17 @@ export default function PatientHome() {
     <button
       type="button"
       onClick={() => setPanelExpanded(true)}
-      className="mb-4 flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-emerald-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-700"
+      className="mb-4 flex w-full cursor-pointer items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-left shadow-card transition-colors hover:border-line-brand"
     >
-      <span className="flex shrink-0 items-center justify-center rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+      <span className="flex shrink-0 items-center justify-center rounded-control bg-brand-soft p-2 text-brand-ink">
         <IconSearch width={16} height={16} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-gray-900 dark:text-gray-100">
+        <span className="block truncate text-sm font-bold text-ink">
           {askedFor || 'New search'}
         </span>
         {selectedLabel && (
-          <span className="mt-0.5 flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+          <span className="mt-0.5 flex items-center gap-1 text-xs text-muted">
             <IconMapPin width={12} height={12} className="shrink-0" />
             <span className="truncate">
               {selectedLga ? `${selectedLabel} · ${selectedLga}` : selectedLabel}
@@ -869,7 +869,7 @@ export default function PatientHome() {
           </span>
         )}
       </span>
-      <span className="shrink-0 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+      <span className="shrink-0 text-sm font-semibold text-brand-ink">
         Change
       </span>
     </button>
@@ -892,20 +892,20 @@ export default function PatientHome() {
         <StepLabel>Where are you?</StepLabel>
 
         {areaChosen && !pickerOpen ? (
-          <div className="flex items-center justify-between gap-2 rounded-xl bg-emerald-50 px-3.5 py-2.5 dark:bg-emerald-500/10">
-            <p className="flex min-w-0 items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <IconMapPin width={16} height={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center justify-between gap-2 rounded-control bg-brand-soft px-3.5 py-2.5">
+            <p className="flex min-w-0 items-center gap-2 text-sm text-muted">
+              <IconMapPin width={16} height={16} className="shrink-0 text-brand-ink" />
               {/* Broad to narrow, matching the order the pickers ask in. */}
               <span className="truncate">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLabel}</span>
-                <span className="mx-1.5 text-gray-500 dark:text-gray-400">·</span>
-                <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedLga}</span>
+                <span className="font-semibold text-ink">{selectedLabel}</span>
+                <span className="mx-1.5 text-faint">·</span>
+                <span className="font-semibold text-ink">{selectedLga}</span>
               </span>
             </p>
             <button
               type="button"
               onClick={() => setPickerOpen(true)}
-              className="shrink-0 cursor-pointer text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="shrink-0 cursor-pointer text-sm font-semibold text-brand-ink underline underline-offset-2"
             >
               Change
             </button>
@@ -916,7 +916,7 @@ export default function PatientHome() {
                 it, so it reads as an answer to what they just did rather
                 than as an error they caused. */}
             {needsArea && (
-              <p className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+              <p className="flex items-start gap-2 rounded-control bg-warn-soft p-3 text-sm font-medium text-warn-ink">
                 <IconMapPin width={15} height={15} className="mt-0.5 shrink-0" />
                 Almost there — tell us where you are and we&apos;ll search straight away.
               </p>
@@ -975,16 +975,16 @@ export default function PatientHome() {
               type="button"
               onClick={detectMyArea}
               disabled={locating}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-emerald-300 px-4 py-2.5 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand-soft disabled:opacity-50 dark:border-emerald-800"
             >
               <IconMapPin width={15} height={15} />
               {locating ? 'Finding you…' : 'Use my location'}
             </button>
             {locationHint && (
-              <p className="text-xs text-amber-700 dark:text-amber-400">{locationHint}</p>
+              <p className="text-xs text-warn-ink">{locationHint}</p>
             )}
             {!needsArea && (
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-muted">
                 Or skip this — search a medicine and we&apos;ll ask afterwards.
               </p>
             )}
@@ -995,20 +995,20 @@ export default function PatientHome() {
             the next pick joins — and every chip removable, since a
             prescription typed wrong is the normal way this goes astray. */}
         {basket.length > 0 && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
-            <p className="text-xs font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+          <div className="rounded-control border border-emerald-200 bg-brand-soft p-3 dark:border-emerald-900/60">
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-ink">
               Medicines you need ({basket.length})
             </p>
             <ul className="mt-2 flex flex-wrap gap-2">
               {basket.map((d) => (
                 <li key={d.id}>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white py-1 pl-3 pr-1 text-xs font-semibold text-gray-800 shadow-sm dark:bg-gray-900 dark:text-gray-100">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-surface py-1 pl-3 pr-1 text-xs font-semibold text-ink shadow-card">
                     {drugLabel(d)}
                     <button
                       type="button"
                       onClick={() => removeFromList(d.id)}
                       aria-label={`Remove ${drugLabel(d)} from the list`}
-                      className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-gray-200"
+                      className="cursor-pointer rounded-full p-1 text-faint transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-gray-200"
                     >
                       <IconX width={12} height={12} />
                     </button>
@@ -1024,7 +1024,7 @@ export default function PatientHome() {
           </div>
         )}
 
-        <div className="border-t border-gray-100 pt-4 dark:border-gray-800">
+        <div className="border-t border-line-soft pt-4">
           <StepLabel>
             {basket.length > 0 || listMode
               ? 'Add another medicine'
@@ -1063,7 +1063,7 @@ export default function PatientHome() {
                       key={term}
                       type="button"
                       onClick={() => quickSearch(term)}
-                      className="cursor-pointer rounded-full border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-white/5 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                      className="cursor-pointer rounded-full border border-line bg-canvas px-3.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink"
                     >
                       {term}
                     </button>
@@ -1088,7 +1088,7 @@ export default function PatientHome() {
                       setListMode(true)
                       setTimeout(() => searchInputRef.current?.focus(), 0)
                     }}
-                    className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
+                    className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand-ink"
                   >
                     <IconPlus width={13} height={13} />
                     Need several medicines? Search them together
@@ -1151,13 +1151,17 @@ export default function PatientHome() {
                 enough to hold white text over the brightest part of the
                 picture at better than 9:1.
               */}
-              <p className="text-sm font-semibold text-emerald-300 md:text-emerald-700 md:dark:text-emerald-400">
+              <p className="text-sm font-semibold text-emerald-300 md:text-brand-ink">
                 Nationwide Pharmacy Network
               </p>
-              <h1 className="mt-4 text-[2.7rem] font-bold leading-[1.05] tracking-tight text-white sm:text-[3.25rem] md:text-gray-900 md:dark:text-gray-50">
+              {/* text-white, not text-on-brand: below `md` this sits on the
+                  photograph and has to stay white in both themes, and
+                  --on-brand is near-black in dark. Only the `md:` half,
+                  which sits on mint, is a token. */}
+              <h1 className="mt-4 text-[2.7rem] font-bold leading-[1.05] tracking-tight text-white sm:text-[3.25rem] md:text-ink">
                 Find Medicine In Stock Near You
               </h1>
-              <p className="mt-5 text-[1.05rem] leading-relaxed text-emerald-50 md:text-gray-600 md:dark:text-gray-400">
+              <p className="mt-5 text-[1.05rem] leading-relaxed text-emerald-50 md:text-muted">
                 Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
                 nearby, and get directions or call — free, across Nigeria.
               </p>
@@ -1174,12 +1178,12 @@ export default function PatientHome() {
                 {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
                   <li
                     key={label}
-                    className="flex items-start gap-1.5 text-xs font-semibold text-white md:text-gray-700 md:dark:text-gray-300"
+                    className="flex items-start gap-1.5 text-xs font-semibold text-white md:text-muted"
                   >
                     <Icon
                       width={14}
                       height={14}
-                      className="mt-px shrink-0 text-emerald-300 md:text-emerald-600 md:dark:text-emerald-400"
+                      className="mt-px shrink-0 text-emerald-300 md:text-brand-ink"
                     />
                     {label}
                   </li>
@@ -1240,7 +1244,7 @@ export default function PatientHome() {
                   product. */}
               <Link
                 href="/prescriptions"
-                className="group relative mt-4 block overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg sm:mt-5 sm:rounded-3xl sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900 dark:hover:border-emerald-800"
+                className="group relative mt-4 block overflow-hidden rounded-card border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lg sm:mt-5 sm:rounded-3xl sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900"
               >
                 {/* Soft light behind the corner. pointer-events-none so it
                     never sits between a thumb and the link. */}
@@ -1250,23 +1254,23 @@ export default function PatientHome() {
                 />
 
                 <div className="relative flex items-center gap-3.5 sm:items-start sm:gap-5">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-700/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 sm:rounded-2xl dark:bg-emerald-500 dark:text-emerald-950 dark:shadow-emerald-500/20">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-brand text-on-brand shadow-md shadow-emerald-700/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 sm:rounded-2xl dark:shadow-emerald-500/20">
                     <IconCamera width={22} height={22} className="sm:hidden" />
                     <IconClipboardList width={26} height={26} className="hidden sm:block" />
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-bold tracking-tight text-gray-900 sm:text-xl dark:text-gray-50">
+                    <span className="block text-base font-bold tracking-tight text-ink sm:text-xl">
                       Not sure what you need?
                     </span>
                     {/* Two wordings, one meaning. The phone gets the short
                         one because the card is competing with the search
                         box on a 390px screen, and losing that contest is
                         the point — searching is still the main act. */}
-                    <span className="mt-0.5 block text-sm leading-snug text-gray-600 sm:hidden dark:text-gray-400">
+                    <span className="mt-0.5 block text-sm leading-snug text-muted sm:hidden">
                       Tap to send a photo of your prescription — a Pharmacist will explain.
                     </span>
-                    <span className="mt-1 hidden text-base leading-relaxed text-gray-600 sm:block dark:text-gray-400">
+                    <span className="mt-1 hidden text-base leading-relaxed text-muted sm:block">
                       Send a photo of your prescription and a licensed Pharmacist will explain.
                     </span>
 
@@ -1278,12 +1282,12 @@ export default function PatientHome() {
                         (line) => (
                           <span
                             key={line}
-                            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400"
+                            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted"
                           >
                             <IconCheck
                               width={13}
                               height={13}
-                              className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                              className="shrink-0 text-brand-ink"
                             />
                             {line}
                           </span>
@@ -1296,7 +1300,7 @@ export default function PatientHome() {
                         height on desktop where it reads as a button; on a
                         phone the chevron at the edge says the same in one
                         line of nothing. */}
-                    <span className="mt-4 hidden items-center gap-1.5 text-sm font-semibold text-emerald-700 sm:inline-flex dark:text-emerald-400">
+                    <span className="mt-4 hidden items-center gap-1.5 text-sm font-semibold text-brand-ink sm:inline-flex">
                       Ask a pharmacist
                       <IconChevronRight
                         width={16}
@@ -1310,7 +1314,7 @@ export default function PatientHome() {
                     width={20}
                     height={20}
                     aria-hidden="true"
-                    className="shrink-0 text-emerald-600 transition-transform duration-200 group-hover:translate-x-0.5 sm:hidden dark:text-emerald-400"
+                    className="shrink-0 text-brand-ink transition-transform duration-200 group-hover:translate-x-0.5 sm:hidden"
                   />
                 </div>
               </Link>
@@ -1319,7 +1323,7 @@ export default function PatientHome() {
                   gradient call to action, and a second loud panel would
                   compete with the thing we actually want tapped — this is
                   reassurance you read on the way past. */}
-              <div className="mt-6 rounded-3xl border border-gray-200/90 bg-white/70 p-5 backdrop-blur-sm dark:border-gray-800/90 dark:bg-gray-900/50">
+              <div className="mt-6 rounded-sheet border border-gray-200/90 bg-white/70 p-5 backdrop-blur-sm dark:border-gray-800/90 dark:bg-gray-900/50">
                 {/* Four across once there is room. It was one column for
                     as long as this card lived in a 464px-wide grid column,
                     where two wrapped every label onto a second line —
@@ -1329,10 +1333,10 @@ export default function PatientHome() {
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {TRUST_BADGES.map(({ label, Icon }) => (
                     <li key={label} className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
                         <Icon width={16} height={16} />
                       </span>
-                      <span className="min-w-0 text-sm font-semibold leading-snug text-gray-800 dark:text-gray-200">
+                      <span className="min-w-0 text-sm font-semibold leading-snug text-ink">
                         {label}
                       </span>
                     </li>
@@ -1344,11 +1348,11 @@ export default function PatientHome() {
 
           <section className="reveal">
             <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">
+            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ink">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               How it works
             </p>
-            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl dark:text-gray-50">
+            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
               Three steps between you and your medicine
             </h2>
             {/* Numbered rather than iconed-and-numbered: the step number is
@@ -1359,7 +1363,7 @@ export default function PatientHome() {
               {HOW_IT_WORKS.map(({ icon: Icon, title, text }, i) => (
                 <li
                   key={title}
-                  className="rounded-[1.75rem] bg-white p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.12)] ring-1 ring-gray-100 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_20px_40px_-12px_rgba(5,150,105,0.22)] dark:bg-gray-900 dark:shadow-none dark:ring-gray-800"
+                  className="rounded-[1.75rem] bg-surface p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.12)] ring-1 ring-gray-100 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_20px_40px_-12px_rgba(5,150,105,0.22)] dark:shadow-none dark:ring-gray-800"
                 >
                   <div className="flex items-center gap-3">
                     {/* extrabold, not black: Open Sans stops at 800, and
@@ -1373,15 +1377,15 @@ export default function PatientHome() {
                         says how far through the three steps you are. Solid
                         emerald-600 is 3.77:1 and looks more like the
                         reference besides. */}
-                    <span className="text-[2.5rem] font-extrabold leading-none tracking-tighter text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[2.5rem] font-extrabold leading-none tracking-tighter text-brand-ink">
                       0{i + 1}
                     </span>
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
                       <Icon width={18} height={18} />
                     </span>
                   </div>
-                  <p className="mt-5 text-lg font-bold text-gray-900 dark:text-gray-50">{title}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{text}</p>
+                  <p className="mt-5 text-lg font-bold text-ink">{title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{text}</p>
                 </li>
               ))}
             </ol>
@@ -1392,28 +1396,28 @@ export default function PatientHome() {
               stays keyboard- and screen-reader-correct for free. */}
           <section className="reveal rounded-[2rem] bg-emerald-50/80 md:rounded-[3.5rem] dark:bg-emerald-950/25">
             <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">
+            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ink">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               Questions
             </p>
-            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl dark:text-gray-50">
+            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
               The things people ask before they trust us
             </h2>
             <div className="mx-auto mt-12 max-w-2xl space-y-3">
               {FAQ.map(({ q, a }) => (
                 <details
                   key={q}
-                  className="group rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors open:border-emerald-200 dark:border-gray-800 dark:bg-gray-900 dark:open:border-emerald-800"
+                  className="group rounded-card border border-line bg-surface shadow-card transition-colors open:border-emerald-200 dark:open:border-emerald-800"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-semibold text-gray-900 marker:content-none dark:text-gray-50 [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-semibold text-ink marker:content-none [&::-webkit-details-marker]:hidden">
                     {q}
                     <IconChevronDown
                       width={20}
                       height={20}
-                      className="shrink-0 text-gray-400 transition-transform duration-200 group-open:rotate-180 dark:text-gray-500"
+                      className="shrink-0 text-faint transition-transform duration-200 group-open:rotate-180"
                     />
                   </summary>
-                  <p className="px-5 pb-5 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{a}</p>
+                  <p className="px-5 pb-5 text-sm leading-relaxed text-muted">{a}</p>
                 </details>
               ))}
             </div>
@@ -1426,8 +1430,8 @@ export default function PatientHome() {
           {viewerLoaded && !viewerRole && (
             <section className="reveal">
               <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-              <div className="rounded-[2rem] bg-emerald-700 p-8 shadow-xl shadow-emerald-800/25 sm:rounded-[2.5rem] sm:p-12 dark:bg-emerald-800">
-                <h2 className="max-w-lg text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
+              <div className="rounded-[2rem] bg-brand p-8 shadow-xl shadow-emerald-800/25 sm:rounded-[2.5rem] sm:p-12">
+                <h2 className="max-w-lg text-2xl font-bold leading-tight tracking-tight text-on-brand sm:text-3xl">
                   Run a pharmacy? Put your shelf on the map.
                 </h2>
                 <p className="mt-3.5 max-w-xl leading-relaxed text-emerald-50">
@@ -1441,14 +1445,14 @@ export default function PatientHome() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/pharmacy/register"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-base font-semibold text-emerald-800 shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-emerald-50 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-surface px-6 py-3.5 text-base font-semibold text-brand-ink shadow-card transition-[background-color,box-shadow,transform] duration-150 hover:bg-brand-soft hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
                   >
                     <IconStore width={18} height={18} />
                     Register your pharmacy
                   </Link>
                   <Link
                     href="/login"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3.5 text-base font-semibold text-white transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3.5 text-base font-semibold text-on-brand transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
                   >
                     Already listed? Sign in
                     <IconChevronRight width={18} height={18} />
@@ -1487,23 +1491,23 @@ export default function PatientHome() {
 
       {state.kind !== 'idle' &&
         (selectedState && userPos ? (
-          <p className="flex items-center justify-center gap-1.5 text-center text-xs font-medium text-emerald-700 dark:text-emerald-400">
+          <p className="flex items-center justify-center gap-1.5 text-center text-xs font-medium text-brand-ink">
             <IconMapPin width={14} height={14} />
             Using your location — distances and directions start from where you are
           </p>
         ) : selectedState && locationDenied ? (
-          <div className="text-center text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-center text-xs text-faint">
             <p>
               Location is off — measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
               <button
                 onClick={enableLocation}
                 disabled={locating}
-                className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 disabled:opacity-50 dark:text-emerald-400"
+                className="cursor-pointer font-medium text-brand-ink underline underline-offset-2 disabled:opacity-50"
               >
                 {locating ? 'Getting your location…' : 'Use my location'}
               </button>
             </p>
-            {locationHint && <p className="mt-1 text-amber-700 dark:text-amber-400">{locationHint}</p>}
+            {locationHint && <p className="mt-1 text-warn-ink">{locationHint}</p>}
           </div>
         ) : null)}
 
@@ -1516,17 +1520,17 @@ export default function PatientHome() {
                   <span
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                       userPos
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-                        : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
+                        ? 'bg-brand-soft text-brand-ink'
+                        : 'bg-warn-soft text-amber-600 dark:text-amber-400'
                     }`}
                   >
                     <IconMapPin width={19} height={19} />
                   </span>
                   <div className="min-w-0 pt-0.5">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                    <p className="text-sm font-semibold text-ink">
                       {userPos ? 'Using your location' : 'Location is off'}
                     </p>
-                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="mt-0.5 text-sm text-faint">
                       {userPos ? (
                         'Distances and directions start from where you are'
                       ) : (
@@ -1535,7 +1539,7 @@ export default function PatientHome() {
                           <button
                             onClick={enableLocation}
                             disabled={locating}
-                            className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 disabled:opacity-50 dark:text-emerald-400"
+                            className="cursor-pointer font-medium text-brand-ink underline underline-offset-2 disabled:opacity-50"
                           >
                             {locating ? 'Getting your location…' : 'Use my location'}
                           </button>
@@ -1543,28 +1547,28 @@ export default function PatientHome() {
                       )}
                     </p>
                     {!userPos && locationHint && (
-                      <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">{locationHint}</p>
+                      <p className="mt-1 text-xs text-warn-ink">{locationHint}</p>
                     )}
                   </div>
                 </div>
-                <div className="border-t border-gray-100 dark:border-gray-800" />
+                <div className="border-t border-line-soft" />
               </>
             )}
             <div className="flex items-start gap-3.5 p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-sunken text-faint">
                 <IconSearch width={19} height={19} />
               </span>
               <div className="min-w-0 pt-0.5">
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                <p className="text-sm font-semibold text-ink">
                   Search by generic name or brand
                 </p>
-                <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-faint">
                   Try
-                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
+                  <span className="rounded-full bg-sunken px-2.5 py-0.5 text-xs font-medium text-muted">
                     Paracetamol
                   </span>
                   or
-                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-300">
+                  <span className="rounded-full bg-sunken px-2.5 py-0.5 text-xs font-medium text-muted">
                     Panadol
                   </span>
                 </p>
@@ -1576,10 +1580,10 @@ export default function PatientHome() {
         {state.kind === 'loading' && (
           <ul className="space-y-3" aria-label="Searching pharmacies" aria-live="polite">
             {[0, 1, 2].map((i) => (
-              <li key={i} className="animate-pulse rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-                <div className="h-4 w-2/5 rounded bg-gray-200 dark:bg-gray-800" />
-                <div className="mt-2 h-3 w-3/5 rounded bg-gray-100 dark:bg-gray-800/70" />
-                <div className="mt-4 h-9 rounded-lg bg-gray-100 dark:bg-gray-800/70" />
+              <li key={i} className="animate-pulse rounded-card border border-line bg-surface p-4">
+                <div className="h-4 w-2/5 rounded bg-line" />
+                <div className="mt-2 h-3 w-3/5 rounded bg-sunken" />
+                <div className="mt-4 h-9 rounded-lg bg-sunken" />
               </li>
             ))}
           </ul>
@@ -1589,10 +1593,10 @@ export default function PatientHome() {
           <div ref={coverageRef} className="scroll-mt-20">
             {state.drugs.length < 2 ? (
               <Card className="text-center">
-                <p className="font-semibold text-gray-900 dark:text-gray-100">
+                <p className="font-semibold text-ink">
                   Add a second medicine
                 </p>
-                <p className="mx-auto mt-1.5 max-w-md text-sm text-gray-600 dark:text-gray-400">
+                <p className="mx-auto mt-1.5 max-w-md text-sm text-muted">
                   Search for the next thing on your prescription and we&apos;ll show which
                   pharmacies near you have the most of the list.
                 </p>
@@ -1602,22 +1606,22 @@ export default function PatientHome() {
                 {[0, 1, 2].map((i) => (
                   <li
                     key={i}
-                    className="animate-pulse rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+                    className="animate-pulse rounded-card border border-line bg-surface p-4"
                   >
-                    <div className="h-4 w-2/5 rounded bg-gray-200 dark:bg-gray-800" />
-                    <div className="mt-2 h-3 w-3/5 rounded bg-gray-100 dark:bg-gray-800/70" />
-                    <div className="mt-4 h-9 rounded-lg bg-gray-100 dark:bg-gray-800/70" />
+                    <div className="h-4 w-2/5 rounded bg-line" />
+                    <div className="mt-2 h-3 w-3/5 rounded bg-sunken" />
+                    <div className="mt-4 h-9 rounded-lg bg-sunken" />
                   </li>
                 ))}
               </ul>
             ) : (
               <>
-                <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mb-3 text-sm text-muted">
                   {state.results.length === 0 ? (
                     <>Nothing in {selectedLabel} lists any of these.</>
                   ) : (
                     <>
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      <span className="font-semibold text-ink">
                         {state.results.length}
                       </span>{' '}
                       {state.results.length === 1 ? 'pharmacy' : 'pharmacies'} in {selectedLabel}{' '}
@@ -1631,7 +1635,7 @@ export default function PatientHome() {
                     Google Maps — the single-medicine results have had
                     this all along. */}
                 {route && state.results.length > 0 && (
-                  <div className="mb-4 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+                  <div className="mb-4 overflow-hidden rounded-card border border-line">
                     {/* The map fills its container, so the container is what
                         gives it a height — without one it collapses to
                         nothing and the route is drawn into a zero-pixel
@@ -1646,9 +1650,9 @@ export default function PatientHome() {
                         onRoute={showRoute}
                       />
                     </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 bg-white px-3.5 py-2.5 dark:border-gray-800 dark:bg-gray-900">
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface px-3.5 py-2.5">
+                      <p className="text-sm text-muted">
+                        <span className="font-semibold text-ink">
                           {route.pharmacyName}
                         </span>{' '}
                         — {route.distanceKm.toFixed(1)} km, about {Math.round(route.durationMin)} min
@@ -1660,14 +1664,14 @@ export default function PatientHome() {
                           href={directionsUrl(route.toLat, route.toLng)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                          className="text-sm font-semibold text-brand-ink underline underline-offset-2"
                         >
                           Voice navigation
                         </a>
                         <button
                           type="button"
                           onClick={() => setRoute(null)}
-                          className="cursor-pointer text-sm font-semibold text-gray-600 underline underline-offset-2 dark:text-gray-400"
+                          className="cursor-pointer text-sm font-semibold text-muted underline underline-offset-2"
                         >
                           Close map
                         </button>
@@ -1676,7 +1680,7 @@ export default function PatientHome() {
                   </div>
                 )}
                 {routeError && (
-                  <p className="mb-3 text-sm text-amber-700 dark:text-amber-400">{routeError}</p>
+                  <p className="mb-3 text-sm text-warn-ink">{routeError}</p>
                 )}
 
                 <CoverageResults
@@ -1693,12 +1697,12 @@ export default function PatientHome() {
         )}
 
         {state.kind === 'no-match' && (
-          <div className="animate-fade-up mt-10 flex flex-col items-center rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
+          <div className="animate-fade-up mt-10 flex flex-col items-center rounded-card border border-warn bg-warn-soft p-6 text-center">
             <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
-            <p className="mt-2 font-medium text-amber-800 dark:text-amber-300">
+            <p className="mt-2 font-medium text-warn-ink">
               No drug matching “{state.query}” is in our list yet.
             </p>
-            <p className="mt-1 text-sm text-amber-700 dark:text-amber-400/90">
+            <p className="mt-1 text-sm text-warn-ink">
               Try the generic name, or check the spelling. We add new drugs regularly.
             </p>
           </div>
@@ -1710,17 +1714,17 @@ export default function PatientHome() {
             noise. An amber rule down the side says "bring this with you"
             without competing with "nobody has it". */}
         {state.kind === 'results' && needsPrescription(state.drug.dispensing) && (
-          <div className="animate-fade-up mb-4 rounded-2xl border border-gray-200 border-l-4 border-l-amber-400 bg-white p-4 dark:border-gray-800 dark:border-l-amber-500 dark:bg-gray-900">
-            <p className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-gray-100">
+          <div className="animate-fade-up mb-4 rounded-card border border-line border-l-4 border-l-amber-400 bg-surface p-4 dark:border-l-amber-500">
+            <p className="flex items-center gap-2 text-sm font-bold text-ink">
               <IconAlertCircle width={16} height={16} className="shrink-0 text-amber-500 dark:text-amber-400" />
               {dispensingClass('POM')!.label}
             </p>
-            <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-1.5 text-sm text-muted">
               {dispensingClass('POM')!.note}
             </p>
             <Link
               href="/prescriptions"
-              className="mt-2.5 inline-block text-sm font-bold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="mt-2.5 inline-block text-sm font-bold text-brand-ink underline underline-offset-2"
             >
               Don&apos;t have one? Ask a pharmacist →
             </Link>
@@ -1729,14 +1733,14 @@ export default function PatientHome() {
 
         {state.kind === 'results' && results.length === 0 && (
           <>
-            <div className="animate-fade-up rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/60 dark:bg-amber-950/30">
+            <div className="animate-fade-up rounded-card border border-warn bg-warn-soft p-6">
               <div className="flex items-start gap-3">
                 <IconAlertCircle width={22} height={22} className="mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" />
                 <div className="min-w-0">
-                  <p className="font-semibold text-amber-900 dark:text-amber-200">
+                  <p className="font-semibold text-warn-ink">
                     No pharmacy in {selectedLga} has {state.label} right now
                   </p>
-                  <p className="mt-1 text-sm text-amber-800 dark:text-amber-300/90">
+                  <p className="mt-1 text-sm text-warn-ink">
                     Here&apos;s what you can do instead — stock changes daily, so it&apos;s worth
                     checking back.
                   </p>
@@ -1746,8 +1750,8 @@ export default function PatientHome() {
 
             {state.elsewhere.length > 0 && (
               <div className="mt-4">
-                <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  <IconMapPin width={15} height={15} className="text-emerald-600 dark:text-emerald-400" />
+                <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-ink">
+                  <IconMapPin width={15} height={15} className="text-brand-ink" />
                   Available elsewhere in {selectedLabel}
                 </h2>
                 <ul className="space-y-2">
@@ -1755,12 +1759,12 @@ export default function PatientHome() {
                     <li key={r.id}>
                       <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{r.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-sm font-medium text-ink">{r.name}</p>
+                          <p className="text-xs text-faint">
                             {r.lga ? `${r.lga} · ` : ''}
                             {r.distanceKm.toFixed(1)} km away
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-faint">
                             Stock updated {relativeTime(r.stockUpdatedAt)}
                           </p>
                         </div>
@@ -1768,14 +1772,14 @@ export default function PatientHome() {
                           <a
                             href={`tel:${r.phone.replace(/\s/g, '')}`}
                             onClick={(e) => handleCall(e, r.phone)}
-                            className="flex-1 rounded-lg border border-emerald-600/60 px-3 py-2 text-center text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 sm:flex-none dark:border-emerald-400/50 dark:text-emerald-400 dark:hover:bg-emerald-400/10"
+                            className="flex-1 rounded-lg border border-emerald-600/60 px-3 py-2 text-center text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft sm:flex-none dark:border-emerald-400/50"
                           >
                             {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                           </a>
                           <button
                             onClick={() => showRoute(r)}
                             disabled={routeBusyId === r.id}
-                            className="flex-1 cursor-pointer rounded-lg bg-emerald-700 px-3 py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 sm:flex-none dark:bg-emerald-500 dark:text-emerald-950"
+                            className="flex-1 cursor-pointer rounded-lg bg-brand px-3 py-2 text-center text-xs font-semibold text-on-brand transition-colors hover:bg-brand-hover disabled:opacity-60 sm:flex-none"
                           >
                             {routeBusyId === r.id ? 'Loading…' : 'Directions'}
                           </button>
@@ -1784,26 +1788,26 @@ export default function PatientHome() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-2 text-xs text-faint">
                   Call ahead before travelling — these are outside {selectedLga}.
                 </p>
               </div>
             )}
 
             {routeError && (
-              <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+              <p className="mt-4 rounded-control border border-warn bg-warn-soft p-3 text-sm text-warn-ink">
                 {routeError}
               </p>
             )}
 
             {route && (
               <div ref={emptyRouteRef} className="mt-4 scroll-mt-24">
-                <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+                <div className="mb-3 flex items-center justify-between gap-3 rounded-control border border-emerald-200 bg-brand-soft p-3 dark:border-emerald-900/60">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-emerald-900 dark:text-emerald-300">
                       {route.pharmacyName}
                     </p>
-                    <p className="text-xs text-emerald-800 dark:text-emerald-400">
+                    <p className="text-xs text-brand-ink">
                       {route.distanceKm.toFixed(1)} km · ~{route.durationMin} min drive
                       {!userPos ? ` from ${selectedLabel}'s capital` : ' from your location'}
                     </p>
@@ -1811,7 +1815,7 @@ export default function PatientHome() {
                       href={directionsUrl(route.toLat, route.toLng)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                      className="text-xs font-medium text-brand-ink underline underline-offset-2"
                     >
                       Voice navigation (opens Google Maps)
                     </a>
@@ -1819,12 +1823,12 @@ export default function PatientHome() {
                   <button
                     onClick={() => setRoute(null)}
                     aria-label="Clear route"
-                    className="shrink-0 cursor-pointer rounded-full p-1.5 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
+                    className="shrink-0 cursor-pointer rounded-full p-1.5 text-brand-ink hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
                   >
                     <IconX width={16} height={16} />
                   </button>
                 </div>
-                <div className="map-tiles h-[55dvh] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+                <div className="map-tiles h-[55dvh] overflow-hidden rounded-card border border-line">
                   <ResultsMap
                     results={state.elsewhere}
                     userPos={userPos}
@@ -1838,7 +1842,7 @@ export default function PatientHome() {
 
             {state.substitutes.length > 0 && (
               <div className="mt-4">
-                <h2 className="mb-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="mb-2 text-sm font-semibold text-ink">
                   Try this instead — same generic, different strength/form
                 </h2>
                 <ul className="space-y-2">
@@ -1846,10 +1850,10 @@ export default function PatientHome() {
                     <li key={sub.drug.id}>
                       <Card className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <p className="truncate text-sm font-medium text-ink">
                             {drugLabel(sub.drug)}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-faint">
                             {sub.results.length} {sub.results.length === 1 ? 'pharmacy' : 'pharmacies'} nearby
                             {' · nearest '}
                             {sub.results[0].distanceKm.toFixed(1)} km
@@ -1869,19 +1873,19 @@ export default function PatientHome() {
 
             <Card className="mt-4">
               <div className="flex items-start gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-brand-soft text-brand-ink">
                   <IconMessageCircle width={19} height={19} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                  <p className="text-sm font-semibold text-ink">
                     Not sure what to do next?
                   </p>
-                  <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mt-0.5 text-sm text-muted">
                     Speak to a licensed pharmacist for drug advice.
                   </p>
                   <Link
                     href="/prescriptions"
-                    className="mt-2 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                    className="mt-2 inline-block text-sm font-semibold text-brand-ink underline underline-offset-2"
                   >
                     Ask a pharmacist
                   </Link>
@@ -1894,13 +1898,13 @@ export default function PatientHome() {
         {state.kind === 'results' && results.length > 0 && (
           <>
             <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="min-w-0 text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">{results.length}</span>{' '}
+              <p className="min-w-0 text-sm text-muted">
+                <span className="font-semibold text-ink">{results.length}</span>{' '}
                 {activeFilterCount(filters) > 0 ? ` of ${allResults.length} ` : ' '}
                 {results.length === 1 ? 'pharmacy has' : 'pharmacies have'}{' '}
                 <Link
                   href={`/drugs/${state.drugId}?state=${selectedState}&lga=${encodeURIComponent(selectedLga)}`}
-                  className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                  className="font-medium text-brand-ink underline underline-offset-2"
                 >
                   {state.label}
                 </Link>{' '}
@@ -1912,25 +1916,25 @@ export default function PatientHome() {
                     setFilterDraft(filters)
                     setFiltersOpen(true)
                   }}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line-strong px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:text-brand-ink"
                 >
                   Filters
                   {activeFilterCount(filters) > 0 && (
-                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-700 px-1 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-xs font-bold text-on-brand">
                       {activeFilterCount(filters)}
                     </span>
                   )}
                 </button>
-                <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm md:hidden dark:border-gray-700">
+                <div className="flex overflow-hidden rounded-lg border border-line-strong text-sm md:hidden">
                   <button
                     onClick={() => setView('list')}
-                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-emerald-700 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'list' ? 'bg-brand text-on-brand' : 'bg-surface text-muted'}`}
                   >
                     List
                   </button>
                   <button
                     onClick={() => setView('map')}
-                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-emerald-700 text-white' : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'}`}
+                    className={`cursor-pointer px-4 py-1.5 font-medium transition-colors ${view === 'map' ? 'bg-brand text-on-brand' : 'bg-surface text-muted'}`}
                   >
                     Map
                   </button>
@@ -1947,7 +1951,7 @@ export default function PatientHome() {
                 <button
                   type="button"
                   onClick={() => startList(state.drug)}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-300 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:border-emerald-500 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:border-emerald-600 dark:hover:bg-emerald-500/10"
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-control border border-dashed border-emerald-300 px-4 py-2.5 text-sm font-semibold text-brand-ink transition-colors hover:border-emerald-500 hover:bg-brand-soft dark:border-emerald-800 dark:hover:border-emerald-600"
                 >
                   <IconPlus width={15} height={15} />
                   Need more than one? Add to a list
@@ -1972,8 +1976,8 @@ export default function PatientHome() {
                     }
                     className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
                       isSaved(state.drug.id)
-                        ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
-                        : 'border-gray-300 text-gray-700 hover:border-emerald-400 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-600 dark:hover:text-emerald-400'
+                        ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+                        : 'border-line-strong text-muted hover:border-emerald-400 hover:text-brand-ink dark:hover:border-emerald-600'
                     }`}
                   >
                     <IconBookmark width={15} height={15} />
@@ -1997,8 +2001,8 @@ export default function PatientHome() {
                   aria-pressed={sortBy === key}
                   className={`shrink-0 cursor-pointer rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
                     sortBy === key
-                      ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10'
+                      ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+                      : 'border-line bg-surface text-muted hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink'
                   }`}
                 >
                   {label}
@@ -2007,18 +2011,18 @@ export default function PatientHome() {
             </div>
 
             {routeError && (
-              <p className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+              <p className="mb-3 rounded-control border border-warn bg-warn-soft p-3 text-sm text-warn-ink">
                 {routeError}
               </p>
             )}
 
             {route && (
-              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-control border border-emerald-200 bg-brand-soft p-3 dark:border-emerald-900/60">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-emerald-900 dark:text-emerald-300">
                     {route.pharmacyName}
                   </p>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-400">
+                  <p className="text-xs text-brand-ink">
                     {route.distanceKm.toFixed(1)} km · ~{route.durationMin} min drive
                     {!userPos ? ` from ${selectedLabel}'s capital` : ' from your location'}
                   </p>
@@ -2026,7 +2030,7 @@ export default function PatientHome() {
                     href={directionsUrl(route.toLat, route.toLng)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                    className="text-xs font-medium text-brand-ink underline underline-offset-2"
                   >
                     Voice navigation (opens Google Maps)
                   </a>
@@ -2034,7 +2038,7 @@ export default function PatientHome() {
                 <button
                   onClick={() => setRoute(null)}
                   aria-label="Clear route"
-                  className="shrink-0 cursor-pointer rounded-full p-2 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+                  className="shrink-0 cursor-pointer rounded-full p-2 text-brand-ink hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
                 >
                   <IconX width={14} height={14} />
                 </button>
@@ -2042,11 +2046,11 @@ export default function PatientHome() {
             )}
 
             {results.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-                <p className="font-semibold text-gray-900 dark:text-gray-100">
+              <div className="rounded-card border border-dashed border-line-strong p-8 text-center">
+                <p className="font-semibold text-ink">
                   No pharmacy matches those filters
                 </p>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-1 text-sm text-muted">
                   {allResults.length} {allResults.length === 1 ? 'pharmacy has' : 'pharmacies have'}{' '}
                   this in {selectedLga} without them.
                 </p>
@@ -2060,25 +2064,25 @@ export default function PatientHome() {
                 {sortedResults.map((r) => (
                   <li
                     key={r.id}
-                    className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-800"
+                    className="rounded-card border border-line bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lg"
                   >
                     <div className="flex items-start gap-3.5">
-                      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-brand-soft text-brand-ink">
                         <IconStore width={24} height={24} />
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
                           <Link
                             href={`/pharmacies/${r.id}`}
-                            className="truncate font-bold text-gray-900 transition-colors hover:text-emerald-700 dark:text-gray-50 dark:hover:text-emerald-400"
+                            className="truncate font-bold text-ink transition-colors hover:text-brand-ink"
                           >
                             {r.name}
                           </Link>
-                          <span className="shrink-0 text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">
+                          <span className="shrink-0 text-sm font-bold tabular-nums text-faint">
                             {r.distanceKm.toFixed(1)} km
                           </span>
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                        <p className="mt-0.5 truncate text-xs text-faint">
                           {r.address}
                           {r.lga ? ` · ${r.lga}` : ''}
                         </p>
@@ -2096,11 +2100,11 @@ export default function PatientHome() {
                       className="mt-3.5 flex cursor-pointer items-center gap-2.5"
                     >
                       <RatingStars value={r.ratingAvg} count={r.ratingCount} />
-                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Rate</span>
+                      <span className="text-xs font-bold text-brand-ink">Rate</span>
                     </button>
 
                     {stockFreshness(r.stockUpdatedAt).tone === 'stale' && (
-                      <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+                      <p className="mt-3 text-xs text-warn-ink">
                         Not confirmed in over a day — worth calling first.
                       </p>
                     )}
@@ -2110,14 +2114,14 @@ export default function PatientHome() {
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
                         onClick={(e) => handleCall(e, r.phone)}
                         aria-label={`Call ${r.name}`}
-                        className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                        className="flex items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
                       >
                         <IconPhone width={16} height={16} />
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
                       <Link
                         href={`/pharmacies/${r.id}`}
-                        className="flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                        className="flex items-center justify-center rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
                       >
                         Details
                       </Link>
@@ -2138,14 +2142,14 @@ export default function PatientHome() {
                         the follow-up for the ones who don't want to lose the
                         last pack while they travel. */}
                     {reserved[r.id] ? (
-                      <div className="mt-2.5 rounded-xl bg-emerald-50 p-3 dark:bg-emerald-500/10">
+                      <div className="mt-2.5 rounded-control bg-brand-soft p-3">
                         {/* The tick belongs here, on the state, and nowhere
                             near the button. A filled green block wearing a
                             tick and the words "Medicine obtained" reads as
                             a badge saying it already happened — three
                             signals all pointing at "done" on a control
                             whose entire job is to say "not yet". */}
-                        <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                        <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-ink">
                           {reserved[r.id].status === 'READY' ? (
                             <>
                               <IconCheck width={14} height={14} className="shrink-0" />
@@ -2202,13 +2206,13 @@ export default function PatientHome() {
                     )}
                   </li>
                 ))}
-                <li className="flex items-start gap-3 rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/30">
+                <li className="flex items-start gap-3 rounded-card bg-info-soft p-4">
                   <IconAlertCircle
                     width={18}
                     height={18}
-                    className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400"
+                    className="mt-0.5 shrink-0 text-info-ink"
                   />
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <p className="text-sm text-info-ink">
                     Pharmacies keep their own stock and hours up to date. Call ahead if a listing
                     hasn&apos;t been confirmed today.
                   </p>
