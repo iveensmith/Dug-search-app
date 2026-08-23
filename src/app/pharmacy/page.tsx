@@ -1146,7 +1146,7 @@ function PharmacyDashboard() {
                       reason inventories here stay half-empty. */}
                   <Link
                     href="/pharmacy/import"
-                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted"
+                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-muted"
                   >
                     <IconUpload width={16} height={16} />
                     Import from a file

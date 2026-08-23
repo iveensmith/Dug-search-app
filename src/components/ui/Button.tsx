@@ -17,10 +17,15 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
 export type ButtonAccent = 'emerald' | 'deep'
 
 /**
- * `rounded` is the default everything has always had; `pill` is the fully
- * rounded shape the home page's primary actions use. A separate prop
- * rather than a className override, for the reason spelled out above: two
- * radius utilities in one class list are settled by emission order.
+ * `pill` is the default now: the design this app follows makes every
+ * button fully rounded, and setting it here is what carries that into the
+ * screens nobody redesigns by hand — the owner dashboard, the admin
+ * tables, every dialog. `rounded` is kept for anything that needs to sit
+ * flush in a group.
+ *
+ * A prop rather than a className override, for the reason spelled out
+ * above: two radius utilities in one class list are settled by emission
+ * order, not by which one you wrote last.
  */
 export type ButtonShape = 'rounded' | 'pill'
 
@@ -96,7 +101,7 @@ export function buttonClass(
   size: ButtonSize = 'md',
   className = '',
   accent: ButtonAccent = 'emerald',
-  shape: ButtonShape = 'rounded',
+  shape: ButtonShape = 'pill',
 ) {
   const look =
     variant === 'ghost' || variant === 'destructive' ? variants[variant] : accented[accent][variant]
@@ -104,7 +109,7 @@ export function buttonClass(
 }
 
 const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = 'primary', size = 'md', accent = 'emerald', shape = 'rounded', loading, disabled, className = '', children, ...props },
+  { variant = 'primary', size = 'md', accent = 'emerald', shape = 'pill', loading, disabled, className = '', children, ...props },
   ref,
 ) {
   return (

@@ -88,18 +88,26 @@ export default function OwnerRatings() {
   }
 
   return (
-    <div className="animate-fade-up py-8">
-      <Link
-        href="/pharmacy/overview"
-        className="inline-flex items-center gap-1 text-sm font-medium text-brand-ink hover:underline"
-      >
-        <IconChevronRight width={15} height={15} className="rotate-180" />
-        Back to dashboard
-      </Link>
+    <div className="animate-fade-up">
+      {/* Same mint band as the dashboard. The fill stays raw for the
+          reason bands always do; the copy on it is tokenised. */}
+      <header className="bg-emerald-50 dark:bg-emerald-950/25">
+        <div className="mx-auto w-full max-w-3xl px-4 py-10 md:py-14">
+          <Link
+            href="/pharmacy/overview"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-brand-ink hover:underline"
+          >
+            <IconChevronRight width={15} height={15} className="rotate-180" />
+            Back to dashboard
+          </Link>
 
-      <h1 className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-        Your ratings
-      </h1>
+          <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
+            Your Ratings
+          </h1>
+        </div>
+      </header>
+
+      <div className="mx-auto w-full max-w-3xl px-4 pt-8">
 
       {failed ? (
         <Card className="mt-6">
@@ -253,6 +261,7 @@ export default function OwnerRatings() {
           />
         </>
       )}
+      </div>
     </div>
   )
 }

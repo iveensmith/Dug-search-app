@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { NIGERIAN_STATES, type NigerianStateValue, stateCenter, stateLabel } from '@/lib/states'
 import { useLgas } from '@/lib/useLgas'
 import SiteHeader from '@/components/ui/SiteHeader'
+import PageHeader from '@/components/ui/PageHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -223,11 +224,15 @@ export default function PharmacyRegisterPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-      <header className="py-10 text-center">
-        <h1 className="text-2xl font-bold text-ink">Add your pharmacy outlet</h1>
-        <p className="mt-2 text-sm text-muted">Get discovered by patients searching nearby</p>
-      </header>
+      {/* Full width so the title band runs edge to edge, with the measure
+          put back on the form below it. */}
+      <main className="w-full flex-1 pb-16">
+      <PageHeader
+        title="Add Your Pharmacy Outlet"
+        lede="Get discovered by patients searching nearby."
+      />
+
+      <div className="mx-auto w-full max-w-2xl px-4 pt-8">
 
       {me === undefined && (
         <p className="py-12 text-center text-faint">Checking your account…</p>
@@ -558,6 +563,7 @@ export default function PharmacyRegisterPage() {
       </Card>
         </>
       )}
+      </div>
       </main>
       <SiteFooter />
     </div>

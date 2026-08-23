@@ -30,7 +30,7 @@ type Pharmacy = {
 }
 
 const statTileClass =
-  'rounded-card border border-line bg-surface p-4 text-center sm:p-5'
+  'rounded-[1.5rem] bg-surface p-4 text-center shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_28px_-14px_rgba(16,24,40,0.14)] ring-1 ring-line dark:shadow-none sm:p-5'
 
 type RecentSearch = { id: string; drug: DrugSuggestion | null; youStock: boolean }
 
@@ -137,7 +137,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           </p>
           <Link
             href="/pharmacy/register"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-control bg-brand px-4 py-2.5 font-semibold text-on-brand transition-colors hover:bg-brand-hover"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-on-brand transition-colors hover:bg-brand-hover"
           >
             Add your outlet
           </Link>
@@ -151,16 +151,22 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
   const approved = pharmacy?.verificationStatus === 'APPROVED'
 
   return (
-    <div className="animate-fade-up py-10 md:py-14">
-      <header>
-        <p className="text-sm font-semibold italic text-brand-ink">
+    <div className="animate-fade-up">
+      {/* The greeting sits on the same mint field the patient side opens
+          on. The eyebrow loses its italic for the same reason the home
+          page's did — one weight, one colour, no third signal.
+          The band fill stays raw: a mint page band is a page-level wash,
+          not a surface, and no token carries it. */}
+      <header className="bg-emerald-50 dark:bg-emerald-950/25">
+        <div className="mx-auto w-full max-w-5xl px-4 py-10 md:py-14">
+        <p className="text-sm font-semibold text-brand-ink">
           Pharmacy dashboard
         </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+        <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
           {displayName ? `Welcome back, ${displayName.split(' ')[0]}` : 'Welcome back'}
         </h1>
         {pharmacy && (
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-muted">
+          <p className="mt-3 flex flex-wrap items-center gap-2 text-muted">
             <span className="font-medium text-ink">{pharmacy.name}</span>
             <span aria-hidden="true">·</span>
             <span>
@@ -170,7 +176,10 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             {approved && <VerifiedBadge />}
           </p>
         )}
+        </div>
       </header>
+
+      <div className="mx-auto w-full max-w-5xl px-4 pt-8">
 
       {pharmacy && !approved && (
         <div className="mt-6 flex items-start gap-3 rounded-control border border-warn bg-warn-soft p-4 text-sm text-warn-ink">
@@ -229,7 +238,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/pharmacy"
-          className="flex flex-1 items-center justify-center gap-2 rounded-control bg-brand px-5 py-3 font-semibold text-on-brand transition-all hover:bg-brand-hover hover:shadow-md hover:shadow-emerald-700/25"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 font-semibold text-on-brand transition-all hover:bg-brand-hover hover:shadow-md hover:shadow-emerald-700/25"
         >
           <IconClipboardList width={18} height={18} />
           Manage inventory
@@ -239,14 +248,14 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             "Manage inventory" with the form still closed. */}
         <Link
           href="/pharmacy?add=1"
-          className="flex flex-1 items-center justify-center gap-2 rounded-control border border-emerald-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-emerald-400/50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-emerald-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-emerald-400/50"
         >
           <IconPlus width={18} height={18} />
           Add a drug
         </Link>
         <Link
           href="/pharmacy/ratings"
-          className="flex flex-1 items-center justify-center gap-2 rounded-control border border-emerald-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-emerald-400/50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-emerald-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-emerald-400/50"
         >
           <IconStar width={18} height={18} />
           See your ratings
@@ -336,6 +345,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           )}
         </div>
       </section>
+      </div>
     </div>
   )
 }
