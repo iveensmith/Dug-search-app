@@ -222,7 +222,7 @@ export default function SearchBox({
             // or generic" is the thing a patient holding a box needs to
             // know — the name on it is usually the brand.
             placeholder={placeholder ?? 'Brand or generic name'}
-            className="w-full rounded-control border-2 border-line-strong bg-surface py-3.5 pl-10 pr-4 text-base text-ink shadow-sm outline-none transition-colors placeholder:text-faint focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:bg-sunken disabled:text-faint dark:focus:border-emerald-400 dark:focus:ring-emerald-950"
+            className="w-full rounded-control border-2 border-line-strong bg-surface py-3.5 pl-10 pr-4 text-base text-ink shadow-card outline-none transition-colors placeholder:text-faint focus:border-focus focus:ring-4 focus:ring-brand-soft disabled:bg-sunken disabled:text-faint"
             aria-label="Search for a drug"
             autoComplete="off"
             disabled={disabled}
@@ -248,7 +248,7 @@ export default function SearchBox({
             aria-pressed={listening}
             className={`flex min-h-[52px] w-[52px] shrink-0 items-center justify-center rounded-control border transition-colors disabled:opacity-50 ${
               listening
-                ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+                ? 'border-brand bg-brand text-on-brand'
                 : 'border-line-strong text-faint hover:border-emerald-300 hover:text-brand-ink dark:hover:border-emerald-700'
             }`}
           >
@@ -263,14 +263,14 @@ export default function SearchBox({
       </div>
 
       {listening && (
-        <p className="animate-fade-in mt-2 flex items-center gap-2 rounded-control border border-emerald-500 bg-brand-soft px-3.5 py-2.5 text-sm font-semibold text-brand-ink">
-          <span className="pulse-dot h-2 w-2 shrink-0 rounded-full bg-emerald-500" data-live="true" />
+        <p className="animate-fade-in mt-2 flex items-center gap-2 rounded-control border border-brand bg-brand-soft px-3.5 py-2.5 text-sm font-semibold text-brand-ink">
+          <span className="pulse-dot h-2 w-2 shrink-0 rounded-full bg-brand-500" data-live="true" />
           Listening — say the medicine name
         </p>
       )}
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-[1000] mt-1.5 w-full overflow-hidden rounded-control border border-line bg-surface shadow-lg">
+        <ul className="absolute z-[1000] mt-1.5 w-full overflow-hidden rounded-control border border-line bg-raised shadow-sheet">
           {suggestions.map((d, i) => (
             <li key={d.id}>
               <button
@@ -280,10 +280,10 @@ export default function SearchBox({
                 }}
                 onMouseEnter={() => setHighlighted(i)}
                 className={`flex w-full cursor-pointer items-center gap-3.5 px-4 py-3 text-left transition-colors ${
-                  i === highlighted ? 'bg-brand-soft' : 'bg-surface'
+                  i === highlighted ? 'bg-brand-soft' : 'bg-raised'
                 }`}
               >
-                <span className="flex shrink-0 items-center justify-center rounded-control bg-brand-soft p-2.5 text-emerald-600 dark:text-emerald-400">
+                <span className="flex shrink-0 items-center justify-center rounded-control bg-brand-soft p-2.5 text-brand-ink">
                   <IconPill width={18} height={18} />
                 </span>
                 <span className="min-w-0 flex-1">
