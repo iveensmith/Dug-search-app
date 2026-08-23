@@ -35,8 +35,8 @@ function Chip({
       aria-pressed={on}
       className={`min-h-11 cursor-pointer rounded-full border px-4 text-sm font-semibold transition-colors ${
         on
-          ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
-          : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10'
+          ? 'border-brand bg-brand text-on-brand'
+          : 'border-line bg-surface text-muted hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink'
       }`}
     >
       {children}
@@ -80,20 +80,20 @@ export default function ResultFilters({
       }}
       className="fixed inset-0 z-[1500] flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-4"
     >
-      <div className="animate-fade-up max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-xl sm:max-w-md sm:rounded-3xl dark:bg-gray-900">
-        <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-gray-200 sm:hidden dark:bg-gray-700" />
+      <div className="animate-fade-up max-h-[90dvh] w-full overflow-y-auto rounded-t-sheet bg-raised p-5 pb-8 shadow-modal sm:max-w-md sm:rounded-sheet">
+        <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-line sm:hidden" />
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-50">Filter results</h2>
+          <h2 className="text-lg font-bold text-ink">Filter results</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="cursor-pointer rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-white/10"
+            className="cursor-pointer rounded-full p-1.5 text-faint hover:bg-sunken"
           >
             <IconX width={18} height={18} />
           </button>
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-faint">
           Distance
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">
@@ -104,7 +104,7 @@ export default function ResultFilters({
           ))}
         </div>
 
-        <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-faint">
           Only show
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">
@@ -123,7 +123,7 @@ export default function ResultFilters({
         {activeFilterCount(draft) > 0 && (
           <button
             onClick={() => setDraft(NO_FILTERS)}
-            className="mt-3 w-full cursor-pointer text-sm font-semibold text-gray-500 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400"
+            className="mt-3 w-full cursor-pointer text-sm font-semibold text-faint hover:text-brand-ink"
           >
             Clear all filters
           </button>
