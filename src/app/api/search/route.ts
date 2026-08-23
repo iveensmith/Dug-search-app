@@ -45,6 +45,23 @@ export async function GET(req: NextRequest) {
   // still search the whole state.
   const lga = parsed.data.lga && isValidLga(state, parsed.data.lga) ? parsed.data.lga : null
 
+  // Resolved before anything uses it. A drugId that names nothing used to
+  // sail through — the schema only checks it is a non-empty string — and
+  // every search below quietly returned nothing, right up to the
+  // searchLog insert, where the foreign key rejected it and the caller got
+  // a 500 for what is really a bad request.
+  //
+  // A 404 is the honest answer, and the likeliest cause is benign: a
+  // bookmarked or shared link to a medicine an admin has since removed.
+  // The lookup is not extra work — the substitutes branch below needed
+  // this row anyway, and now reuses it instead of fetching it again.
+  const drug = drugId
+    ? await prisma.drug.findUnique({ where: { id: drugId }, select: { genericName: true } })
+    : null
+  if (drugId && !drug) {
+    return NextResponse.json({ error: 'That medicine is no longer listed' }, { status: 404 })
+  }
+
   const fallback = stateCenter(state)!
   const searchLat = lat ?? fallback.lat
   const searchLng = lng ?? fallback.lng
@@ -70,18 +87,15 @@ export async function GET(req: NextRequest) {
   // pharmacies stock a different strength/form of the same generic before
   // giving up entirely.
   let substitutes: Awaited<ReturnType<typeof findGenericSubstitutes>> = []
-  if (drugId && results.length === 0) {
-    const drug = await prisma.drug.findUnique({ where: { id: drugId }, select: { genericName: true } })
-    if (drug) {
-      substitutes = await findGenericSubstitutes({
-        genericName: drug.genericName,
-        excludeDrugId: drugId,
-        state,
-        lga,
-        lat: searchLat,
-        lng: searchLng,
-      })
-    }
+  if (drugId && drug && results.length === 0) {
+    substitutes = await findGenericSubstitutes({
+      genericName: drug.genericName,
+      excludeDrugId: drugId,
+      state,
+      lga,
+      lat: searchLat,
+      lng: searchLng,
+    })
   }
 
   await prisma.searchLog.create({
