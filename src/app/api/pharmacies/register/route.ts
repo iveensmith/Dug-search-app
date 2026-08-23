@@ -4,10 +4,30 @@ import { prisma } from '@/lib/db'
 import { normalizePhone, requireSession } from '@/lib/auth'
 import { isValidState } from '@/lib/states'
 import { isValidLga } from '@/lib/lgas'
+import { PHARMACY_NAME_ALLOWED } from '@/lib/nameInput'
+import { sanitizeDisplayName } from '@/lib/authValidation'
 import { Prisma } from '@/generated/prisma/client'
 
+/**
+ * The shop name is the one field here a human wrote and other humans read
+ * back — it lands in search results and, via lib/mail.ts, inside the HTML
+ * of a stock-alert email. So it gets the same treatment a display name
+ * does: strip markup and control characters first, then check what
+ * survives against the rule the form enforces as it is typed.
+ *
+ * Sanitise-then-validate, in that order. Validating first would reject a
+ * name for characters that were about to be removed anyway.
+ */
+const pharmacyNameSchema = z
+  .string()
+  .max(120 * 4) // room for markup that is about to be stripped
+  .transform(sanitizeDisplayName)
+  .pipe(
+    z.string().min(2).max(120).regex(PHARMACY_NAME_ALLOWED, 'unsupported characters'),
+  )
+
 const bodySchema = z.object({
-  pharmacyName: z.string().min(2).max(120),
+  pharmacyName: pharmacyNameSchema,
   address: z.string().min(5).max(300),
   state: z.string().refine(isValidState, { message: 'Select a valid state' }),
   lga: z.string().min(1).max(80),

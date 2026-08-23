@@ -55,3 +55,74 @@ const LEADING_NON_LETTER = /^[^\p{L}\p{M}]+/u
 export function filterNameInput(raw: string): string {
   return raw.replace(DISALLOWED, '').replace(LEADING_NON_LETTER, '')
 }
+
+/* ------------------------------------------------------- business names */
+
+/**
+ * A pharmacy is not a person, and the rule above would reject a lot of
+ * real shops. "CityMed 24/7", "H2O Chemists", "A&B Pharmacy", "Pharmacy
+ * No. 3, Ikeja" — digits, ampersands, commas, slashes and brackets all
+ * belong in a business name in a way they never belong in a person's.
+ *
+ * So this is deliberately looser: it keeps what a shop sign might carry
+ * and drops the rest. What it will not accept is a name with no letter in
+ * it at all — "0000" is not a pharmacy — or the angle brackets that make
+ * the name dangerous downstream, since lib/mail.ts interpolates it into
+ * the HTML of a stock-alert email.
+ */
+// Every one of `-`, `/`, `(` and `)` is escaped for the same reason the
+// hyphen is above, and this one was found the hard way: under the `v` flag
+// they are reserved punctuators inside a character class, so leaving any
+// of them bare makes the whole pattern fail to compile. The browser then
+// drops it silently and *every* value validates, which looks exactly like
+// a rule that is working until you test a value that should fail.
+const BIZ_TAIL = "\\p{L}\\p{M}\\p{N} &'.,\\-\\/\\(\\)+"
+
+/** Starts with a letter or digit, and has at least one letter somewhere. */
+export const PHARMACY_NAME_ALLOWED = new RegExp(
+  `^(?=[^\\p{L}]*\\p{L})[\\p{L}\\p{N}][${BIZ_TAIL}]*$`,
+  'u',
+)
+
+/** The same rule as an HTML `pattern`. See NAME_PATTERN on the escaping. */
+export const PHARMACY_NAME_PATTERN = `(?=[^\\p{L}]*\\p{L})[\\p{L}\\p{N}][${BIZ_TAIL}]*`
+
+const BIZ_DISALLOWED = new RegExp(`[^${BIZ_TAIL}]`, 'gu')
+const BIZ_LEADING = /^[^\p{L}\p{N}]+/u
+
+/**
+ * Drops anything a shop name may not contain, for an input's `onChange`.
+ *
+ * The "must contain a letter" half of the rule is not enforced here — it
+ * cannot be, because someone typing "24/7 Pharmacy" has only digits in the
+ * box for the first four keystrokes. That half is left to `pattern` and to
+ * the server, which see a finished value.
+ */
+export function filterPharmacyNameInput(raw: string): string {
+  return raw.replace(BIZ_DISALLOWED, '').replace(BIZ_LEADING, '')
+}
+
+/* ------------------------------------------------------------ self-check */
+
+// A `pattern` that does not compile is dropped by the browser without a
+// word, and a dropped pattern accepts everything — the rule looks like it
+// is working right up until you try a value that should fail. That is not
+// a thing to find in production, so compile both here, the way a browser
+// would: `v` is the flag `pattern` uses, and it is the strict one.
+//
+// These are constants, so this either throws the first time the module is
+// imported — in dev, or during `next build` — or it never throws at all.
+for (const [name, source] of [
+  ['NAME_PATTERN', NAME_PATTERN],
+  ['PHARMACY_NAME_PATTERN', PHARMACY_NAME_PATTERN],
+] as const) {
+  try {
+    new RegExp(source, 'v')
+  } catch (cause) {
+    throw new Error(
+      `${name} is not a valid HTML pattern — a browser would ignore it and ` +
+        `accept every value. Check the escaping inside the character class.`,
+      { cause },
+    )
+  }
+}

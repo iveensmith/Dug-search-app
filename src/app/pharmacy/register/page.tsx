@@ -12,6 +12,7 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { Field, Input, Select } from '@/components/ui/Field'
+import { PHARMACY_NAME_PATTERN, filterPharmacyNameInput } from '@/lib/nameInput'
 import { IconShieldCheck, IconStore, IconUser } from '@/components/ui/icons'
 
 type Me = { id: string; email: string | null; displayName: string | null; role: string }
@@ -334,7 +335,15 @@ export default function PharmacyRegisterPage() {
           {step === 0 && (
             <>
               <Field label="Pharmacy name" htmlFor="pharmacyName">
-                <Input id="pharmacyName" value={form.pharmacyName} onChange={(e) => set('pharmacyName', e.target.value)} required />
+                <Input
+                  id="pharmacyName"
+                  value={form.pharmacyName}
+                  onChange={(e) => set('pharmacyName', filterPharmacyNameInput(e.target.value))}
+                  required
+                  maxLength={120}
+                  pattern={PHARMACY_NAME_PATTERN}
+                  title="Letters and numbers, with & , . ' - / ( ) — and at least one letter"
+                />
               </Field>
 
               <Field label="State" htmlFor="state">
