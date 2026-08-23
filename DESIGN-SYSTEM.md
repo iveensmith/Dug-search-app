@@ -43,11 +43,12 @@ Light resolves to emerald-700 with white text; dark to emerald-500 with near-bla
 `border-line-soft` hairlines · `border-line` default · `border-line-strong` hover · `border-line-brand` brand hover hint · `ring-focus` focus
 
 ### Status
-Each tone has a solid, a soft fill, and a readable ink: `ok` · `warn` · `danger` · `info`
+Each tone has a solid, a soft fill, and a readable ink: `ok` · `warn` · `urgent` · `danger` · `info`
 
 ```
 bg-ok-soft text-ok-ink        →  "In stock"
 bg-warn-soft text-warn-ink    →  "Last confirmed 3 days ago"
+bg-urgent-soft text-urgent-ink →  "Last few left"
 bg-danger-soft text-danger-ink →  "Out of stock"
 bg-info-soft text-info-ink    →  "Pending approval"
 ```
@@ -85,6 +86,7 @@ Find-and-replace, roughly in this order. Every line on the right also deletes th
 | `text-emerald-700` / `dark:text-emerald-400` | `text-brand-ink` |
 | `bg-emerald-100 text-emerald-800` | `bg-ok-soft text-ok-ink` |
 | `bg-amber-100 text-amber-800` | `bg-warn-soft text-warn-ink` |
+| `bg-orange-50 text-orange-800` | `bg-urgent-soft text-urgent-ink` |
 | `bg-red-100 text-red-700` | `bg-danger-soft text-danger-ink` |
 | `bg-blue-100 text-blue-800` | `bg-info-soft text-info-ink` |
 | `rounded-xl` on controls | `rounded-control` |

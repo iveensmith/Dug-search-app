@@ -152,6 +152,9 @@
   --warn: #f59e0b;
   --warn-soft: #fffbeb;
   --warn-ink: #b45309;
+  --urgent: #f97316;
+  --urgent-soft: #fff7ed;
+  --urgent-ink: #9a3412;
   --danger: #dc2626;
   --danger-soft: #fef2f2;
   --danger-ink: #b91c1c;
@@ -198,6 +201,9 @@
   --dark-warn: #f59e0b;
   --dark-warn-soft: #2e2109;
   --dark-warn-ink: #fbbf24;
+  --dark-urgent: #f97316;
+  --dark-urgent-soft: #2c1608;
+  --dark-urgent-ink: #fdba74;
   --dark-danger: #ef4444;
   --dark-danger-soft: #2d1414;
   --dark-danger-ink: #fca5a5;
@@ -235,6 +241,9 @@
     --warn: var(--dark-warn);
     --warn-soft: var(--dark-warn-soft);
     --warn-ink: var(--dark-warn-ink);
+    --urgent: var(--dark-urgent);
+    --urgent-soft: var(--dark-urgent-soft);
+    --urgent-ink: var(--dark-urgent-ink);
     --danger: var(--dark-danger);
     --danger-soft: var(--dark-danger-soft);
     --danger-ink: var(--dark-danger-ink);
@@ -273,6 +282,9 @@
   --warn: var(--dark-warn);
   --warn-soft: var(--dark-warn-soft);
   --warn-ink: var(--dark-warn-ink);
+  --urgent: var(--dark-urgent);
+  --urgent-soft: var(--dark-urgent-soft);
+  --urgent-ink: var(--dark-urgent-ink);
   --danger: var(--dark-danger);
   --danger-soft: var(--dark-danger-soft);
   --danger-ink: var(--dark-danger-ink);
@@ -309,6 +321,9 @@
   --warn: #f59e0b;
   --warn-soft: #fffbeb;
   --warn-ink: #b45309;
+  --urgent: #f97316;
+  --urgent-soft: #fff7ed;
+  --urgent-ink: #9a3412;
   --danger: #dc2626;
   --danger-soft: #fef2f2;
   --danger-ink: #b91c1c;
@@ -356,6 +371,9 @@
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-warn-ink: var(--warn-ink);
+  --color-urgent: var(--urgent);
+  --color-urgent-soft: var(--urgent-soft);
+  --color-urgent-ink: var(--urgent-ink);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-danger-ink: var(--danger-ink);

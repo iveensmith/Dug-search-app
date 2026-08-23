@@ -13,9 +13,9 @@ import { stockLevel } from '@/lib/stockLevels'
  * shop that is being more honest than one saying nothing at all.
  */
 const TONE = {
-  good: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
-  warn: 'bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300',
-  urgent: 'bg-orange-50 text-orange-800 dark:bg-orange-500/10 dark:text-orange-300',
+  good: 'bg-ok-soft text-ok-ink',
+  warn: 'bg-warn-soft text-warn-ink',
+  urgent: 'bg-urgent-soft text-urgent-ink',
 } as const
 
 export default function StockLevelBadge({ level }: { level: string | null | undefined }) {
