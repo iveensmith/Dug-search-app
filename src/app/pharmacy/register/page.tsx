@@ -229,7 +229,8 @@ export default function PharmacyRegisterPage() {
           put back on the form below it. */}
       <main className="w-full flex-1 pb-16">
       <PageHeader
-        title="Add Your Pharmacy Outlet"
+        title="Add Your"
+        accent="Pharmacy Outlet"
         lede="Get discovered by patients searching nearby."
       />
 

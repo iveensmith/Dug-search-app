@@ -17,12 +17,22 @@ import { type ReactNode } from 'react'
  */
 export default function PageHeader({
   title,
+  accent,
   lede,
   eyebrow,
   children,
   width = 'narrow',
 }: {
   title: ReactNode
+  /**
+   * The tail of the heading, in the brand green — the same treatment the
+   * home page gives "In Stock". Pass the phrase that says what the page is
+   * for ("Ask A" + "Pharmacist"), and leave it off where there is no such
+   * phrase: a heading built from a drug's name has no part worth picking
+   * out, and colouring half of "Medicine Not Found" would put the brand
+   * colour on the bad news.
+   */
+  accent?: ReactNode
   lede?: ReactNode
   /** A short label above the title. Only where there is a true one to give. */
   eyebrow?: ReactNode
@@ -39,8 +49,17 @@ export default function PageHeader({
         {eyebrow && (
           <p className="text-sm font-semibold text-brand-ink">{eyebrow}</p>
         )}
-        <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
+        {/* text-balance for the reason the home hero has it: these wrap on
+            a phone, and an accented tail left alone on its own short line
+            reads as a caption rather than part of the heading. */}
+        <h1 className="mt-3 text-balance text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
           {title}
+          {accent && (
+            <>
+              {' '}
+              <span className="text-brand-ink">{accent}</span>
+            </>
+          )}
         </h1>
         {lede && (
           <p className="mt-4 text-[1.05rem] leading-relaxed text-muted">

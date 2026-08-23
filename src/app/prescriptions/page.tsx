@@ -218,7 +218,8 @@ export default function PrescriptionsPage() {
           the title band can run edge to edge the way the home page's do. */}
       <main className="w-full flex-1 pb-16">
       <PageHeader
-        title="Ask A Pharmacist"
+        title="Ask A"
+        accent="Pharmacist"
         lede="Upload a prescription you don't understand — a licensed pharmacist will explain it."
       />
 
