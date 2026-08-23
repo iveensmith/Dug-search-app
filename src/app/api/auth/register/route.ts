@@ -12,6 +12,8 @@ import { isValidState } from '@/lib/states'
 import { issueVerifyUrl } from '@/lib/emailVerification'
 import { sendVerifyEmail } from '@/lib/mail'
 import { Prisma } from '@/generated/prisma/client'
+import { consumeWindow } from '@/lib/rateLimit'
+import { clientIp } from '@/lib/loginThrottle'
 
 // Sign-up: email is the only login identifier. accountType picks the role —
 // 'patient' (default) or 'pharmacy' for a pharmacy owner account, which is
@@ -24,6 +26,16 @@ const bodySchema = registerSchema.extend({
 })
 
 export async function POST(req: NextRequest) {
+  // Bulk account creation from one address. Ten an hour is far above a
+  // real person signing up and far below a script filling the table.
+  const limit = await consumeWindow(`register:${clientIp(req)}`, 10, 60 * 60 * 1000)
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many sign-ups from this device. Try again in a little while.' },
+      { status: 429 },
+    )
+  }
+
   // Validated server-side regardless of what the form checked first.
   const body = await readJsonBody(req)
   const parsed = bodySchema.safeParse(body)
