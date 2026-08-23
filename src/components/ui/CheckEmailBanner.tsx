@@ -79,16 +79,16 @@ export default function CheckEmailBanner() {
       role="status"
       className={`border-b px-4 py-2.5 ${
         failedToSend
-          ? 'border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40'
-          : 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40'
+          ? 'border-warn bg-warn-soft'
+          : 'border-line-brand bg-brand-soft'
       }`}
     >
       <div className="mx-auto flex w-full max-w-6xl items-start gap-2.5">
         <span
           className={`mt-0.5 shrink-0 ${
             failedToSend
-              ? 'text-amber-700 dark:text-amber-400'
-              : 'text-emerald-700 dark:text-emerald-400'
+              ? 'text-warn-ink'
+              : 'text-brand-ink'
           }`}
         >
           {failedToSend ? (
@@ -101,8 +101,8 @@ export default function CheckEmailBanner() {
         <div
           className={`min-w-0 flex-1 text-sm ${
             failedToSend
-              ? 'text-amber-900 dark:text-amber-200'
-              : 'text-emerald-900 dark:text-emerald-200'
+              ? 'text-warn-ink'
+              : 'text-brand-ink'
           }`}
         >
           {failedToSend ? (
@@ -145,8 +145,8 @@ export default function CheckEmailBanner() {
           aria-label="Dismiss"
           className={`-m-1 shrink-0 cursor-pointer rounded-lg p-1 ${
             failedToSend
-              ? 'text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/40'
-              : 'text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/40'
+              ? 'text-warn-ink hover:bg-amber-100 dark:hover:bg-amber-900/40'
+              : 'text-brand-ink hover:bg-brand-soft'
           }`}
         >
           <IconX width={16} height={16} />

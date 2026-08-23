@@ -62,9 +62,9 @@ export default function NetworkPulse({ showCounts = true, placement = 'float' }:
 
   return (
     <div
-      className={`${PLACEMENT[placement]} select-none rounded-2xl border border-emerald-200 bg-white/95 p-4 shadow-lg backdrop-blur-sm dark:border-emerald-900/60 dark:bg-gray-900/95`}
+      className={`${PLACEMENT[placement]} select-none rounded-2xl border border-line-brand bg-white/95 p-4 shadow-lg backdrop-blur-sm dark:bg-gray-900/95`}
     >
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-ink">
         <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
         Live network
       </p>
@@ -74,14 +74,14 @@ export default function NetworkPulse({ showCounts = true, placement = 'float' }:
           <IconStore
             width={16}
             height={16}
-            className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+            className="mt-0.5 shrink-0 text-brand-ink"
           />
-          <p className="text-sm leading-snug text-gray-700 dark:text-gray-300">
-            <span className="font-bold text-gray-900 dark:text-gray-100">
+          <p className="text-sm leading-snug text-muted">
+            <span className="font-bold text-ink">
               {stats.pharmacies.toLocaleString()}
             </span>{' '}
             verified {stats.pharmacies === 1 ? 'pharmacy' : 'pharmacies'} across{' '}
-            <span className="font-bold text-gray-900 dark:text-gray-100">{stats.states}</span>{' '}
+            <span className="font-bold text-ink">{stats.states}</span>{' '}
             {stats.states === 1 ? 'state' : 'states'}
           </p>
         </div>
@@ -92,14 +92,14 @@ export default function NetworkPulse({ showCounts = true, placement = 'float' }:
           <IconCheck
             width={16}
             height={16}
-            className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+            className="mt-0.5 shrink-0 text-brand-ink"
           />
-          <p className="text-sm leading-snug text-gray-700 dark:text-gray-300">
+          <p className="text-sm leading-snug text-muted">
             Stock confirmed{' '}
             {activity.lga ? (
-              <span className="font-bold text-gray-900 dark:text-gray-100">in {activity.lga}</span>
+              <span className="font-bold text-ink">in {activity.lga}</span>
             ) : (
-              <span className="font-bold text-gray-900 dark:text-gray-100">
+              <span className="font-bold text-ink">
                 in {stateLabel(activity.state)}
               </span>
             )}{' '}

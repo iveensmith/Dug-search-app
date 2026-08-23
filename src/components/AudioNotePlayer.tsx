@@ -30,7 +30,7 @@ export default function AudioNotePlayer({
   const head =
     tone === 'own'
       ? 'text-white/90'
-      : 'text-gray-600 dark:text-gray-400'
+      : 'text-muted'
 
   return (
     <div>

@@ -19,7 +19,7 @@ type Pos = { lat: number; lng: number }
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+    <div className="flex h-full items-center justify-center text-sm text-faint">
       Loading map…
     </div>
   ),
@@ -225,29 +225,29 @@ export default function PharmacyRegisterPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
       <header className="py-10 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Add your pharmacy outlet</h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Get discovered by patients searching nearby</p>
+        <h1 className="text-2xl font-bold text-ink">Add your pharmacy outlet</h1>
+        <p className="mt-2 text-sm text-muted">Get discovered by patients searching nearby</p>
       </header>
 
       {me === undefined && (
-        <p className="py-12 text-center text-gray-500 dark:text-gray-400">Checking your account…</p>
+        <p className="py-12 text-center text-faint">Checking your account…</p>
       )}
 
       {me === null && (
         <Card className="animate-fade-up mx-auto max-w-md text-center">
-          <IconUser width={28} height={28} className="mx-auto text-gray-400 dark:text-gray-500" />
-          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">Sign in to add your outlet</p>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <IconUser width={28} height={28} className="mx-auto text-faint" />
+          <p className="mt-3 font-semibold text-ink">Sign in to add your outlet</p>
+          <p className="mt-1 text-sm text-muted">
             You need to be signed in before you can register a pharmacy outlet.
           </p>
           <Button className="mt-4 w-full" onClick={() => router.push('/login?next=/pharmacy/register')}>
             Log in
           </Button>
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-sm text-muted">
             Don&apos;t have an account?{' '}
             <Link
               href="/register?type=pharmacy&next=/pharmacy/register"
-              className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="font-medium text-brand-ink underline underline-offset-2"
             >
               Create a pharmacy owner account
             </Link>
@@ -257,11 +257,11 @@ export default function PharmacyRegisterPage() {
 
       {me && me.role !== 'PHARMACY_OWNER' && (
         <Card className="animate-fade-up mx-auto max-w-md text-center">
-          <IconStore width={28} height={28} className="mx-auto text-gray-400 dark:text-gray-500" />
-          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">
+          <IconStore width={28} height={28} className="mx-auto text-faint" />
+          <p className="mt-3 font-semibold text-ink">
             This needs a pharmacy owner account
           </p>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted">
             You&apos;re signed in as a {me.role === 'PATIENT' ? 'patient' : me.role.toLowerCase().replace('_', ' ')} —
             pharmacy outlets are managed from a separate pharmacy owner account.
           </p>
@@ -271,11 +271,11 @@ export default function PharmacyRegisterPage() {
           >
             Create a pharmacy owner account
           </Button>
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-sm text-muted">
             Already have one?{' '}
             <Link
               href="/login?next=/pharmacy/register"
-              className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="font-medium text-brand-ink underline underline-offset-2"
             >
               Log in with it
             </Link>
@@ -285,7 +285,7 @@ export default function PharmacyRegisterPage() {
 
       {me && me.role === 'PHARMACY_OWNER' && (
         <>
-      <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
+      <div className="flex items-start gap-3 rounded-control border border-info bg-info-soft p-3.5 text-sm text-info-ink">
         <IconShieldCheck width={18} height={18} className="mt-0.5 shrink-0" />
         <div>
           <p className="font-semibold">Before you start</p>
@@ -305,10 +305,10 @@ export default function PharmacyRegisterPage() {
               key={label}
               className={
                 i === step
-                  ? 'font-bold text-emerald-700 dark:text-emerald-400'
+                  ? 'font-bold text-brand-ink'
                   : i < step
                     ? 'text-emerald-700/70 dark:text-emerald-400/70'
-                    : 'text-gray-500 dark:text-gray-400'
+                    : 'text-faint'
               }
             >
               {i < step ? '✓ ' : `${i + 1}. `}
@@ -316,9 +316,9 @@ export default function PharmacyRegisterPage() {
             </span>
           ))}
         </div>
-        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-line">
           <div
-            className="h-full rounded-full bg-emerald-600 transition-all duration-300 dark:bg-emerald-500"
+            className="h-full rounded-full bg-brand transition-all duration-300"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </div>
@@ -402,9 +402,9 @@ export default function PharmacyRegisterPage() {
                   required
                 />
                 {touchedPcn && pcnError ? (
-                  <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{pcnError}</p>
+                  <p className="mt-1 text-sm font-medium text-danger-ink">{pcnError}</p>
                 ) : (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-faint">
                     Input the correct registration number — confirmation will be done via the PCN
                     register.
                   </p>
@@ -424,7 +424,7 @@ export default function PharmacyRegisterPage() {
                 Continue to location
               </Button>
               {!detailsComplete && (
-                <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-center text-xs text-faint">
                   Fill in every field above to continue.
                 </p>
               )}
@@ -434,9 +434,9 @@ export default function PharmacyRegisterPage() {
           {step === 1 && (
             <>
               <div>
-                <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <p className="mb-1.5 text-sm font-medium text-muted">
                   Pin your exact location{' '}
-                  <span className="font-normal text-gray-500 dark:text-gray-400">
+                  <span className="font-normal text-faint">
                     (move the map so the pin sits on your shopfront)
                   </span>
                 </p>
@@ -475,8 +475,8 @@ export default function PharmacyRegisterPage() {
                   </Button>
                 </div>
 
-                {geocodeNote && <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">{geocodeNote}</p>}
-                <div className="map-tiles h-72 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700">
+                {geocodeNote && <p className="mb-2 text-sm text-muted">{geocodeNote}</p>}
+                <div className="map-tiles h-72 overflow-hidden rounded-control border border-line-strong">
                   {/* The tick follows the map, but only when the owner moved it —
                       a programmatic recentre (picking a state, a place
                       search) must not confirm a pin on their behalf. */}
@@ -488,7 +488,7 @@ export default function PharmacyRegisterPage() {
                     }}
                   />
                 </div>
-                <label className="mt-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <label className="mt-2 flex items-center gap-2 text-sm text-muted">
                   <input
                     type="checkbox"
                     checked={pinConfirmed}
@@ -497,7 +497,7 @@ export default function PharmacyRegisterPage() {
                   />
                   The pin is on my pharmacy
                 </label>
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1.5 text-xs text-faint">
                   Patients get walking and driving directions to this exact point.
                 </p>
               </div>
@@ -515,7 +515,7 @@ export default function PharmacyRegisterPage() {
 
           {step === 2 && (
             <>
-              <dl className="divide-y divide-gray-100 rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+              <dl className="divide-y divide-gray-100 rounded-control border border-line dark:divide-gray-800">
                 {[
                   ['Pharmacy', form.pharmacyName],
                   ['Area', selectedState ? `${selectedLga}, ${stateLabel(selectedState)}` : ''],
@@ -525,24 +525,24 @@ export default function PharmacyRegisterPage() {
                   ['Map pin', `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`],
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-start justify-between gap-3 px-3.5 py-2.5">
-                    <dt className="shrink-0 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    <dt className="shrink-0 text-xs font-medium uppercase tracking-wide text-faint">
                       {label}
                     </dt>
-                    <dd className="min-w-0 break-words text-right text-sm text-gray-900 dark:text-gray-100">{value}</dd>
+                    <dd className="min-w-0 break-words text-right text-sm text-ink">{value}</dd>
                   </div>
                 ))}
               </dl>
 
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted">
                 Managed from{' '}
-                <span className="font-medium text-gray-900 dark:text-gray-100">
+                <span className="font-medium text-ink">
                   {me.displayName ?? me.email ?? 'your account'}
                 </span>
                 {me.email && me.displayName ? ` (${me.email})` : ''}. We&apos;ll email you when
                 verification finishes — usually 2–3 working days.
               </p>
 
-              {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+              {error && <p className="text-sm font-medium text-danger-ink">{error}</p>}
 
               <div className="flex gap-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>

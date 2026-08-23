@@ -46,7 +46,7 @@ export default function RatingStars({
   // than showing empty stars, which reads as a bad rating.
   if (score === null && (count ?? 0) > 0) {
     return (
-      <span className={`text-xs text-gray-500 dark:text-gray-400 ${className}`}>
+      <span className={`text-xs text-faint ${className}`}>
         {count} {count === 1 ? 'rating' : 'ratings'} so far — too few to score
       </span>
     )
@@ -62,12 +62,12 @@ export default function RatingStars({
       </span>
       <span className="sr-only">{label}</span>
       {score !== null && (
-        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+        <span className="text-xs font-semibold text-muted">
           {score.toFixed(1)}
         </span>
       )}
       {count !== undefined && (
-        <span className="text-xs text-gray-500 dark:text-gray-400">
+        <span className="text-xs text-faint">
           {count === 0 ? 'No ratings yet' : `(${count})`}
         </span>
       )}

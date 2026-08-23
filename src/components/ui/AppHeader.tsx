@@ -35,7 +35,7 @@ export default function AppHeader({
 }: Props) {
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/80">
+    <header className="sticky top-0 z-50 border-b border-line bg-white/80 backdrop-blur-sm dark:bg-gray-950/80">
       <WelcomeToast />
       <div className={`mx-auto flex w-full ${width} items-center justify-between gap-3 px-4 py-4`}>
       <div className="flex min-w-0 items-center gap-3">
@@ -45,13 +45,13 @@ export default function AppHeader({
         <Link
           href={backHref}
           aria-label="MediQuest home"
-          className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
+          className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-lg"
         >
           <LogoMark size="sm" />
         </Link>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold text-gray-900 dark:text-gray-50">{title}</h1>
-          {subtitle && <p className="truncate text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>}
+          <h1 className="truncate text-lg font-bold text-ink">{title}</h1>
+          {subtitle && <p className="truncate text-sm text-muted">{subtitle}</p>}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
@@ -59,7 +59,7 @@ export default function AppHeader({
         {onLogout && (
           <button
             onClick={onLogout}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-faint transition-colors hover:bg-sunken hover:text-ink"
           >
             <IconLogOut width={15} height={15} />
             Log out

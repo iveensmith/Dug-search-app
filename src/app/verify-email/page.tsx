@@ -58,22 +58,22 @@ function VerifyEmailBody() {
             leaves a screen reader nothing to announce the page by. Tailwind
             resets heading size and weight, so these look unchanged. */}
         {state === 'working' && (
-          <h1 className="text-sm text-gray-600 dark:text-gray-400">Confirming your email…</h1>
+          <h1 className="text-sm text-muted">Confirming your email…</h1>
         )}
 
         {state === 'done' && (
           <>
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand-ink">
               <IconCheck width={22} height={22} />
             </span>
-            <h1 className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">Email confirmed</h1>
-            <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
+            <h1 className="mt-3 text-lg font-bold text-ink">Email confirmed</h1>
+            <p className="mt-1.5 text-sm text-muted">
               Thanks — we can reach you now if a pharmacist replies, or if you ever need to reset
               your password.
             </p>
             <Link
               href="/"
-              className="mt-5 inline-block rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
+              className="mt-5 inline-block rounded-control bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand"
             >
               Find medicine
             </Link>
@@ -82,23 +82,23 @@ function VerifyEmailBody() {
 
         {state === 'failed' && (
           <>
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-warn-soft text-warn-ink">
               <IconAlertCircle width={22} height={22} />
             </span>
-            <h1 className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">
+            <h1 className="mt-3 text-lg font-bold text-ink">
               Couldn&apos;t confirm that
             </h1>
-            <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">{error}</p>
+            <p className="mt-1.5 text-sm text-muted">{error}</p>
             {/* Nothing is lost by this failing — say so, because a page
                 that only reports an error implies something broke that
                 needs fixing before the app will work. */}
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-3 text-sm text-muted">
               Your account still works either way. You can ask for a new link from your account
               page.
             </p>
             <Link
               href="/account"
-              className="mt-5 inline-block rounded-xl border border-emerald-600/60 px-5 py-2.5 text-sm font-semibold text-emerald-700 dark:border-emerald-400/50 dark:text-emerald-400"
+              className="mt-5 inline-block rounded-control border border-emerald-600/60 px-5 py-2.5 text-sm font-semibold text-brand-ink dark:border-emerald-400/50"
             >
               Go to my account
             </Link>

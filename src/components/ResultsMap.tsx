@@ -87,7 +87,7 @@ export default function ResultsMap({ results, userPos, center, route, onRoute }:
                 {onRoute && (
                   <button
                     onClick={() => onRoute(r)}
-                    className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2"
+                    className="cursor-pointer font-medium text-brand-ink underline underline-offset-2"
                   >
                     Route
                   </button>
@@ -96,11 +96,11 @@ export default function ResultsMap({ results, userPos, center, route, onRoute }:
                   href={directionsUrl(r.latitude, r.longitude)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-emerald-700"
+                  className="font-medium text-brand-ink"
                 >
                   Google Maps
                 </a>
-                <a href={`tel:${r.phone.replace(/\s/g, '')}`} className="font-medium text-emerald-700">
+                <a href={`tel:${r.phone.replace(/\s/g, '')}`} className="font-medium text-brand-ink">
                   Call
                 </a>
               </div>

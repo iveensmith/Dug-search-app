@@ -6,7 +6,7 @@ export function LogoMark({ size = 'md' }: { size?: keyof typeof MARK_SIZES }) {
   const px = MARK_SIZES[size]
   return (
     <svg width={px} height={px} viewBox="0 0 40 40" fill="none" aria-hidden="true" className="shrink-0">
-      <rect width="40" height="40" rx="11" className="fill-emerald-600 dark:fill-emerald-500" />
+      <rect width="40" height="40" rx="11" className="fill-brand" />
       <path d="M20 11a9 9 0 100 18 9 9 0 000-18z" fill="white" fillOpacity="0.16" />
       <rect x="17.25" y="12" width="5.5" height="16" rx="1.5" fill="white" />
       <rect x="12" y="17.25" width="16" height="5.5" rx="1.5" fill="white" />
@@ -27,18 +27,18 @@ export default function Logo({ size = 'md', href = '/', tagline, className = '' 
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark size={size} />
       <span className="text-left">
-        <span className="block text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-gray-50">
+        <span className="block text-xl font-bold leading-tight tracking-tight text-ink">
           MediQuest
         </span>
         {tagline && (
-          <span className="block text-xs font-medium text-gray-500 dark:text-gray-400">{tagline}</span>
+          <span className="block text-xs font-medium text-faint">{tagline}</span>
         )}
       </span>
     </span>
   )
   if (href === null) return content
   return (
-    <Link href={href} className="inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg">
+    <Link href={href} className="inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-lg">
       {content}
     </Link>
   )

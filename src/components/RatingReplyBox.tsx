@@ -54,7 +54,7 @@ export function ReplyBox({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mt-1.5 cursor-pointer text-xs font-semibold text-emerald-700 dark:text-emerald-400"
+        className="mt-1.5 cursor-pointer text-xs font-semibold text-brand-ink"
       >
         {comment.ownerReply ? 'Edit your reply' : 'Reply publicly'}
       </button>

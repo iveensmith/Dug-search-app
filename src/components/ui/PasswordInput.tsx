@@ -47,7 +47,7 @@ export default function PasswordInput({
         // and a reveal button in the middle of it is a trip hazard for
         // anyone using a keyboard or a screen reader.
         tabIndex={-1}
-        className="absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-2.5 text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200"
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-2.5 text-faint transition-colors hover:text-ink"
       >
         {shown ? <IconEyeOff width={18} height={18} /> : <IconEye width={18} height={18} />}
       </button>

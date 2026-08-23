@@ -50,9 +50,9 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <Card>
-        <p className="text-sm text-gray-700 dark:text-gray-300">
+        <p className="text-sm text-muted">
           This link is missing its reset token.{' '}
-          <Link href="/forgot-password" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+          <Link href="/forgot-password" className="font-medium text-brand-ink underline underline-offset-2">
             Request a new one
           </Link>
           .
@@ -91,11 +91,11 @@ function ResetPasswordForm() {
             does fail, give them the way out rather than just the news. */}
         {error && (
           <div>
-            <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm font-medium text-danger-ink">{error}</p>
             {/expired|invalid/i.test(error) && (
               <Link
                 href="/forgot-password"
-                className="mt-1.5 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                className="mt-1.5 inline-block text-sm font-semibold text-brand-ink underline underline-offset-2"
               >
                 Send me a new link
               </Link>
@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Choose a new password</h1>
+          <h1 className="text-2xl font-bold text-ink">Choose a new password</h1>
         </div>
         <Suspense>
           <ResetPasswordForm />

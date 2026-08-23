@@ -146,13 +146,13 @@ export default function AdminPage() {
   if (denied) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-gray-700 dark:text-gray-300">This page is for administrators only.</p>
-        <Link href="/" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">Back to search</Link>
+        <p className="text-muted">This page is for administrators only.</p>
+        <Link href="/" className="mt-4 inline-block text-brand-ink underline underline-offset-2">Back to search</Link>
       </div>
     )
   }
 
-  if (!pharmacies) return <p className="py-16 text-center text-gray-500 dark:text-gray-400">Loading admin panel…</p>
+  if (!pharmacies) return <p className="py-16 text-center text-faint">Loading admin panel…</p>
 
   const pending = pharmacies.filter((p) => p.verificationStatus === 'PENDING')
 
@@ -166,7 +166,7 @@ export default function AdminPage() {
     />
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 pb-16">
 
-      <nav className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
+      <nav className="mb-6 flex gap-1 overflow-x-auto rounded-control bg-sunken p-1">
         {(
           [
             ['pharmacies', `Pharmacies (${pharmacies.length})`],
@@ -180,8 +180,8 @@ export default function AdminPage() {
             onClick={() => setTab(key)}
             className={`flex-1 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               tab === key
-                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-50'
-                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                ? 'bg-surface text-ink shadow-card'
+                : 'text-muted hover:text-ink'
             }`}
           >
             {label}
@@ -237,9 +237,9 @@ function PharmaciesTab({
           <Card>
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-gray-100">{p.name}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{p.address}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="font-semibold text-ink">{p.name}</p>
+                <p className="text-sm text-muted">{p.address}</p>
+                <p className="mt-1 text-xs text-faint">
                   {stateLabel(p.state)} · PCN: {p.pcnLicenseNumber} · {p.phone} · owner:{' '}
                   {p.ownerEmail ?? p.ownerPhone} ·{' '}
                   {p.inventoryCount} drugs listed
@@ -262,7 +262,7 @@ function PharmaciesTab({
                 href={`https://www.google.com/maps/search/?api=1&query=${p.latitude ?? ''},${p.longitude ?? ''}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto text-sm text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                className="ml-auto text-sm text-brand-ink underline underline-offset-2"
               >
                 View pin
               </a>
@@ -325,8 +325,8 @@ function PharmacistsTab({
     <div>
       <Card>
         <form onSubmit={create}>
-          <p className="mb-1 font-semibold text-gray-900 dark:text-gray-100">Create a pharmacist account</p>
-          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mb-1 font-semibold text-ink">Create a pharmacist account</p>
+          <p className="mb-3 text-xs text-faint">
             Pharmacists are a vetted role — there is no public sign-up. Verify their license yourself,
             then create their login here.
           </p>
@@ -349,9 +349,9 @@ function PharmacistsTab({
               />
             </Field>
           </div>
-          {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          {error && <p className="mt-2 text-sm font-medium text-danger-ink">{error}</p>}
           {created && (
-            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <div className="mt-3 rounded-lg border border-line-brand bg-brand-soft p-3 text-sm text-brand-ink">
               <p className="font-medium">
                 Account created for {created.email}. Share this temporary password with them — it
                 won&apos;t be shown again:
@@ -365,21 +365,21 @@ function PharmacistsTab({
         </form>
       </Card>
 
-      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
+      <ul className="mt-4 divide-y divide-line rounded-control border border-line bg-surface shadow-card">
         {pharmacists.length === 0 && (
-          <li className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No pharmacist accounts yet.</li>
+          <li className="px-4 py-6 text-center text-sm text-faint">No pharmacist accounts yet.</li>
         )}
         {pharmacists.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-              <p className="truncate font-medium text-gray-900 dark:text-gray-100">{p.displayName ?? 'Unnamed'}</p>
-              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+              <p className="truncate font-medium text-ink">{p.displayName ?? 'Unnamed'}</p>
+              <p className="truncate text-xs text-faint">
                 {p.email ?? p.phone} · claimed {p.claimedCount} conversation{p.claimedCount === 1 ? '' : 's'}
               </p>
             </div>
             <button
               onClick={() => revoke(p.id, p.displayName ?? p.email ?? 'this pharmacist')}
-              className="shrink-0 cursor-pointer text-sm font-medium text-red-600 underline underline-offset-2 dark:text-red-400"
+              className="shrink-0 cursor-pointer text-sm font-medium text-danger-ink underline underline-offset-2"
             >
               Revoke
             </button>
@@ -393,8 +393,8 @@ function PharmacistsTab({
 function chipClass(on: boolean) {
   return `cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
     on
-      ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
-      : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+      ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+      : 'border-line bg-surface text-muted hover:border-line-brand hover:text-brand-ink'
   }`
 }
 
@@ -480,7 +480,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
     <div>
       <Card>
         <form onSubmit={save}>
-          <p className="mb-3 font-semibold text-gray-900 dark:text-gray-100">
+          <p className="mb-3 font-semibold text-ink">
             {editingId ? 'Edit drug' : 'Add a drug to the master list'}
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -529,7 +529,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
               </Select>
             </Field>
           </div>
-          {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          {error && <p className="mt-2 text-sm font-medium text-danger-ink">{error}</p>}
           <div className="mt-3 flex gap-2">
             <Button type="submit" loading={busy}>
               {editingId ? 'Save changes' : 'Add drug'}
@@ -587,11 +587,11 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       </div>
 
       {unclassifiedCount > 0 && filter !== 'unclassified' && (
-        <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-3 text-sm text-muted">
           {unclassifiedCount} {unclassifiedCount === 1 ? 'drug has' : 'drugs have'} no class yet —{' '}
           <button
             onClick={() => setFilter('unclassified')}
-            className="cursor-pointer font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            className="cursor-pointer font-semibold text-brand-ink underline underline-offset-2"
           >
             work through them
           </button>
@@ -600,7 +600,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
       )}
 
       {visible.length === 0 ? (
-        <p className="mt-4 rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+        <p className="mt-4 rounded-control border border-dashed border-line-strong p-8 text-center text-sm text-faint">
           {filter === 'unclassified'
             ? 'Every drug has a class. Nothing to do here.'
             : filter === 'no-dispensing'
@@ -608,23 +608,23 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
               : 'No drug matches that.'}
         </p>
       ) : (
-      <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
+      <ul className="mt-4 divide-y divide-line rounded-control border border-line bg-surface shadow-card">
         {visible.map((d) => (
           <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
-              <p className="flex items-center gap-2 truncate font-medium text-gray-900 dark:text-gray-100">
+              <p className="flex items-center gap-2 truncate font-medium text-ink">
                 <span className="truncate">
                   {d.genericName} {d.strength}{' '}
-                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{d.form.toLowerCase()}</span>
+                  <span className="text-xs font-normal text-faint">{d.form.toLowerCase()}</span>
                 </span>
                 <DispensingBadge value={d.dispensing} short className="shrink-0" />
               </p>
-              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+              <p className="truncate text-xs text-faint">
                 <span
                   className={
                     d.category
-                      ? 'font-medium text-gray-600 dark:text-gray-300'
-                      : 'font-medium text-amber-700 dark:text-amber-400'
+                      ? 'font-medium text-muted'
+                      : 'font-medium text-warn-ink'
                   }
                 >
                   {d.category ?? 'Unclassified'}
@@ -633,7 +633,7 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
                 {d.stockedByCount}
               </p>
             </div>
-            <button onClick={() => startEdit(d)} className="shrink-0 cursor-pointer text-sm font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+            <button onClick={() => startEdit(d)} className="shrink-0 cursor-pointer text-sm font-medium text-brand-ink underline underline-offset-2">
               Edit
             </button>
           </li>
@@ -645,37 +645,37 @@ function DrugsTab({ drugs, onChanged }: { drugs: AdminDrug[]; onChanged: () => v
 }
 
 function GapsTab({ analytics }: { analytics: Analytics | null }) {
-  if (!analytics) return <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading analytics…</p>
+  if (!analytics) return <p className="py-8 text-center text-faint">Loading analytics…</p>
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{analytics.totalSearches}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">total searches</p>
+          <p className="text-3xl font-bold text-ink">{analytics.totalSearches}</p>
+          <p className="text-sm text-muted">total searches</p>
         </Card>
         <Card className="text-center">
           <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{analytics.noResultSearches}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">found nothing</p>
+          <p className="text-sm text-muted">found nothing</p>
         </Card>
       </div>
 
       <section>
-        <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Drugs searched but out of stock everywhere</h2>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+        <h2 className="mb-2 font-semibold text-ink">Drugs searched but out of stock everywhere</h2>
+        <p className="mb-3 text-sm text-muted">
           These drugs are in the list, but no approved pharmacy had them — stock gaps worth chasing.
         </p>
         {analytics.stockGaps.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">Nothing yet.</p>
+          <p className="rounded-control border border-dashed border-line-strong p-4 text-sm text-faint">Nothing yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
+          <ul className="divide-y divide-line rounded-control border border-line bg-surface shadow-card">
             {analytics.stockGaps.map((g) => (
               <li key={g.drugId} className="flex items-center justify-between px-4 py-3">
-                <span className="font-medium text-gray-900 dark:text-gray-100">
+                <span className="font-medium text-ink">
                   {g.genericName} {g.strength}{' '}
-                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{g.form.toLowerCase()}</span>
+                  <span className="text-xs font-normal text-faint">{g.form.toLowerCase()}</span>
                 </span>
-                <span className="text-sm text-gray-600 dark:text-gray-400">{g.searches}×</span>
+                <span className="text-sm text-muted">{g.searches}×</span>
               </li>
             ))}
           </ul>
@@ -683,18 +683,18 @@ function GapsTab({ analytics }: { analytics: Analytics | null }) {
       </section>
 
       <section>
-        <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Searches that matched no drug</h2>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+        <h2 className="mb-2 font-semibold text-ink">Searches that matched no drug</h2>
+        <p className="mb-3 text-sm text-muted">
           What people typed that isn&apos;t in the master list — candidates to add.
         </p>
         {analytics.unmatchedQueries.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">Nothing yet.</p>
+          <p className="rounded-control border border-dashed border-line-strong p-4 text-sm text-faint">Nothing yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900">
+          <ul className="divide-y divide-line rounded-control border border-line bg-surface shadow-card">
             {analytics.unmatchedQueries.map((q) => (
               <li key={q.queryText} className="flex items-center justify-between px-4 py-3">
-                <span className="font-medium text-gray-900 dark:text-gray-100">“{q.queryText}”</span>
-                <span className="text-sm text-gray-600 dark:text-gray-400">{q.searches}×</span>
+                <span className="font-medium text-ink">“{q.queryText}”</span>
+                <span className="text-sm text-muted">{q.searches}×</span>
               </li>
             ))}
           </ul>

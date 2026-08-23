@@ -62,21 +62,21 @@ export default function SearchHistoryPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">Search history</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-xl font-bold text-ink">Search history</h1>
+          <p className="text-sm text-muted">
             Drugs you&apos;ve searched for while logged in
           </p>
         </header>
 
         {!searches ? (
-          <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+          <p className="py-8 text-center text-faint">Loading…</p>
         ) : searches.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-            <IconSearch className="text-gray-400 dark:text-gray-500" />
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col items-center rounded-card border border-dashed border-line-strong p-8 text-center">
+            <IconSearch className="text-faint" />
+            <p className="mt-2 text-sm text-faint">
               Nothing here yet — searches you run while logged in will show up here.
             </p>
-            <Link href="/" className="mt-3 text-sm font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+            <Link href="/" className="mt-3 text-sm font-medium text-brand-ink underline underline-offset-2">
               Search for a drug
             </Link>
           </div>
@@ -86,10 +86,10 @@ export default function SearchHistoryPage() {
               <li key={s.id}>
                 <Card className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <p className="truncate text-sm font-medium text-ink">
                       {s.drug ? drugLabel(s.drug) : `“${s.queryText}”`}
                     </p>
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mt-0.5 text-xs text-faint">
                       {new Date(s.createdAt).toLocaleString()}
                       {s.state ? ` · ${stateLabel(s.state)}` : ''}
                     </p>

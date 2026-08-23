@@ -142,8 +142,8 @@ export default function PrescriptionThreadPage() {
   if (notFound) {
     return (
       <main className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-gray-700 dark:text-gray-300">This conversation doesn&apos;t exist or you can&apos;t view it.</p>
-        <Link href="/prescriptions" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+        <p className="text-muted">This conversation doesn&apos;t exist or you can&apos;t view it.</p>
+        <Link href="/prescriptions" className="mt-4 inline-block text-brand-ink underline underline-offset-2">
           Back
         </Link>
       </main>
@@ -151,7 +151,7 @@ export default function PrescriptionThreadPage() {
   }
   if (!thread)
     return (
-      <main className="py-16 text-center text-gray-500 dark:text-gray-400">
+      <main className="py-16 text-center text-faint">
         <p>Loading conversation…</p>
       </main>
     )
@@ -169,7 +169,7 @@ export default function PrescriptionThreadPage() {
           because the alternative is a patient believing a pharmacist has
           heard something that was never delivered. */}
       {voiceNoteFailed && (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+        <div className="mt-4 rounded-control border border-warn bg-warn-soft p-3.5 text-sm text-warn-ink">
           <p className="font-bold">Your voice note did not attach</p>
           <p className="mt-1">
             Everything else was sent. Record it again in a message below, or type your question —
@@ -179,24 +179,24 @@ export default function PrescriptionThreadPage() {
       )}
       <header className="flex items-center justify-between gap-3 py-4">
         <div className="min-w-0">
-          <h1 className="truncate font-bold text-gray-900 dark:text-gray-50">
+          <h1 className="truncate font-bold text-ink">
             {upload.isMine
               ? upload.pharmacistName
                 ? `Chat with ${upload.pharmacistName}`
                 : 'Your prescription question'
               : `Question from ${upload.patientName}`}
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-faint">
             {new Date(upload.createdAt).toLocaleString()} · {upload.status.toLowerCase()}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {upload.status !== 'CLOSED' && (upload.isMine || upload.canMessage) && (
-            <button onClick={close} className="cursor-pointer text-sm text-gray-500 underline underline-offset-2 dark:text-gray-400">
+            <button onClick={close} className="cursor-pointer text-sm text-faint underline underline-offset-2">
               Close
             </button>
           )}
-          <Link href={backHref} className="text-sm text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+          <Link href={backHref} className="text-sm text-brand-ink underline underline-offset-2">
             Back
           </Link>
         </div>
@@ -205,7 +205,7 @@ export default function PrescriptionThreadPage() {
       <PrescriptionDisclaimer />
 
       <Card className="mt-4">
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-faint">
           Uploaded prescription
         </p>
         {/* Below the fold — the header, status and note come first. Both
@@ -217,7 +217,7 @@ export default function PrescriptionThreadPage() {
           alt="Uploaded prescription"
         />
         {upload.patientNote && (
-          <p className="mt-2 rounded-lg bg-gray-50 p-2 text-sm text-gray-700 dark:bg-white/5 dark:text-gray-300">
+          <p className="mt-2 rounded-lg bg-canvas p-2 text-sm text-muted">
             <span className="font-medium">Patient&apos;s note:</span> {upload.patientNote}
           </p>
         )}
@@ -225,7 +225,7 @@ export default function PrescriptionThreadPage() {
             part of the question being asked, and a pharmacist deciding
             whether to claim it should be able to hear it first. */}
         {upload.hasAudio && (
-          <div className="mt-2 rounded-lg bg-gray-50 p-2 dark:bg-white/5">
+          <div className="mt-2 rounded-lg bg-canvas p-2">
             <AudioNotePlayer
               src={`/api/prescriptions/${upload.id}/audio`}
               seconds={upload.audioDurationSec}
@@ -243,7 +243,7 @@ export default function PrescriptionThreadPage() {
 
       <div className="mt-4 flex-1 space-y-2">
         {messages.length === 0 && upload.status === 'PENDING' && (
-          <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="py-6 text-center text-sm text-faint">
             {upload.isMine
               ? 'A pharmacist will pick this up soon — replies appear here.'
               : 'Claim the question to start the conversation.'}
@@ -254,12 +254,12 @@ export default function PrescriptionThreadPage() {
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                 m.mine
-                  ? 'rounded-br-sm bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950'
-                  : 'rounded-bl-sm border border-gray-200 bg-white text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100'
+                  ? 'rounded-br-sm bg-brand text-on-brand'
+                  : 'rounded-bl-sm border border-line bg-surface text-ink'
               }`}
             >
               {!m.mine && (
-                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <p className="text-xs font-semibold text-brand-ink">
                   {m.senderName}
                   {m.senderRole === 'PHARMACIST' ? ' · Pharmacist' : ''}
                 </p>
@@ -274,7 +274,7 @@ export default function PrescriptionThreadPage() {
                   />
                 </div>
               )}
-              <p className={`mt-1 text-right text-[10px] ${m.mine ? 'text-emerald-100 dark:text-emerald-900' : 'text-gray-500 dark:text-gray-400'}`}>
+              <p className={`mt-1 text-right text-[10px] ${m.mine ? 'text-emerald-100 dark:text-emerald-900' : 'text-faint'}`}>
                 {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -298,7 +298,7 @@ export default function PrescriptionThreadPage() {
               onChange={(e) => setText(e.target.value)}
               placeholder={voiceNote ? 'Add a note with it (optional)…' : 'Type your message…'}
               maxLength={2000}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900"
+              className="w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink outline-none transition-colors placeholder:text-faint focus:border-focus focus:ring-2 focus:ring-brand-soft"
             />
             <Button
               type="submit"
@@ -313,7 +313,7 @@ export default function PrescriptionThreadPage() {
           </div>
         </form>
       ) : upload.status === 'CLOSED' ? (
-        <p className="mt-4 rounded-xl bg-gray-100 p-3 text-center text-sm text-gray-600 dark:bg-white/5 dark:text-gray-400">
+        <p className="mt-4 rounded-control bg-sunken p-3 text-center text-sm text-muted">
           This conversation is closed.
         </p>
       ) : null}

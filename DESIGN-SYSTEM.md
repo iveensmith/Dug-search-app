@@ -96,8 +96,55 @@ Find-and-replace, roughly in this order. Every line on the right also deletes th
 | `rounded-3xl` on bands | `rounded-sheet` |
 | `hover:border-emerald-200`,`hover:border-emerald-300` / `dark:hover:border-emerald-700`,`dark:hover:border-emerald-800` | `hover:border-line-brand` |
 | `focus-visible:ring-emerald-500` | `focus-visible:ring-focus` |
+| `divide-gray-100` / `dark:divide-gray-800` | `divide-line` |
+| `placeholder:text-gray-400` / `dark:placeholder:text-gray-500` | `placeholder:text-faint` |
+| `focus:border-emerald-500` / `dark:focus:border-emerald-400` | `focus:border-focus` |
+| `focus:ring-emerald-200` / `dark:focus:ring-emerald-900` | `focus:ring-brand-soft` |
+| `hover:bg-gray-50`,`hover:bg-gray-100` / `dark:hover:bg-white/5`,`dark:hover:bg-white/10` | `hover:bg-sunken` |
+| `hover:text-gray-700`,`hover:text-gray-900` / `dark:hover:text-gray-200` | `hover:text-ink` |
+| `hover:bg-emerald-800` on a brand fill | `hover:bg-brand-hover` |
+| `bg-emerald-800` + `dark:bg-emerald-700` (owner surfaces) | `bg-brand-deep` |
+| `text-white` + `dark:text-white` on a deep-brand fill | `text-on-brand-deep` |
+| `text-blue-800`,`text-blue-900` / `dark:text-blue-200`,`dark:text-blue-300` | `text-info-ink` |
+| `text-blue-500` / `dark:text-blue-400` (icon on info-soft) | `text-info` |
+| `border-emerald-200` / `dark:border-emerald-900/60` around a `bg-brand-soft` callout | `border-line-brand` |
+| `fill-emerald-600` / `dark:fill-emerald-500` | `fill-brand` |
 
 Highest-value files first: `SearchBox`, `CoverageResults`, `ResultFilters`, `StockLevelBadge`, `OpenStatusBadge`, `DispensingBadge`, `PatientHome`, `SiteHeader`, `TabBar`.
+
+### Two traps
+
+**A `dark:` left beside a token silently wins.** The token resolves per theme
+already, so the leftover `dark:` overrides it in dark mode and the token does
+nothing. Replace each utility and its twin together — this is the failure mode
+worth scanning for after every file.
+
+**Variants change who wins, and authoring order is not emission order.**
+Tailwind emits `hover:*` before `dark:*` and `dark:*` before `dark:hover:*`.
+So on an element whose base colour has to stay raw — a gradient, an alpha
+wash, anything sitting on a photograph — a bare `hover:<token>` is dead in
+dark mode, because the raw `dark:` base is emitted after it. Those elements
+need an explicit `dark:hover:<token>` twin. There is exactly one in the app
+(the prescriptions CTA card on the home page) and it carries a comment saying
+so, because it otherwise looks like the leftover the rule above warns about.
+
+### What deliberately stays raw
+
+Not everything has a token, and forcing one is worse than leaving the utility.
+These are intentional, and each carries a comment where it lives:
+
+- **Anything over the hero photograph** (`PatientHome` headline, `NetworkStatsRow`,
+  `HeroPanel`'s scrim). White in both themes, because the photo is dark in both;
+  `--ink` and `--on-brand` both flip. Only the `md:` halves, which land on mint,
+  are tokens.
+- **The "PCN verified" chip on a map** — map tiles are light in both themes.
+- **The owner CTA's primary button** (`bg-white`) — `--surface` goes near-black in
+  dark, which would make the primary quieter than the outlined link beside it.
+- **Gradients and alpha washes** — three-stop backgrounds, translucent headers,
+  the black lightbox scrim. A flat token loses the effect.
+- **Mint page bands** (`bg-emerald-50` / `dark:bg-emerald-950/25`) — a band is a
+  page-level wash, not a surface.
+- **Rating gold** (`bg-amber-400`, `text-amber-500`) — stars are not a warning.
 
 ## Loading states
 

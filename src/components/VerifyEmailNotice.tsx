@@ -49,8 +49,8 @@ export default function VerifyEmailNotice({
   }
 
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
-      <p className="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-300">
+    <div className="rounded-card border border-warn bg-warn-soft p-4">
+      <p className="flex items-center gap-2 text-sm font-bold text-warn-ink">
         <IconAlertCircle width={16} height={16} className="shrink-0" />
         Confirm your email
       </p>
@@ -61,19 +61,19 @@ export default function VerifyEmailNotice({
       </p>
 
       {state === 'sent' ? (
-        <p className="mt-2.5 text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+        <p className="mt-2.5 text-sm font-semibold text-brand-ink">
           Sent — check your inbox, and your spam folder.
         </p>
       ) : (
         <button
           onClick={resend}
           disabled={state === 'sending'}
-          className="mt-2.5 cursor-pointer text-sm font-bold text-amber-900 underline underline-offset-2 disabled:opacity-60 dark:text-amber-300"
+          className="mt-2.5 cursor-pointer text-sm font-bold text-warn-ink underline underline-offset-2 disabled:opacity-60"
         >
           {state === 'sending' ? 'Sending…' : 'Send the link again'}
         </button>
       )}
-      {error && <p className="mt-1.5 text-sm text-red-700 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-1.5 text-sm text-danger-ink">{error}</p>}
     </div>
   )
 }

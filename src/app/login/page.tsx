@@ -35,10 +35,10 @@ const PORTAL = {
     subtitle: 'Log in to your account',
     heading: 'Patient account',
     accent: 'emerald' as const,
-    tab: 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950',
+    tab: 'bg-brand text-on-brand',
     cardEdge: 'border-t-4 border-t-emerald-500 dark:border-t-emerald-400',
-    text: 'text-emerald-700 dark:text-emerald-400',
-    chip: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
+    text: 'text-brand-ink',
+    chip: 'bg-brand-soft text-brand-ink',
     Icon: IconUser,
   },
   pharmacy: {
@@ -46,29 +46,29 @@ const PORTAL = {
     subtitle: 'Log in to manage your pharmacy',
     heading: 'Pharmacy owner account',
     accent: 'deep' as const,
-    tab: 'bg-emerald-800 text-white dark:bg-emerald-700 dark:text-white',
+    tab: 'bg-brand-deep text-on-brand-deep',
     cardEdge: 'border-t-4 border-t-emerald-800 dark:border-t-emerald-600',
-    text: 'text-emerald-800 dark:text-emerald-300',
-    chip: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-800/35 dark:text-emerald-100',
+    text: 'text-brand-ink',
+    chip: 'bg-brand-soft text-brand-ink',
     Icon: IconStore,
   },
 } as const
 
 const actionCardClass =
-  'group flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900'
+  'group flex w-full cursor-pointer items-center gap-3.5 rounded-card border border-line bg-surface p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-md'
 
 // Each card takes the colour of the side it leads to, not the side you are
 // on — so "Are you a patient?" stays green while you are looking at the
 // indigo owner form, and the colour is telling you where the tap goes.
 const CARD_ACCENT = {
   patient: {
-    hover: 'hover:border-emerald-300 dark:hover:border-emerald-700',
-    icon: 'bg-emerald-50 text-emerald-700 group-hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:group-hover:bg-emerald-500/20',
+    hover: 'hover:border-line-brand',
+    icon: 'bg-brand-soft text-brand-ink group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20',
     chevron: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400',
   },
   pharmacy: {
     hover: 'hover:border-emerald-700 dark:hover:border-emerald-600',
-    icon: 'bg-emerald-100 text-emerald-900 group-hover:bg-emerald-200 dark:bg-emerald-800/35 dark:text-emerald-100 dark:group-hover:bg-emerald-800/50',
+    icon: 'bg-brand-soft text-brand-ink group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/50',
     chevron: 'group-hover:text-emerald-800 dark:group-hover:text-emerald-300',
   },
 } as const
@@ -93,8 +93,8 @@ function ActionCardBody({
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-semibold text-gray-900 dark:text-gray-50">{title}</span>
-        <span className="block truncate text-sm text-gray-500 dark:text-gray-400">{subtitle}</span>
+        <span className="block font-semibold text-ink">{title}</span>
+        <span className="block truncate text-sm text-faint">{subtitle}</span>
       </span>
       <IconChevronRight
         width={18}
@@ -155,13 +155,13 @@ function LoginForm() {
       <SiteHeader />
       <main className="animate-fade-up mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Welcome back</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-ink">Welcome back</h1>
+          <p className="mt-1 text-sm text-muted">
             {theme.subtitle}
           </p>
         </div>
 
-        <div className="mb-4 flex overflow-hidden rounded-lg border border-gray-300 text-sm dark:border-gray-700">
+        <div className="mb-4 flex overflow-hidden rounded-lg border border-line-strong text-sm">
           {(['patient', 'pharmacy'] as const).map((key) => (
             <button
               key={key}
@@ -171,7 +171,7 @@ function LoginForm() {
               className={`flex-1 cursor-pointer px-4 py-2 font-medium transition-colors ${
                 portal === key
                   ? PORTAL[key].tab
-                  : 'bg-white text-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                  : 'bg-surface text-muted'
               }`}
             >
               {PORTAL[key].label}
@@ -223,8 +223,8 @@ function LoginForm() {
                 showing them only after a failed attempt would say which
                 addresses are registered. */}
             {error && (
-              <div className="rounded-xl bg-red-50 p-3 dark:bg-red-950/40">
-                <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
+              <div className="rounded-control bg-danger-soft p-3">
+                <p className="text-sm font-medium text-danger-ink">{error}</p>
               </div>
             )}
 

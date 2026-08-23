@@ -14,14 +14,14 @@ export const metadata: Metadata = {
  */
 function Code({ children }: { children: string }) {
   return (
-    <pre className="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-xs leading-relaxed text-gray-100 dark:bg-black/60">
+    <pre className="mt-3 overflow-x-auto rounded-control bg-gray-900 p-4 text-xs leading-relaxed text-gray-100 dark:bg-black/60">
       <code>{children}</code>
     </pre>
   )
 }
 
 function H2({ children }: { children: React.ReactNode }) {
-  return <h2 className="mt-10 text-xl font-bold text-gray-900 dark:text-gray-50">{children}</h2>
+  return <h2 className="mt-10 text-xl font-bold text-ink">{children}</h2>
 }
 
 export default function ApiDocsPage() {
@@ -29,15 +29,15 @@ export default function ApiDocsPage() {
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">Stock API</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-ink">Stock API</h1>
+        <p className="mt-2 text-muted">
           Send a pharmacy&apos;s stock straight from the software that already tracks it. Everything
           below is one pharmacy&apos;s data — the key decides which, and there is no field to name
           another.
         </p>
 
         <H2>Getting a key</H2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-muted">
           The pharmacy owner creates one under <strong>Pharmacy → Connect your own software</strong>.
           It is shown once, at creation, and never again: only a scrambled copy is stored. Treat it
           like a password — anyone holding it can change what patients are told is on that shelf.
@@ -46,7 +46,7 @@ export default function ApiDocsPage() {
         <Code>{`Authorization: Bearer mq_live_xxxxxxxxxxxxxxxxxxxxxxxx`}</Code>
 
         <H2>1. Find our ids for your products — once</H2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-muted">
           Your system has its own product codes. Map them to ours once and store the result; do not
           re-guess on every sync.
         </p>
@@ -61,7 +61,7 @@ export default function ApiDocsPage() {
 }`}</Code>
 
         <H2>2. Send your stock</H2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-muted">
           Up to 500 items per request. Name each medicine by our <code>drugId</code>, or by an exact{' '}
           <code>genericName</code> + <code>strength</code> + <code>form</code>.
         </p>
@@ -78,7 +78,7 @@ export default function ApiDocsPage() {
   "https://your-domain/api/v1/inventory"
 
 { "applied": 1, "rejected": [ { "index": 1, "ref": "SKU-0102", "reason": "…" } ] }`}</Code>
-        <p className="mt-3 text-gray-600 dark:text-gray-400">
+        <p className="mt-3 text-muted">
           A bad item does not fail the batch — a nightly sync should not lose 499 good lines to one
           discontinued product. <strong>Read the <code>rejected</code> list</strong>; it is the only
           place you will learn something needs fixing. Pass <code>ref</code> and it comes back
@@ -89,20 +89,20 @@ export default function ApiDocsPage() {
         <Code>{`curl -H "Authorization: Bearer $KEY" "https://your-domain/api/v1/inventory"`}</Code>
 
         <H2>Two things that will bite you</H2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-muted">
           <strong>Strength and form are exact.</strong> If you send a strength we do not carry, the
           item is rejected rather than matched to a near one. That is deliberate: nobody is watching
           an unattended sync, and a helpful guess here puts the wrong box in a patient&apos;s hands.
           The <code>rejected</code> reason tells you what happened.
         </p>
-        <p className="mt-3 text-gray-600 dark:text-gray-400">
+        <p className="mt-3 text-muted">
           <strong>Omitted fields keep their current value.</strong> Sending only{' '}
           <code>quantity</code> will not erase a brand or expiry you set earlier. To clear one,
           send it explicitly as <code>null</code>.
         </p>
 
         <H2>Limits and errors</H2>
-        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-gray-600 dark:text-gray-400">
+        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-muted">
           <li>60 requests per minute per key. Over that: <code>429</code>, with <code>retryAfterSeconds</code>.</li>
           <li>500 items per request.</li>
           <li><code>401</code> — key missing, unknown or revoked. <code>403</code> — pharmacy not approved yet.</li>
@@ -114,7 +114,7 @@ export default function ApiDocsPage() {
         </ul>
 
         <H2>Webhooks: being told about reservations</H2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-muted">
           The owner sets a URL under <strong>Pharmacy → Connect your own software</strong>. We POST
           JSON to it when a patient asks for a hold, and again whenever that reservation changes.
           The events are <code>reservation.created</code>, <code>reservation.updated</code> and{' '}
@@ -139,7 +139,7 @@ X-MediQuest-Signature: t=1786370000,v1=9f86d0…
 }`}</Code>
 
         <H2>Checking the signature</H2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-muted">
           Anyone can POST to your URL. The signature is how you know we sent it. Sign the raw body
           — not a re-encoded copy of the parsed JSON, which will not match.
         </p>
@@ -156,7 +156,7 @@ const ok = crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))
 const fresh = Math.abs(Date.now() / 1000 - Number(t)) < 300`}</Code>
 
         <H2>Delivery, honestly</H2>
-        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-gray-600 dark:text-gray-400">
+        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-muted">
           <li>Answer <code>2xx</code> quickly. Anything else counts as a failure.</li>
           <li>
             Failures retry six times over about eight hours, then stop. The owner can see which
@@ -176,7 +176,7 @@ const fresh = Math.abs(Date.now() / 1000 - Number(t)) < 300`}</Code>
           <li>HTTPS only, and the address must be reachable from the public internet.</li>
           <li>Redirects are not followed.</li>
         </ul>
-        <p className="mt-3 text-gray-600 dark:text-gray-400">
+        <p className="mt-3 text-muted">
           These payloads carry a patient&apos;s name and phone number. Terminate them somewhere you
           would be comfortable holding that.
         </p>

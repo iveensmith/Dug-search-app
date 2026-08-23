@@ -91,32 +91,32 @@ export default function OwnerRatings() {
     <div className="animate-fade-up py-8">
       <Link
         href="/pharmacy/overview"
-        className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+        className="inline-flex items-center gap-1 text-sm font-medium text-brand-ink hover:underline"
       >
         <IconChevronRight width={15} height={15} className="rotate-180" />
         Back to dashboard
       </Link>
 
-      <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-gray-50">
+      <h1 className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
         Your ratings
       </h1>
 
       {failed ? (
         <Card className="mt-6">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted">
             Could not load your ratings. Refresh to try again.
           </p>
         </Card>
       ) : summary === null ? (
         <div className="mt-6 space-y-3">
-          <div className="h-36 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800" />
-          <div className="h-24 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800" />
+          <div className="h-36 animate-pulse rounded-card bg-sunken" />
+          <div className="h-24 animate-pulse rounded-card bg-sunken" />
         </div>
       ) : summary.count === 0 ? (
         <Card className="mt-6 text-center">
-          <IconStore width={26} height={26} className="mx-auto text-gray-300 dark:text-gray-600" />
-          <p className="mt-2 font-medium text-gray-900 dark:text-gray-100">No ratings yet</p>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <IconStore width={26} height={26} className="mx-auto text-line-strong" />
+          <p className="mt-2 font-medium text-ink">No ratings yet</p>
+          <p className="mt-1 text-sm text-muted">
             They appear here as patients visit and rate you. Keeping your stock list accurate is the
             fastest way to earn good ones.
           </p>
@@ -126,13 +126,13 @@ export default function OwnerRatings() {
           <Card className="mt-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">
+                <p className="text-3xl font-bold text-ink">
                   {summary.overall!.toFixed(1)}
-                  <span className="ml-1 text-base font-medium text-gray-500 dark:text-gray-400">
+                  <span className="ml-1 text-base font-medium text-faint">
                     / 5
                   </span>
                 </p>
-                <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-0.5 text-sm text-muted">
                   from {summary.count} {summary.count === 1 ? 'patient' : 'patients'}
                 </p>
               </div>
@@ -143,8 +143,8 @@ export default function OwnerRatings() {
               />
             </div>
 
-            <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-relaxed text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200">
-              <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0 text-blue-500 dark:text-blue-400" />
+            <div className="mt-3 flex items-start gap-2.5 rounded-control border border-info bg-info-soft p-3 text-xs leading-relaxed text-info-ink">
+              <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0 text-info" />
               <p>
                 <span className="font-semibold">Patients rate your pharmacy</span> on{' '}
                 {COUNT_WORDS[RATING_DIMENSIONS.length] ?? RATING_DIMENSIONS.length} things:{' '}
@@ -154,7 +154,7 @@ export default function OwnerRatings() {
             </div>
 
             {!summary.scored && (
-              <p className="mt-3 rounded-xl bg-gray-50 p-3 text-sm text-gray-600 dark:bg-white/5 dark:text-gray-400">
+              <p className="mt-3 rounded-control bg-canvas p-3 text-sm text-muted">
                 Only you can see this so far. Patients see a score once you have{' '}
                 {MIN_RATINGS_TO_SCORE} ratings — until then one bad visit can&apos;t define your
                 shop.
@@ -166,16 +166,16 @@ export default function OwnerRatings() {
                 const value = summary.averages![key]
                 return (
                   <div key={key} className="flex items-center gap-3">
-                    <dt className="w-36 shrink-0 text-sm leading-tight text-gray-600 dark:text-gray-400">
+                    <dt className="w-36 shrink-0 text-sm leading-tight text-muted">
                       {label}
                     </dt>
-                    <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
+                    <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-sunken">
                       <div
                         className="h-full rounded-full bg-amber-400 dark:bg-amber-500"
                         style={{ width: `${(value / 5) * 100}%` }}
                       />
                     </div>
-                    <dd className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+                    <dd className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-ink">
                       {value.toFixed(1)}
                     </dd>
                   </div>
@@ -189,33 +189,33 @@ export default function OwnerRatings() {
               <li key={r.id}>
                 <Card>
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{r.author}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="font-medium text-ink">{r.author}</p>
+                    <p className="text-xs text-faint">
                       {relativeTime(r.createdAt)}
                     </p>
                   </div>
                   <div className="mt-1 flex items-center gap-2">
                     <RatingStars value={r.overall} size={14} />
-                    <span className="text-sm font-semibold tabular-nums text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-semibold tabular-nums text-muted">
                       {r.overall.toFixed(1)}
                     </span>
                   </div>
 
                   {r.comment ? (
-                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                    <p className="mt-2 text-sm text-muted">
                       &ldquo;{r.comment}&rdquo;
                     </p>
                   ) : (
                     // Worth saying rather than leaving a gap: a bare score
                     // still counts towards the average above.
-                    <p className="mt-2 text-sm italic text-gray-500 dark:text-gray-400">
+                    <p className="mt-2 text-sm italic text-faint">
                       Scored without a comment
                     </p>
                   )}
 
                   {r.ownerReply && (
-                    <p className="mt-2 border-l-2 border-emerald-500 pl-3 text-sm text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                    <p className="mt-2 border-l-2 border-brand pl-3 text-sm text-muted">
+                      <span className="font-semibold text-brand-ink">
                         Your reply:
                       </span>{' '}
                       {r.ownerReply}

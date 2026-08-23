@@ -112,30 +112,30 @@ export default function ReservationsPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">My reservations</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-xl font-bold text-ink">My reservations</h1>
+          <p className="text-sm text-muted">
             Medicines you&apos;ve asked a pharmacy to hold
           </p>
         </header>
 
         {error && (
-          <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700 dark:bg-red-950/40 dark:text-red-400">
+          <p className="mb-4 rounded-control bg-danger-soft p-3 text-sm font-medium text-danger-ink">
             {error}
           </p>
         )}
 
         {!rows ? (
-          <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+          <p className="py-8 text-center text-faint">Loading…</p>
         ) : rows.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-            <IconBookmark className="text-gray-400 dark:text-gray-500" />
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col items-center rounded-card border border-dashed border-line-strong p-8 text-center">
+            <IconBookmark className="text-faint" />
+            <p className="mt-2 text-sm text-faint">
               Nothing reserved yet. Search for a medicine, then tap Reserve on a pharmacy to ask
               them to hold it.
             </p>
             <Link
               href="/"
-              className="mt-3 text-sm font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="mt-3 text-sm font-medium text-brand-ink underline underline-offset-2"
             >
               Find a medicine
             </Link>
@@ -160,7 +160,7 @@ export default function ReservationsPage() {
 
             {past.length > 0 && (
               <>
-                <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-faint">
                   Past
                 </h2>
                 <ul className="space-y-3">
@@ -214,20 +214,20 @@ function ReservationCard({
 
   return (
     <li
-      className={`rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 ${
+      className={`rounded-card border border-line bg-surface p-4 shadow-card ${
         live ? '' : 'opacity-75'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-semibold text-gray-900 dark:text-gray-50">{drugLabel(r.drug)}</p>
+          <p className="font-semibold text-ink">{drugLabel(r.drug)}</p>
           <Link
             href={`/pharmacies/${r.pharmacy.id}`}
-            className="text-sm text-gray-600 underline-offset-2 hover:underline dark:text-gray-400"
+            className="text-sm text-muted underline-offset-2 hover:underline"
           >
             {r.pharmacy.name}
           </Link>
-          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-0.5 text-xs text-faint">
             {r.pharmacy.address}
             {r.pharmacy.lga ? ` · ${r.pharmacy.lga}` : ''}
           </p>
@@ -237,18 +237,18 @@ function ReservationCard({
         </span>
       </div>
 
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+      <p className="mt-2 text-xs text-faint">
         {r.quantity ? `${r.quantity} asked for · ` : ''}
         {r.status === 'COLLECTED' && r.collectedAt
           ? `Collected ${relativeTime(r.collectedAt)}`
           : `Reserved ${relativeTime(r.createdAt)}`}
       </p>
       {r.note && (
-        <p className="mt-1 text-xs italic text-gray-500 dark:text-gray-400">“{r.note}”</p>
+        <p className="mt-1 text-xs italic text-faint">“{r.note}”</p>
       )}
 
       {isStale(r.status, r.createdAt) && (
-        <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+        <p className="mt-2 text-xs text-warn-ink">
           No answer in over a day — worth calling the pharmacy to check.
         </p>
       )}
@@ -257,7 +257,7 @@ function ReservationCard({
           a hold running is good news, and the countdown is there to help
           them set off, not to alarm them. */}
       {timeLeft && (
-        <p className="mt-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+        <p className="mt-2 text-xs font-semibold text-brand-ink">
           Held for you · {timeLeft}
         </p>
       )}
@@ -266,7 +266,7 @@ function ReservationCard({
           medicine is almost certainly still on the shelf, and saying so is
           the difference between a dead end and a next step. */}
       {r.status === 'EXPIRED' && (
-        <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-xs text-muted">
           The {HOLD_HOURS}-hour hold ran out, so the pharmacy can sell it again. It may well still
           be in stock — search for it to check, or call them.
         </p>
@@ -284,7 +284,7 @@ function ReservationCard({
           </Button>
           <a
             href={`tel:${r.pharmacy.phone.replace(/\s/g, '')}`}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+            className="inline-flex items-center gap-2 rounded-control border border-line px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:text-brand-ink"
           >
             <IconPhone width={15} height={15} />
             Call

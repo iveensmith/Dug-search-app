@@ -132,32 +132,32 @@ export default function RatePharmacyDialog({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="animate-fade-up max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:max-w-md sm:rounded-2xl dark:bg-gray-900">
+      <div className="animate-fade-up max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-surface p-5 shadow-xl sm:max-w-md sm:rounded-2xl">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-bold text-gray-900 dark:text-gray-50">
+            <p className="font-bold text-ink">
               {editing ? 'Update your rating' : (intro ?? 'Rate this pharmacy')}
             </p>
-            <p className="truncate text-sm text-gray-600 dark:text-gray-400">{pharmacyName}</p>
+            <p className="truncate text-sm text-muted">{pharmacyName}</p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="shrink-0 cursor-pointer rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-white/10"
+            className="shrink-0 cursor-pointer rounded-full p-1.5 text-faint hover:bg-sunken"
           >
             <IconX width={18} height={18} />
           </button>
         </div>
 
         {loading ? (
-          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Loading…</p>
+          <p className="py-8 text-center text-sm text-faint">Loading…</p>
         ) : (
           <>
             <div className="mt-5 space-y-4">
               {RATING_DIMENSIONS.map(({ key, label, hint }) => (
                 <div key={key}>
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p>
+                  <p className="text-sm font-medium text-ink">{label}</p>
+                  <p className="text-xs text-faint">{hint}</p>
                   <div className="mt-1.5 flex gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <button
@@ -168,8 +168,8 @@ export default function RatePharmacyDialog({
                         aria-pressed={scores[key] === n}
                         className={`h-10 flex-1 cursor-pointer rounded-lg border text-sm font-semibold transition-colors ${
                           (scores[key] ?? 0) >= n
-                            ? 'border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-500/60 dark:bg-amber-500/15 dark:text-amber-300'
-                            : 'border-gray-200 text-gray-400 hover:border-gray-300 dark:border-gray-700 dark:text-gray-500'
+                            ? 'border-amber-400 bg-warn-soft text-warn-ink dark:border-amber-500/60'
+                            : 'border-line text-faint hover:border-gray-300'
                         }`}
                       >
                         {n}
@@ -183,9 +183,9 @@ export default function RatePharmacyDialog({
             <div className="mt-4">
               <label
                 htmlFor="rating-comment"
-                className="mb-1.5 block text-sm font-medium text-gray-900 dark:text-gray-100"
+                className="mb-1.5 block text-sm font-medium text-ink"
               >
-                Anything to add? <span className="font-normal text-gray-500">(optional)</span>
+                Anything to add? <span className="font-normal text-faint">(optional)</span>
               </label>
               <Textarea
                 id="rating-comment"
@@ -198,7 +198,7 @@ export default function RatePharmacyDialog({
               />
             </div>
 
-            {error && <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+            {error && <p className="mt-3 text-sm font-medium text-danger-ink">{error}</p>}
 
             <Button onClick={submit} loading={busy} disabled={!complete} className="mt-4 w-full" size="lg">
               {busy ? 'Saving…' : editing ? 'Update rating' : 'Submit rating'}
@@ -209,12 +209,12 @@ export default function RatePharmacyDialog({
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-2 w-full cursor-pointer py-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="mt-2 w-full cursor-pointer py-1.5 text-sm font-medium text-faint hover:text-ink"
               >
                 Not now
               </button>
             )}
-            <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-center text-xs text-faint">
               Your rating is public and shown with your first name.
             </p>
           </>

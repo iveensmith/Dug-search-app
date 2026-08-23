@@ -67,12 +67,12 @@ export default function PharmacistPage() {
   if (denied) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-gray-700 dark:text-gray-300">This page is for licensed pharmacists only.</p>
-        <Link href="/" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">Back to search</Link>
+        <p className="text-muted">This page is for licensed pharmacists only.</p>
+        <Link href="/" className="mt-4 inline-block text-brand-ink underline underline-offset-2">Back to search</Link>
       </div>
     )
   }
-  if (!uploads) return <p className="py-16 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+  if (!uploads) return <p className="py-16 text-center text-faint">Loading…</p>
 
   const pending = uploads.filter((u) => u.status === 'PENDING')
   const mine = uploads.filter((u) => u.status !== 'PENDING')
@@ -88,11 +88,11 @@ export default function PharmacistPage() {
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
 
       <section>
-        <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="mb-2 font-semibold text-ink">
           Waiting to be claimed ({pending.length})
         </h2>
         {pending.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+          <p className="rounded-control border border-dashed border-line-strong p-4 text-center text-sm text-faint">
             No open questions right now.
           </p>
         ) : (
@@ -101,12 +101,12 @@ export default function PharmacistPage() {
               <li key={u.id}>
                 <Link
                   href={`/prescriptions/${u.id}`}
-                  className="block rounded-xl border border-amber-200 bg-amber-50 p-4 transition-shadow hover:shadow-md dark:border-amber-900/60 dark:bg-amber-950/30"
+                  className="block rounded-control border border-warn bg-warn-soft p-4 transition-shadow hover:shadow-md"
                 >
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <p className="text-sm font-medium text-ink">
                     {u.patientName}: {u.patientNote ?? 'no note — see photo'}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-0.5 text-xs text-faint">
                     {new Date(u.createdAt).toLocaleString()}
                   </p>
                 </Link>
@@ -117,9 +117,9 @@ export default function PharmacistPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Your conversations ({mine.length})</h2>
+        <h2 className="mb-2 font-semibold text-ink">Your conversations ({mine.length})</h2>
         {mine.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+          <p className="rounded-control border border-dashed border-line-strong p-4 text-center text-sm text-faint">
             Claim a question above to start.
           </p>
         ) : (
@@ -129,13 +129,13 @@ export default function PharmacistPage() {
                 <Link href={`/prescriptions/${u.id}`}>
                   <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-md">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <p className="truncate text-sm font-medium text-ink">
                         {u.patientName}: {u.patientNote ?? 'prescription question'}
                       </p>
-                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{u.status.toLowerCase()}</p>
+                      <p className="mt-0.5 text-xs text-faint">{u.status.toLowerCase()}</p>
                     </div>
                     {u.unreadCount > 0 && (
-                      <span className="shrink-0 rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                      <span className="shrink-0 rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-on-brand">
                         {u.unreadCount} new
                       </span>
                     )}

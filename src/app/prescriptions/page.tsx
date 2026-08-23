@@ -230,7 +230,7 @@ export default function PrescriptionsPage() {
           {/* A heading rather than a <label>: a label points at one control
               and there are two here. The buttons below carry their own
               names, so nothing is announced unnamed. */}
-          <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <p className="mb-1.5 text-sm font-medium text-muted">
             Photo of the prescription
           </p>
           <div className="mb-2">
@@ -247,7 +247,7 @@ export default function PrescriptionsPage() {
               camera to open: on a desktop it would open the same file
               dialog as the other button, under a name that promises
               something else. */}
-          <div className="flex flex-col gap-2 rounded-xl border border-dashed border-gray-300 p-3 sm:flex-row dark:border-gray-700">
+          <div className="flex flex-col gap-2 rounded-control border border-dashed border-line-strong p-3 sm:flex-row">
             <input
               ref={cameraRef}
               type="file"
@@ -271,7 +271,7 @@ export default function PrescriptionsPage() {
             <button
               type="button"
               onClick={() => cameraRef.current?.click()}
-              className="hidden flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 [@media(pointer:coarse)]:inline-flex dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+              className="hidden flex-1 cursor-pointer items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-hover [@media(pointer:coarse)]:inline-flex"
             >
               <IconCamera width={16} height={16} />
               Take a photo
@@ -280,7 +280,7 @@ export default function PrescriptionsPage() {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-400 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-600 dark:hover:text-emerald-400"
+              className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-control border border-line-strong px-4 py-2.5 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:text-brand-ink"
             >
               <IconUpload width={16} height={16} />
               Choose a saved photo
@@ -288,7 +288,7 @@ export default function PrescriptionsPage() {
           </div>
 
           {preview && (
-            <div className="animate-fade-in mt-3 flex items-start gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+            <div className="animate-fade-in mt-3 flex items-start gap-3 rounded-control border border-line p-3">
               {/* Local blob preview — next/image would need a remote loader
                   and this never leaves the browser. Not lazy either: it
                   appears the moment the user picks a file, and the bytes
@@ -298,16 +298,16 @@ export default function PrescriptionsPage() {
                 src={preview.url}
                 alt="Prescription you selected"
                 decoding="async"
-                className="h-24 w-24 shrink-0 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+                className="h-24 w-24 shrink-0 rounded-lg border border-line object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Ready to send</p>
-                <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{preview.name}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-sm font-medium text-ink">Ready to send</p>
+                <p className="mt-0.5 truncate text-xs text-faint">{preview.name}</p>
+                <p className="mt-1 text-xs text-faint">
                   Check it&apos;s sharp and the whole slip is visible.
                 </p>
                 {shrinking ? (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs text-faint">
                     Preparing the photo…
                   </p>
                 ) : (
@@ -315,7 +315,7 @@ export default function PrescriptionsPage() {
                     // Worth saying out loud on a metered connection: it
                     // explains why sending is quick and that the data cost
                     // is a fraction of the photo.
-                    <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400">
+                    <p className="mt-1 text-xs text-brand-ink">
                       Shrunk to {formatSize(savedBytes.to)} (from{' '}
                       {formatSize(savedBytes.from)}) so it sends fast on mobile data.
                     </p>
@@ -326,7 +326,7 @@ export default function PrescriptionsPage() {
                 type="button"
                 onClick={clearFile}
                 aria-label="Remove photo"
-                className="shrink-0 cursor-pointer rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-white/10"
+                className="shrink-0 cursor-pointer rounded-full p-1.5 text-faint hover:bg-sunken"
               >
                 <IconX width={16} height={16} />
               </button>
@@ -352,7 +352,7 @@ export default function PrescriptionsPage() {
           <div className="mt-4">
             <AudioNoteRecorder value={voiceNote} onChange={setVoiceNote} disabled={busy} />
           </div>
-          {error && <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          {error && <p className="mt-1 text-sm font-medium text-danger-ink">{error}</p>}
           {/* Blocked while the photo is being prepared — submitting then
               would send the full-size original and undo the point. */}
           <Button
@@ -364,7 +364,7 @@ export default function PrescriptionsPage() {
           >
             {shrinking ? 'Preparing photo…' : busy ? 'Uploading…' : 'Send to a pharmacist'}
           </Button>
-          <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-center text-xs text-faint">
             A pharmacist usually replies within a few hours. You&apos;ll see their answer on this
             page — we&apos;ll never post it anywhere else.
           </p>
@@ -374,26 +374,26 @@ export default function PrescriptionsPage() {
         </form>
       </Card>
 
-      <h2 className="mb-3 mt-12 font-semibold text-gray-900 dark:text-gray-100">Your questions</h2>
+      <h2 className="mb-3 mt-12 font-semibold text-ink">Your questions</h2>
       {!uploads ? (
         <ul className="space-y-2" aria-label="Loading your questions" aria-live="polite">
           {[0, 1].map((i) => (
             <li
               key={i}
-              className="animate-pulse rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
+              className="animate-pulse rounded-card border border-line bg-surface p-4"
             >
-              <div className="h-4 w-2/5 rounded bg-gray-200 dark:bg-gray-800" />
-              <div className="mt-2 h-3 w-1/4 rounded bg-gray-100 dark:bg-gray-800/70" />
+              <div className="h-4 w-2/5 rounded bg-line" />
+              <div className="mt-2 h-3 w-1/4 rounded bg-sunken" />
             </li>
           ))}
         </ul>
       ) : uploads.length === 0 ? (
-        <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+        <div className="flex flex-col items-center rounded-card border border-dashed border-line-strong p-8 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
             <IconClipboardList width={22} height={22} />
           </span>
-          <p className="mt-3 font-semibold text-gray-900 dark:text-gray-100">No questions yet</p>
-          <p className="mt-1 max-w-sm text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-3 font-semibold text-ink">No questions yet</p>
+          <p className="mt-1 max-w-sm text-sm text-muted">
             Snap or upload a prescription you don&apos;t follow — dosage, timing, what a drug is
             for — and a licensed pharmacist will explain it in plain language.
           </p>
@@ -407,18 +407,18 @@ export default function PrescriptionsPage() {
                 <Link href={`/prescriptions/${u.id}`}>
                   <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-md">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <p className="truncate text-sm font-medium text-ink">
                         {u.patientNote ?? (u.hasAudio ? 'Voice note' : 'Prescription question')}
                       </p>
-                      <p className="flex items-center gap-1.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                      <p className="flex items-center gap-1.5 truncate text-xs text-faint">
                         {/* A marker, not a player. The list is a summary,
                             and twenty players would each want their own
                             slice of somebody's data bundle. */}
                         {u.hasAudio && (
-                          <span className="inline-flex shrink-0 items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
+                          <span className="inline-flex shrink-0 items-center gap-1 font-medium text-brand-ink">
                             <IconMic width={11} height={11} />
                             {u.audioDurationSec ? formatDuration(u.audioDurationSec) : 'Voice'}
-                            <span className="text-gray-400 dark:text-gray-600">·</span>
+                            <span className="text-faint">·</span>
                           </span>
                         )}
                         {new Date(u.createdAt).toLocaleDateString()}
@@ -427,7 +427,7 @@ export default function PrescriptionsPage() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {u.unreadCount > 0 && (
-                        <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white dark:bg-emerald-500 dark:text-emerald-950">
+                        <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-on-brand">
                           {u.unreadCount} new
                         </span>
                       )}

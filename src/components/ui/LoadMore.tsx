@@ -26,7 +26,7 @@ export default function LoadMore({
 
   return (
     <div className="mt-4 flex flex-col items-center gap-2">
-      <p className="text-xs text-gray-500 dark:text-gray-400">
+      <p className="text-xs text-faint">
         {total != null && total > shown
           ? `Showing ${shown} of ${total} ${noun}`
           : `${shown} ${shown === 1 ? noun.replace(/s$/, '') : noun}`}

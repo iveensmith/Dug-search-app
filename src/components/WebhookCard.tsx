@@ -113,35 +113,35 @@ export default function WebhookCard() {
 
   return (
     <Card className="mt-4">
-      <h2 className="font-semibold text-gray-900 dark:text-gray-100">Get told about reservations</h2>
-      <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
+      <h2 className="font-semibold text-ink">Get told about reservations</h2>
+      <p className="mt-1.5 text-sm text-muted">
         When a patient asks you to hold something, we can post it to your system straight away, so
         it lands on a screen at the counter instead of waiting for someone to check a dashboard.
       </p>
 
       {secret && (
-        <div className="mt-3 rounded-xl border border-emerald-300 bg-emerald-50/60 p-3 dark:border-emerald-800 dark:bg-emerald-950/30">
-          <p className="flex items-center gap-2 text-sm font-bold text-emerald-900 dark:text-emerald-300">
+        <div className="mt-3 rounded-control border border-emerald-300 bg-emerald-50/60 p-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+          <p className="flex items-center gap-2 text-sm font-bold text-brand-ink">
             <IconCheck width={15} height={15} />
             Saved. Here is your signing secret
           </p>
           <p className="mt-1 text-sm text-emerald-900/90 dark:text-emerald-200/90">
             Your server uses this to check that an event really came from us. Shown once.
           </p>
-          <code className="mt-2 block overflow-x-auto rounded-lg bg-white px-3 py-2 font-mono text-xs break-all dark:bg-gray-900">
+          <code className="mt-2 block overflow-x-auto rounded-lg bg-surface px-3 py-2 font-mono text-xs break-all">
             {secret}
           </code>
         </div>
       )}
 
       {endpoint ? (
-        <div className="mt-3 rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+        <div className="mt-3 rounded-control border border-line p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate font-mono text-sm text-gray-900 dark:text-gray-100">
+              <p className="truncate font-mono text-sm text-ink">
                 {endpoint.url}
               </p>
-              <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+              <p className="mt-0.5 text-xs text-muted">
                 {endpoint.lastOkAt
                   ? `Last accepted ${new Date(endpoint.lastOkAt).toLocaleString()}`
                   : 'Nothing delivered yet'}
@@ -151,7 +151,7 @@ export default function WebhookCard() {
               <button
                 onClick={test}
                 disabled={busy}
-                className="cursor-pointer rounded-lg p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-white/10"
+                className="cursor-pointer rounded-lg p-2 text-muted hover:bg-sunken disabled:opacity-50"
                 aria-label="Send a test event"
                 title="Send a test event"
               >
@@ -159,7 +159,7 @@ export default function WebhookCard() {
               </button>
               <button
                 onClick={remove}
-                className="cursor-pointer rounded-lg p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-950/40"
+                className="cursor-pointer rounded-lg p-2 text-muted hover:bg-danger-soft hover:text-danger"
                 aria-label="Stop sending events"
                 title="Stop sending events"
               >
@@ -168,21 +168,21 @@ export default function WebhookCard() {
             </div>
           </div>
           {testResult && (
-            <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-200">{testResult}</p>
+            <p className="mt-2 text-sm font-semibold text-ink">{testResult}</p>
           )}
 
           {endpoint.deliveries.length > 0 && (
-            <ul className="mt-3 space-y-1.5 border-t border-gray-100 pt-3 dark:border-gray-800">
+            <ul className="mt-3 space-y-1.5 border-t border-line-soft pt-3">
               {endpoint.deliveries.map((d) => (
                 <li key={d.id} className="flex items-center justify-between gap-3 text-xs">
-                  <span className="truncate font-mono text-gray-700 dark:text-gray-300">{d.event}</span>
+                  <span className="truncate font-mono text-muted">{d.event}</span>
                   <span
                     className={
                       d.deliveredAt
-                        ? 'shrink-0 font-semibold text-emerald-700 dark:text-emerald-400'
+                        ? 'shrink-0 font-semibold text-brand-ink'
                         : d.failedAt
-                          ? 'shrink-0 font-semibold text-red-700 dark:text-red-400'
-                          : 'shrink-0 font-semibold text-amber-700 dark:text-amber-400'
+                          ? 'shrink-0 font-semibold text-danger-ink'
+                          : 'shrink-0 font-semibold text-warn-ink'
                     }
                   >
                     {d.deliveredAt
@@ -216,7 +216,7 @@ export default function WebhookCard() {
       )}
 
       {error && (
-        <p className="mt-2 flex items-start gap-2 text-sm text-red-700 dark:text-red-400">
+        <p className="mt-2 flex items-start gap-2 text-sm text-danger-ink">
           <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0" />
           {error}
         </p>

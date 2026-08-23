@@ -149,13 +149,13 @@ export default function ImportPage() {
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         {done !== null ? (
           <Card className="mt-4 text-center">
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand-ink">
               <IconCheck width={22} height={22} />
             </span>
-            <p className="mt-3 text-lg font-bold text-gray-900 dark:text-gray-50">
+            <p className="mt-3 text-lg font-bold text-ink">
               {done} {done === 1 ? 'medicine' : 'medicines'} updated
             </p>
-            <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-1.5 text-sm text-muted">
               Patients searching in your area can see them now.
             </p>
             <Button onClick={() => router.push('/pharmacy')} className="mt-5">
@@ -165,9 +165,9 @@ export default function ImportPage() {
         ) : (
           <>
             <Card className="mt-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted">
                 Upload a CSV of what you have. We will show you what it matched{' '}
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                <span className="font-semibold text-ink">
                   before anything is saved
                 </span>
                 . Your file needs a column of medicine names; strength, form, brand, quantity and
@@ -192,19 +192,19 @@ export default function ImportPage() {
                 </Button>
                 <button
                   onClick={downloadTemplate}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted"
                 >
                   <IconDownload width={16} height={16} />
                   Example file
                 </button>
               </div>
               {fileName && (
-                <p className="mt-2 truncate text-sm text-gray-500 dark:text-gray-400">{fileName}</p>
+                <p className="mt-2 truncate text-sm text-faint">{fileName}</p>
               )}
             </Card>
 
             {error && (
-              <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+              <div className="mt-4 flex items-start gap-2.5 rounded-control border border-danger bg-danger-soft p-4 text-sm text-danger-ink">
                 <IconAlertCircle width={18} height={18} className="mt-0.5 shrink-0" />
                 <p>{error}</p>
               </div>
@@ -224,10 +224,10 @@ export default function ImportPage() {
       </div>
 
       {preview && done === null && (
-        <div className="sticky bottom-0 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/95">
+        <div className="sticky bottom-0 border-t border-line bg-white/95 px-4 py-3 backdrop-blur-sm dark:bg-gray-950/95">
           <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-3">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-bold text-gray-900 dark:text-gray-100">{toApply.length}</span>{' '}
+            <p className="text-sm text-muted">
+              <span className="font-bold text-ink">{toApply.length}</span>{' '}
               will be saved
             </p>
             <Button onClick={apply} disabled={busy || toApply.length === 0}>
@@ -269,7 +269,7 @@ function PreviewList({
           {counts.invalid > 0 && <Pill tone="mute">{counts.invalid} unusable</Pill>}
         </div>
         {preview.ignoredHeaders.length > 0 && (
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-3 text-sm text-faint">
             Columns we did not use: {preview.ignoredHeaders.join(', ')}
           </p>
         )}
@@ -277,7 +277,7 @@ function PreviewList({
 
       {needsAttention.length > 0 && (
         <div className="mt-4">
-          <h2 className="px-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="px-1 text-sm font-bold text-ink">
             Needs your attention ({needsAttention.length})
           </h2>
           <div className="mt-2 space-y-2">
@@ -297,7 +297,7 @@ function PreviewList({
 
       {ready.length > 0 && (
         <div className="mt-5">
-          <h2 className="px-1 text-sm font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="px-1 text-sm font-bold text-ink">
             Ready to save ({ready.length})
           </h2>
           <div className="mt-2 space-y-2">
@@ -320,9 +320,9 @@ function PreviewList({
 
 function Pill({ children, tone }: { children: React.ReactNode; tone: 'good' | 'warn' | 'mute' }) {
   const tones = {
-    good: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
-    warn: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
-    mute: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300',
+    good: 'bg-brand-soft text-brand-ink',
+    warn: 'bg-amber-100 text-warn-ink dark:bg-amber-500/15',
+    mute: 'bg-sunken text-muted',
   }
   return <span className={`rounded-full px-2.5 py-1 font-semibold ${tones[tone]}`}>{children}</span>
 }
@@ -346,18 +346,18 @@ function RowCard({
     <div
       className={`rounded-xl border p-3 ${
         skipped
-          ? 'border-gray-200 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-white/5'
+          ? 'border-line bg-canvas opacity-60'
           : willSave
             ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/60 dark:bg-emerald-950/20'
-            : 'border-amber-200 bg-amber-50/50 dark:border-amber-900/60 dark:bg-amber-950/20'
+            : 'border-warn bg-amber-50/50 dark:bg-amber-950/20'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-gray-900 dark:text-gray-100">
-            {row.source.name || <span className="italic text-gray-400">(blank)</span>}
+          <p className="truncate font-semibold text-ink">
+            {row.source.name || <span className="italic text-faint">(blank)</span>}
           </p>
-          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-0.5 text-xs text-faint">
             Line {row.line}
             {row.source.strength && ` · ${row.source.strength}`}
             {row.source.brand && ` · ${row.source.brand}`}
@@ -365,17 +365,17 @@ function RowCard({
             {!row.inStock && ' · marked out of stock'}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-black/30 dark:text-gray-300">
+        <span className="shrink-0 rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-muted dark:bg-black/30">
           {STATUS_LABEL[row.status]}
         </span>
       </div>
 
       {row.reason && (
-        <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">{row.reason}</p>
+        <p className="mt-1.5 text-sm text-muted">{row.reason}</p>
       )}
 
       {row.status === 'matched' && row.candidates[0] && (
-        <p className="mt-1.5 text-sm text-emerald-800 dark:text-emerald-300">
+        <p className="mt-1.5 text-sm text-brand-ink">
           → {row.candidates[0].genericName} {row.candidates[0].strength} (
           {row.candidates[0].form.toLowerCase()})
         </p>
@@ -392,8 +392,8 @@ function RowCard({
               onClick={() => onChoose(row.line, c.id)}
               className={`block w-full cursor-pointer rounded-lg border px-3 py-2 text-left text-sm ${
                 chosen === c.id
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-200'
-                  : 'border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                  ? 'border-emerald-500 bg-brand-soft font-semibold text-brand-ink'
+                  : 'border-line bg-surface text-muted'
               }`}
             >
               {c.genericName} {c.strength} ({c.form.toLowerCase()})
@@ -405,7 +405,7 @@ function RowCard({
       {row.status !== 'invalid' && (
         <button
           onClick={() => onSkip(row.line, !skipped)}
-          className="mt-2 cursor-pointer text-xs font-semibold text-gray-500 underline underline-offset-2 dark:text-gray-400"
+          className="mt-2 cursor-pointer text-xs font-semibold text-faint underline underline-offset-2"
         >
           {skipped ? 'Include this row' : 'Skip this row'}
         </button>

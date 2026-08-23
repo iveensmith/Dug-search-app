@@ -37,13 +37,13 @@ export default function PageHeader({
         className={`mx-auto w-full px-4 py-10 md:py-14 ${width === 'wide' ? 'max-w-5xl' : 'max-w-2xl'}`}
       >
         {eyebrow && (
-          <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{eyebrow}</p>
+          <p className="text-sm font-semibold text-brand-ink">{eyebrow}</p>
         )}
-        <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-tight text-gray-900 sm:text-[2.4rem] dark:text-gray-50">
+        <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
           {title}
         </h1>
         {lede && (
-          <p className="mt-4 text-[1.05rem] leading-relaxed text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-[1.05rem] leading-relaxed text-muted">
             {lede}
           </p>
         )}

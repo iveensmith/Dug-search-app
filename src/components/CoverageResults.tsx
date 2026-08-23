@@ -121,7 +121,7 @@ export default function CoverageResults({
                       <IconX
                         width={15}
                         height={15}
-                        className="mt-0.5 shrink-0 text-gray-300 dark:text-gray-600"
+                        className="mt-0.5 shrink-0 text-line-strong"
                       />
                     )}
                     <Link

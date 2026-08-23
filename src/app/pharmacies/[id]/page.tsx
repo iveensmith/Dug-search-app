@@ -22,7 +22,7 @@ const RatePharmacyDialog = dynamic(() => import('@/components/RatePharmacyDialog
 // this page is actually open.
 const PharmacyMap = dynamic(() => import('@/components/PharmacyMap'), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-emerald-50 dark:bg-emerald-950/40" />,
+  loading: () => <div className="h-full w-full animate-pulse bg-brand-soft" />,
 })
 
 type Pharmacy = {
@@ -81,21 +81,21 @@ export default function PharmacyDetailPage({ params }: { params: Promise<{ id: s
       <main className="w-full flex-1 pb-16">
         {missing ? (
           <div className="mx-auto w-full max-w-2xl px-4 py-16 text-center">
-            <p className="font-semibold text-gray-900 dark:text-gray-100">Pharmacy not found</p>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p className="font-semibold text-ink">Pharmacy not found</p>
+            <p className="mt-1 text-sm text-muted">
               It may not be verified yet, or the link is out of date.
             </p>
             <Link
               href="/"
-              className="mt-4 inline-block text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="mt-4 inline-block text-sm font-semibold text-brand-ink underline underline-offset-2"
             >
               Back to search
             </Link>
           </div>
         ) : !data ? (
           <div className="space-y-4 py-8">
-            <div className="h-44 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800" />
-            <div className="h-32 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800" />
+            <div className="h-44 animate-pulse rounded-card bg-sunken" />
+            <div className="h-32 animate-pulse rounded-card bg-sunken" />
           </div>
         ) : (
           <PharmacyBody data={data} onRate={() => setRating(true)} />
@@ -208,16 +208,20 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
             routeCoords={route?.coords ?? null}
           />
           {/* Right-hand side: Leaflet puts its zoom controls top-left,
-              and the badge was sitting under them. */}
-          <span className="pointer-events-none absolute right-4 top-4 z-[500] inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-emerald-700 shadow-md">
+              and the badge was sitting under them.
+              bg-white, not bg-surface: this floats on map tiles, which are
+              light in both themes, so the chip has to stay light too —
+              --surface flips to near-black and the badge would disappear
+              into the streets. Same reason the hero copy stays white. */}
+          <span className="pointer-events-none absolute right-4 top-4 z-[500] inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-brand-ink shadow-md">
             <IconShieldCheck width={13} height={13} />
             PCN verified
           </span>
         </div>
         <div className="p-5">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">{p.name}</h1>
-          <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400">{p.address}</p>
-          <p className="mt-0.5 text-sm tabular-nums text-gray-500 dark:text-gray-400">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{p.name}</h1>
+          <p className="mt-1.5 text-sm text-muted">{p.address}</p>
+          <p className="mt-0.5 text-sm tabular-nums text-faint">
             {p.phone}
             {p.lga ? ` · ${p.lga}` : ''} · {stateLabel(p.state)}
           </p>
@@ -231,7 +235,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
             <button
               onClick={showRoute}
               disabled={routing}
-              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950"
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-hover disabled:opacity-60"
             >
               <IconRoute width={16} height={16} />
               {routing ? 'Finding the way…' : route ? 'Route shown above' : 'Directions'}
@@ -240,7 +244,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               href={`tel:${p.phone.replace(/\s/g, '')}`}
               onClick={call}
               aria-label={`Call ${p.name}`}
-              className="flex items-center justify-center gap-2 rounded-full border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+              className="flex items-center justify-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:text-brand-ink"
             >
               <IconPhone width={16} height={16} />
               {copied ? 'Copied ✓' : 'Call'}
@@ -248,7 +252,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
           </div>
 
           {route && (
-            <p className="mt-2.5 text-sm text-emerald-800 dark:text-emerald-300">
+            <p className="mt-2.5 text-sm text-brand-ink">
               <span className="font-semibold">
                 {route.distanceKm.toFixed(1)} km · about {route.durationMin} min
               </span>{' '}
@@ -256,7 +260,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
             </p>
           )}
           {routeError && (
-            <p className="mt-2.5 text-sm text-amber-700 dark:text-amber-400">{routeError}</p>
+            <p className="mt-2.5 text-sm text-warn-ink">{routeError}</p>
           )}
 
           {/* Underneath, not instead of. An in-app line on a map cannot
@@ -266,7 +270,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
             href={directionsUrl(p.latitude, p.longitude)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2.5 inline-block text-sm font-medium text-gray-500 underline underline-offset-2 hover:text-emerald-700 dark:text-gray-400 dark:hover:text-emerald-400"
+            className="mt-2.5 inline-block text-sm font-medium text-faint underline underline-offset-2 hover:text-brand-ink"
           >
             Voice navigation (opens Google Maps)
           </a>
@@ -278,18 +282,18 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
       <div className="mx-auto w-full max-w-2xl px-4 pt-8">
       <Card radius="lg">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-faint">
             What patients say
           </p>
           <RatingStars value={ratings.scored ? ratings.overall : null} count={ratings.count} size={16} />
         </div>
 
         {ratings.count === 0 ? (
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-3 text-sm text-faint">
             No ratings yet — be the first to say how this pharmacy did.
           </p>
         ) : !ratings.scored ? (
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-3 text-sm text-faint">
             {ratings.count} {ratings.count === 1 ? 'patient has' : 'patients have'} rated this
             pharmacy. We publish a score once there are {MIN_RATINGS_TO_SCORE}, so one visit
             doesn&apos;t define a shop.
@@ -300,14 +304,14 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
               const value = ratings.averages![key]
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <dt className="w-36 shrink-0 text-sm leading-tight text-gray-600 dark:text-gray-400">{label}</dt>
-                  <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
+                  <dt className="w-36 shrink-0 text-sm leading-tight text-muted">{label}</dt>
+                  <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-sunken">
                     <div
                       className="h-full rounded-full bg-emerald-500"
                       style={{ width: `${(value / 5) * 100}%` }}
                     />
                   </div>
-                  <dd className="w-7 shrink-0 text-right text-xs font-semibold tabular-nums text-gray-500 dark:text-gray-400">
+                  <dd className="w-7 shrink-0 text-right text-xs font-semibold tabular-nums text-faint">
                     {value.toFixed(1)}
                   </dd>
                 </div>
@@ -317,21 +321,21 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
         )}
 
         {comments.length > 0 && (
-          <ul className="mt-5 space-y-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+          <ul className="mt-5 space-y-4 border-t border-line-soft pt-4">
             {comments.map((c) => (
               <li key={c.id}>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{c.author}</span>{' '}
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted">
+                  <span className="font-semibold text-ink">{c.author}</span>{' '}
+                  <span className="text-xs text-faint">
                     {new Date(c.createdAt).toLocaleDateString()}
                   </span>
                 </p>
-                <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-0.5 text-sm text-muted">
                   &ldquo;{c.comment}&rdquo;
                 </p>
                 {c.ownerReply && (
-                  <p className="mt-2 rounded-xl bg-emerald-50 p-3 text-sm text-gray-700 dark:bg-emerald-500/10 dark:text-gray-300">
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                  <p className="mt-2 rounded-control bg-brand-soft p-3 text-sm text-muted">
+                    <span className="font-semibold text-brand-ink">
                       {p.name} replied:
                     </span>{' '}
                     {c.ownerReply}
@@ -348,16 +352,16 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
       </Card>
 
       <Card radius="lg" className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-faint">
           Opening hours
         </p>
         <div className="mt-2 flex items-center justify-between py-1">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Every day</span>
-          <span className="text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+          <span className="text-sm text-muted">Every day</span>
+          <span className="text-sm font-semibold tabular-nums text-ink">
             {p.open24h ? 'Open 24 hours' : p.opensAt && p.closesAt ? `${p.opensAt} – ${p.closesAt}` : 'Not stated'}
           </span>
         </div>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-faint">
           Self-reported by the pharmacy, in Nigerian time.
         </p>
       </Card>

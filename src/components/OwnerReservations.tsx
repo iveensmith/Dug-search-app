@@ -65,7 +65,7 @@ export default function OwnerReservations({
   }
 
   if (reservations === null) {
-    return <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+    return <p className="py-8 text-center text-faint">Loading…</p>
   }
 
   const live = reservations.filter((r) => isOpen(r.status))
@@ -73,7 +73,7 @@ export default function OwnerReservations({
 
   return (
     <div>
-      <div className="mb-4 flex items-start gap-3 rounded-xl bg-blue-50 p-3.5 text-sm text-blue-800 dark:bg-blue-950/30 dark:text-blue-300">
+      <div className="mb-4 flex items-start gap-3 rounded-control bg-info-soft p-3.5 text-sm text-blue-800 dark:text-blue-300">
         <IconBookmark width={18} height={18} className="mt-0.5 shrink-0" />
         <p>
           Patients can ask you to hold a drug they found in your stock list. Nothing is paid and
@@ -82,14 +82,14 @@ export default function OwnerReservations({
       </div>
 
       {error && (
-        <p className="mb-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700 dark:bg-red-950/40 dark:text-red-400">
+        <p className="mb-3 rounded-control bg-danger-soft p-3 text-sm font-medium text-danger-ink">
           {error}
         </p>
       )}
 
       {reservations.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="rounded-card border border-dashed border-line-strong p-8 text-center">
+          <p className="text-sm text-faint">
             No reservations yet. They appear here as soon as a patient asks you to hold something.
           </p>
         </div>
@@ -99,14 +99,14 @@ export default function OwnerReservations({
             {live.map((r) => (
               <li
                 key={r.id}
-                className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+                className="rounded-card border border-line bg-surface p-4 shadow-card"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 dark:text-gray-50">
+                    <p className="font-semibold text-ink">
                       {drugLabel(r.drug)}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted">
                       {r.patientName}
                       {r.quantity ? ` · ${r.quantity} asked for` : ''}
                     </p>
@@ -118,16 +118,16 @@ export default function OwnerReservations({
                   </span>
                 </div>
 
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1.5 text-xs text-faint">
                   Asked {relativeTime(r.createdAt)}
                 </p>
                 {r.note && (
-                  <p className="mt-1 text-xs italic text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-xs italic text-faint">
                     “{r.note}”
                   </p>
                 )}
                 {isStale(r.status, r.createdAt) && (
-                  <p className="mt-1.5 text-xs text-amber-700 dark:text-amber-400">
+                  <p className="mt-1.5 text-xs text-warn-ink">
                     Waiting over a day for your answer.
                   </p>
                 )}
@@ -137,7 +137,7 @@ export default function OwnerReservations({
                     patient's: not "can I still get there" but "when is
                     this mine to sell again". */}
                 {holdTimeLeft(r.status, r.readyAt) && (
-                  <p className="mt-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  <p className="mt-1.5 text-xs font-semibold text-brand-ink">
                     Set aside · {holdTimeLeft(r.status, r.readyAt)}
                   </p>
                 )}
@@ -170,7 +170,7 @@ export default function OwnerReservations({
                   {r.contactPhone && (
                     <a
                       href={`tel:${r.contactPhone.replace(/\s/g, '')}`}
-                      className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                      className="inline-flex items-center gap-2 rounded-control border border-line px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:text-brand-ink"
                     >
                       <IconPhone width={15} height={15} />
                       {r.contactPhone}
@@ -192,20 +192,20 @@ export default function OwnerReservations({
 
           {past.length > 0 && (
             <>
-              <h3 className="mb-2 mt-6 text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <h3 className="mb-2 mt-6 text-sm font-bold uppercase tracking-wide text-faint">
                 Closed
               </h3>
               <ul className="space-y-2">
                 {past.map((r) => (
                   <li
                     key={r.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm dark:border-gray-800"
+                    className="flex items-center justify-between gap-3 rounded-control border border-line px-3.5 py-2.5 text-sm"
                   >
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-700 dark:text-gray-300">
+                      <p className="truncate font-medium text-muted">
                         {drugLabel(r.drug)}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-faint">
                         {r.patientName} ·{' '}
                         {r.collectedAt
                           ? `collected ${relativeTime(r.collectedAt)}`
@@ -216,7 +216,7 @@ export default function OwnerReservations({
                           with this person's name on it, and nobody is
                           coming for it. */}
                       {r.status === 'EXPIRED' && (
-                        <p className="mt-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                        <p className="mt-0.5 text-xs font-medium text-warn-ink">
                           Nobody came within {HOLD_HOURS} hours — put it back on the shelf.
                         </p>
                       )}

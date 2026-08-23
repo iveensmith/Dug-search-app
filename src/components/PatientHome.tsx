@@ -995,7 +995,7 @@ export default function PatientHome() {
             the next pick joins — and every chip removable, since a
             prescription typed wrong is the normal way this goes astray. */}
         {basket.length > 0 && (
-          <div className="rounded-control border border-emerald-200 bg-brand-soft p-3 dark:border-emerald-900/60">
+          <div className="rounded-control border border-line-brand bg-brand-soft p-3">
             <p className="text-xs font-bold uppercase tracking-wide text-brand-ink">
               Medicines you need ({basket.length})
             </p>
@@ -1008,7 +1008,7 @@ export default function PatientHome() {
                       type="button"
                       onClick={() => removeFromList(d.id)}
                       aria-label={`Remove ${drugLabel(d)} from the list`}
-                      className="cursor-pointer rounded-full p-1 text-faint transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-gray-200"
+                      className="cursor-pointer rounded-full p-1 text-faint transition-colors hover:bg-sunken hover:text-ink"
                     >
                       <IconX width={12} height={12} />
                     </button>
@@ -1174,7 +1174,7 @@ export default function PatientHome() {
                   into. A quiet row under a rule rather than three pills —
                   the pills competed with the search panel, and the panel
                   has to win. */}
-              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/25 pt-5 md:border-emerald-200/80 md:dark:border-emerald-900/60">
+              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/25 pt-5 md:border-line-brand">
                 {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
                   <li
                     key={label}
@@ -1242,9 +1242,17 @@ export default function PatientHome() {
                   able to help themselves. Brand green, like everything
                   else — it is a different kind of help, not a different
                   product. */}
+              {/* The gradient and its matching border stay raw — a
+                  three-stop wash has no token, and a flat surface here
+                  loses the card. That leaves one trap: Tailwind emits
+                  `dark:border-*` after `hover:border-*`, so the raw dark
+                  border silently ate the hover token in dark mode. The
+                  `dark:hover:` twin is what puts it back — the one place
+                  in the app where a dark: class beside a token is load
+                  bearing rather than a leftover. */}
               <Link
                 href="/prescriptions"
-                className="group relative mt-4 block overflow-hidden rounded-card border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lg sm:mt-5 sm:rounded-3xl sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900"
+                className="group relative mt-4 block overflow-hidden rounded-card border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lg sm:mt-5 sm:rounded-3xl sm:p-7 dark:border-emerald-900/50 dark:from-emerald-950/50 dark:via-gray-900 dark:to-gray-900 dark:hover:border-line-brand"
               >
                 {/* Soft light behind the corner. pointer-events-none so it
                     never sits between a thumb and the link. */}
@@ -1407,7 +1415,7 @@ export default function PatientHome() {
               {FAQ.map(({ q, a }) => (
                 <details
                   key={q}
-                  className="group rounded-card border border-line bg-surface shadow-card transition-colors open:border-emerald-200 dark:open:border-emerald-800"
+                  className="group rounded-card border border-line bg-surface shadow-card transition-colors open:border-line-brand"
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-semibold text-ink marker:content-none [&::-webkit-details-marker]:hidden">
                     {q}
@@ -1808,7 +1816,7 @@ export default function PatientHome() {
 
             {route && (
               <div ref={emptyRouteRef} className="mt-4 scroll-mt-24">
-                <div className="mb-3 flex items-center justify-between gap-3 rounded-control border border-emerald-200 bg-brand-soft p-3 dark:border-emerald-900/60">
+                <div className="mb-3 flex items-center justify-between gap-3 rounded-control border border-line-brand bg-brand-soft p-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-emerald-900 dark:text-emerald-300">
                       {route.pharmacyName}
@@ -2023,7 +2031,7 @@ export default function PatientHome() {
             )}
 
             {route && (
-              <div className="mb-3 flex items-center justify-between gap-3 rounded-control border border-emerald-200 bg-brand-soft p-3 dark:border-emerald-900/60">
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-control border border-line-brand bg-brand-soft p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-emerald-900 dark:text-emerald-300">
                     {route.pharmacyName}

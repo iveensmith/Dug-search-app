@@ -21,11 +21,11 @@ const STATE_STORAGE_KEY = 'mediquest_state'
 
 function Spec({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 p-3.5 dark:border-gray-800">
-      <span className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+    <div className="rounded-control border border-line p-3.5">
+      <span className="block text-xs font-semibold uppercase tracking-wide text-faint">
         {label}
       </span>
-      <strong className="mt-1 block text-sm text-gray-900 dark:text-gray-100">{value}</strong>
+      <strong className="mt-1 block text-sm text-ink">{value}</strong>
     </div>
   )
 }
@@ -46,7 +46,7 @@ function DispensingNote({ value }: { value: string | null | undefined }) {
 
   if (c.key !== 'POM') {
     return (
-      <p className="mt-4 flex items-start gap-2 px-1 text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-4 flex items-start gap-2 px-1 text-sm text-faint">
         <IconAlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
         {c.note}
       </p>
@@ -54,15 +54,15 @@ function DispensingNote({ value }: { value: string | null | undefined }) {
   }
 
   return (
-    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
-      <p className="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-300">
+    <div className="mt-4 rounded-card border border-warn bg-warn-soft p-4">
+      <p className="flex items-center gap-2 text-sm font-bold text-warn-ink">
         <IconAlertCircle width={16} height={16} className="shrink-0" />
         {c.label}
       </p>
       <p className="mt-1.5 text-sm text-amber-900/90 dark:text-amber-200/90">{c.note}</p>
       <Link
         href="/prescriptions"
-        className="mt-2.5 inline-block text-sm font-bold text-amber-900 underline underline-offset-2 dark:text-amber-300"
+        className="mt-2.5 inline-block text-sm font-bold text-warn-ink underline underline-offset-2"
       >
         Don&apos;t have one? Ask a pharmacist →
       </Link>
@@ -113,7 +113,7 @@ function DrugBody({ id }: { id: string }) {
         <div className="mx-auto w-full max-w-2xl px-4 pt-8">
           <Link
             href="/"
-            className="text-sm font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            className="text-sm font-semibold text-brand-ink underline underline-offset-2"
           >
             Back to search
           </Link>
@@ -125,8 +125,8 @@ function DrugBody({ id }: { id: string }) {
   if (!data) {
     return (
       <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-8">
-        <div className="h-56 animate-pulse rounded-3xl bg-gray-100 dark:bg-gray-800" />
-        <div className="h-40 animate-pulse rounded-3xl bg-gray-100 dark:bg-gray-800" />
+        <div className="h-56 animate-pulse rounded-sheet bg-sunken" />
+        <div className="h-40 animate-pulse rounded-sheet bg-sunken" />
       </div>
     )
   }
@@ -151,7 +151,7 @@ function DrugBody({ id }: { id: string }) {
         {(drug.category || drug.dispensing) && (
           <div className="mt-5 flex flex-wrap items-center gap-2">
             {drug.category && (
-              <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+              <span className="inline-flex items-center rounded-full bg-info-soft px-3 py-1 text-xs font-bold text-info-ink">
                 {drug.category}
               </span>
             )}
@@ -186,31 +186,31 @@ function DrugBody({ id }: { id: string }) {
       <DispensingNote value={drug.dispensing} />
 
       <Card radius="lg" className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-faint">
           {areaLabel ? `Where to get it in ${areaLabel}` : 'Where to get it'}
         </p>
 
         {!areaLabel ? (
-          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-            <Link href="/" className="font-semibold text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+          <p className="mt-3 text-sm text-muted">
+            <Link href="/" className="font-semibold text-brand-ink underline underline-offset-2">
               Choose your state and LGA
             </Link>{' '}
             to see which nearby pharmacies have this in stock.
           </p>
         ) : stockedBy.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-3 text-sm text-muted">
             No pharmacy in {areaLabel} has this listed right now.
           </p>
         ) : (
-          <ul className="mt-1 divide-y divide-gray-100 dark:divide-gray-800">
+          <ul className="mt-1 divide-y divide-line">
             {stockedBy.map((r) => (
               <li key={r.id}>
                 <Link
                   href={`/pharmacies/${r.id}`}
-                  className="flex items-center gap-3 py-3.5 transition-colors hover:text-emerald-700 dark:hover:text-emerald-400"
+                  className="flex items-center gap-3 py-3.5 transition-colors hover:text-brand-ink"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <span className="block truncate text-sm font-semibold text-ink">
                       {r.name}
                     </span>
                     <span className="mt-1.5 flex flex-wrap items-center gap-2">
@@ -218,7 +218,7 @@ function DrugBody({ id }: { id: string }) {
                       <RatingStars value={r.ratingAvg} count={r.ratingCount} />
                     </span>
                   </span>
-                  <span className="shrink-0 text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">
+                  <span className="shrink-0 text-sm font-bold tabular-nums text-faint">
                     {r.distanceKm.toFixed(1)} km
                   </span>
                 </Link>
@@ -230,7 +230,7 @@ function DrugBody({ id }: { id: string }) {
 
       {siblings.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-faint">
             Other strengths and forms
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -238,13 +238,13 @@ function DrugBody({ id }: { id: string }) {
               <Link
                 key={s.id}
                 href={`/drugs/${s.id}`}
-                className="rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+                className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink"
               >
                 {s.strength} · {s.form.toLowerCase()}
               </Link>
             ))}
           </div>
-          <p className="mt-3 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-3 flex items-start gap-2 text-xs text-faint">
             <IconAlertCircle width={14} height={14} className="mt-0.5 shrink-0" />
             A different strength or form is not automatically a substitute — confirm with your
             prescriber or a pharmacist before switching.
@@ -254,7 +254,7 @@ function DrugBody({ id }: { id: string }) {
 
       <Link
         href="/"
-        className="mt-6 flex items-center justify-center gap-2 rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+        className="mt-6 flex items-center justify-center gap-2 rounded-full border border-line px-4 py-3 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:text-brand-ink"
       >
         <IconStore width={16} height={16} />
         Search another medicine

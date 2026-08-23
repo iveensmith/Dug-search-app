@@ -117,7 +117,7 @@ export default function AccountPage() {
       <div className="flex min-h-dvh w-full flex-col">
         <SiteHeader />
         <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-          <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+          <p className="py-8 text-center text-faint">Loading…</p>
         </main>
         <SiteFooter />
       </div>
@@ -129,8 +129,8 @@ export default function AccountPage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">My account</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Your profile and login details</p>
+          <h1 className="text-xl font-bold text-ink">My account</h1>
+          <p className="text-sm text-muted">Your profile and login details</p>
         </header>
 
         <div className="space-y-4">
@@ -141,10 +141,10 @@ export default function AccountPage() {
           <Card>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="truncate font-semibold text-gray-900 dark:text-gray-100">
+                <p className="truncate font-semibold text-ink">
                   {me.displayName || 'No name set'}
                 </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
+                <p className="truncate text-sm text-faint">
                   {me.email ?? me.phone}
                   {me.state ? ` · ${stateLabel(me.state)}` : ''}
                 </p>
@@ -153,14 +153,14 @@ export default function AccountPage() {
             </div>
             <Link
               href={DASHBOARD_HREF[me.role] ?? '/'}
-              className="text-sm font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+              className="text-sm font-medium text-brand-ink underline underline-offset-2"
             >
               Go to {DASHBOARD_LABEL[me.role] ?? 'your dashboard'} →
             </Link>
           </Card>
 
           <Card>
-            <h2 className="mb-3 font-semibold text-gray-900 dark:text-gray-100">Display name</h2>
+            <h2 className="mb-3 font-semibold text-ink">Display name</h2>
             <form onSubmit={saveName} className="space-y-3">
               <Field label="Name" htmlFor="displayName">
                 <Input
@@ -172,8 +172,8 @@ export default function AccountPage() {
                   maxLength={80}
                 />
               </Field>
-              {nameError && <p className="text-sm font-medium text-red-600 dark:text-red-400">{nameError}</p>}
-              {nameMessage && <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{nameMessage}</p>}
+              {nameError && <p className="text-sm font-medium text-danger-ink">{nameError}</p>}
+              {nameMessage && <p className="text-sm font-medium text-brand-ink">{nameMessage}</p>}
               <Button type="submit" loading={nameBusy} size="sm">
                 Save
               </Button>
@@ -181,7 +181,7 @@ export default function AccountPage() {
           </Card>
 
           <Card>
-            <h2 className="mb-3 font-semibold text-gray-900 dark:text-gray-100">Change password</h2>
+            <h2 className="mb-3 font-semibold text-ink">Change password</h2>
             <form onSubmit={changePassword} className="space-y-3">
               <Field label="Current password" htmlFor="currentPassword">
                 <PasswordInput
@@ -202,9 +202,9 @@ export default function AccountPage() {
                   autoComplete="new-password"
                 />
               </Field>
-              {passwordError && <p className="text-sm font-medium text-red-600 dark:text-red-400">{passwordError}</p>}
+              {passwordError && <p className="text-sm font-medium text-danger-ink">{passwordError}</p>}
               {passwordMessage && (
-                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{passwordMessage}</p>
+                <p className="text-sm font-medium text-brand-ink">{passwordMessage}</p>
               )}
               <Button type="submit" loading={passwordBusy} size="sm">
                 Change password

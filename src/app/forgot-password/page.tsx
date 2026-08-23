@@ -34,8 +34,8 @@ export default function ForgotPasswordPage() {
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Reset your password</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-ink">Reset your password</h1>
+          <p className="mt-1 text-sm text-muted">
             We&apos;ll email you a link to choose a new one
           </p>
         </div>
@@ -43,15 +43,15 @@ export default function ForgotPasswordPage() {
         <Card>
           {sent ? (
             <div className="flex flex-col items-center py-4 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
                 <IconCheck width={22} height={22} />
               </div>
-              <p className="mt-3 font-medium text-gray-900 dark:text-gray-100">Check your email</p>
+              <p className="mt-3 font-medium text-ink">Check your email</p>
               {/* Deliberately conditional, and shown whether or not the
                   address is registered — the wording is the whole defence.
                   The address is not echoed back either: repeating it makes
                   the sentence read as confirmation even though it isn't. */}
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-1 text-sm text-muted">
                 If that email is registered, you&apos;ll receive a reset link. It expires in 1 hour.
               </p>
             </div>
@@ -75,8 +75,8 @@ export default function ForgotPasswordPage() {
           )}
         </Card>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          <Link href="/login" className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+        <p className="mt-6 text-center text-sm text-muted">
+          <Link href="/login" className="font-medium text-brand-ink underline underline-offset-2">
             Back to log in
           </Link>
         </p>

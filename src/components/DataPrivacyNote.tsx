@@ -7,8 +7,8 @@ import { IconAlertCircle } from '@/components/ui/icons'
  *  certification. */
 export default function DataPrivacyNote() {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-gray-600 dark:border-gray-800 dark:bg-white/5 dark:text-gray-400">
-      <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0 text-gray-400 dark:text-gray-500" />
+    <div className="flex items-start gap-3 rounded-control border border-line bg-canvas p-3 text-xs leading-relaxed text-muted">
+      <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0 text-faint" />
       <p>
         Your prescription photo is health data. It&apos;s stored privately — never a public link
         — and only the pharmacist who claims your question can view it, in line with

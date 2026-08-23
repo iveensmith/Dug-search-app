@@ -1,21 +1,21 @@
 import { stockFreshness } from '@/lib/types'
 
 const TONES = {
-  fresh: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
-  aging: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-  // gray-600, not gray-500. Muted is the point of this tone — a claim
-  // nobody has confirmed in a while should not shout — but gray-500 on
-  // gray-100 measures 4.45:1, which is under AA by a hair, and "we are
-  // not sure this is still true" is not information to hide from someone
-  // who cannot read low-contrast text. gray-600 is 6.87:1 and still reads
-  // as the quiet one next to the emerald and amber tones.
-  stale: 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400',
+  fresh: 'bg-brand-soft text-brand-ink',
+  aging: 'bg-warn-soft text-warn-ink',
+  // text-muted, not text-faint. Muted is the point of this tone — a claim
+  // nobody has confirmed in a while should not shout — but the lighter of
+  // the two measures 4.70:1 on this fill against text-muted's 6.14:1, and
+  // "we are not sure this is still true" is not information to hide from
+  // someone who cannot read low-contrast text. It still reads as the
+  // quiet one next to the brand and warn tones.
+  stale: 'bg-sunken text-muted',
 } as const
 
 const DOTS = {
-  fresh: 'bg-emerald-500',
-  aging: 'bg-amber-500',
-  stale: 'bg-gray-400 dark:bg-gray-500',
+  fresh: 'bg-ok',
+  aging: 'bg-warn',
+  stale: 'bg-line-strong',
 } as const
 
 /**
@@ -33,8 +33,8 @@ export default function StockPulse({
 }) {
   if (outOfStock) {
     return (
-      <span className="inline-flex items-center gap-2 rounded-full bg-red-50 py-1.5 pl-2.5 pr-3 text-xs font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400">
-        <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
+      <span className="inline-flex items-center gap-2 rounded-full bg-danger-soft py-1.5 pl-2.5 pr-3 text-xs font-bold text-danger-ink">
+        <span className="h-2 w-2 shrink-0 rounded-full bg-danger" />
         Out of stock
       </span>
     )

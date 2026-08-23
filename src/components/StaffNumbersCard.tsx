@@ -87,30 +87,30 @@ export default function StaffNumbersCard() {
 
   return (
     <Card className="mt-6">
-      <p className="font-semibold text-gray-900 dark:text-gray-100">WhatsApp stock updates</p>
-      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      <p className="font-semibold text-ink">WhatsApp stock updates</p>
+      <p className="mt-1 text-sm text-muted">
         Staff on these numbers can mark your medicines in or out of stock by messaging MediQuest on
         WhatsApp — no login needed. The number is all that identifies them, so only add handsets you
         trust, and remove one the moment somebody leaves.
       </p>
 
       {staff === null ? (
-        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Loading…</p>
+        <p className="mt-4 text-sm text-faint">Loading…</p>
       ) : staff.length === 0 ? (
-        <p className="mt-4 rounded-xl border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+        <p className="mt-4 rounded-control border border-dashed border-line-strong p-4 text-center text-sm text-faint">
           No numbers yet. Stock can only be changed from this dashboard.
         </p>
       ) : (
-        <ul className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+        <ul className="mt-4 divide-y divide-gray-100 rounded-control border border-line dark:divide-gray-800">
           {staff.map((s) => (
             <li key={s.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
               <div className="min-w-0">
-                <p className="flex items-center gap-2 truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-                  <IconPhone width={14} height={14} className="shrink-0 text-gray-400" />
+                <p className="flex items-center gap-2 truncate text-sm font-medium text-ink">
+                  <IconPhone width={14} height={14} className="shrink-0 text-faint" />
                   {s.phone}
                 </p>
                 {s.displayName && (
-                  <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                  <p className="truncate text-xs text-faint">
                     {s.displayName}
                   </p>
                 )}
@@ -119,7 +119,7 @@ export default function StaffNumbersCard() {
                 onClick={() => revoke(s)}
                 disabled={busy}
                 aria-label={`Remove ${s.phone}`}
-                className="shrink-0 cursor-pointer rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                className="shrink-0 cursor-pointer rounded-lg p-2 text-faint transition-colors hover:bg-danger-soft hover:text-danger disabled:opacity-50"
               >
                 <IconTrash width={15} height={15} />
               </button>
@@ -147,7 +147,7 @@ export default function StaffNumbersCard() {
           />
         </Field>
       </div>
-      {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-sm font-medium text-danger-ink">{error}</p>}
       <Button onClick={add} loading={busy} className="mt-3" size="sm">
         Add number
       </Button>

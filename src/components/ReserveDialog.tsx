@@ -117,18 +117,18 @@ export default function ReserveDialog({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="animate-fade-up max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:max-w-md sm:rounded-2xl dark:bg-gray-900">
+      <div className="animate-fade-up max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-surface p-5 shadow-xl sm:max-w-md sm:rounded-2xl">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-bold text-gray-900 dark:text-gray-50">Ask them to hold it</p>
-            <p className="truncate text-sm text-gray-600 dark:text-gray-400">
+            <p className="font-bold text-ink">Ask them to hold it</p>
+            <p className="truncate text-sm text-muted">
               {drugLabel} · {pharmacyName}
             </p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="shrink-0 cursor-pointer rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-white/10"
+            className="shrink-0 cursor-pointer rounded-full p-1.5 text-faint hover:bg-sunken"
           >
             <IconX width={18} height={18} />
           </button>
@@ -161,9 +161,9 @@ export default function ReserveDialog({
           <div>
             <label
               htmlFor="reserve-note"
-              className="mb-1.5 block text-sm font-medium text-gray-900 dark:text-gray-100"
+              className="mb-1.5 block text-sm font-medium text-ink"
             >
-              Anything they should know? <span className="font-normal text-gray-500">(optional)</span>
+              Anything they should know? <span className="font-normal text-faint">(optional)</span>
             </label>
             <Textarea
               id="reserve-note"
@@ -177,7 +177,7 @@ export default function ReserveDialog({
           </div>
         </div>
 
-        {error && <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="mt-3 text-sm font-medium text-danger-ink">{error}</p>}
 
         <Button onClick={submit} loading={busy} className="mt-5 w-full" size="lg">
           {busy ? 'Sending…' : 'Send reservation'}
@@ -186,7 +186,7 @@ export default function ReserveDialog({
             down on the reservation afterwards. An expiry a patient only
             finds out about when it has already happened is worse than no
             expiry at all. */}
-        <p className="mt-2.5 text-center text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-2.5 text-center text-xs text-faint">
           This sends a request to the pharmacy — nothing is paid and they may not be able to hold
           it. If they do set it aside, they&apos;ll keep it for {HOLD_HOURS} hours. Check your
           reservations to see their answer.

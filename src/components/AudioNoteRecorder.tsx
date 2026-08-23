@@ -152,15 +152,15 @@ export default function AudioNoteRecorder({
 
   return (
     <div>
-      <p className="mb-1.5 text-sm font-medium text-gray-900 dark:text-gray-100">
+      <p className="mb-1.5 text-sm font-medium text-ink">
         Or say it out loud{' '}
-        <span className="font-normal text-gray-500 dark:text-gray-400">(optional)</span>
+        <span className="font-normal text-faint">(optional)</span>
       </p>
 
       {value && previewUrl ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+        <div className="rounded-control border border-line-brand bg-brand-soft p-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+            <p className="text-sm font-semibold text-brand-ink">
               Voice note · {formatDuration(value.seconds)}
             </p>
             <button
@@ -168,7 +168,7 @@ export default function AudioNoteRecorder({
               onClick={discard}
               disabled={disabled}
               aria-label="Remove voice note"
-              className="shrink-0 cursor-pointer rounded-lg p-1.5 text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+              className="shrink-0 cursor-pointer rounded-lg p-1.5 text-brand-ink transition-colors hover:bg-brand-soft disabled:opacity-50"
             >
               <IconTrash width={15} height={15} />
             </button>
@@ -177,9 +177,9 @@ export default function AudioNoteRecorder({
           <audio src={previewUrl} controls className="mt-2 w-full" />
         </div>
       ) : recording ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900/60 dark:bg-red-950/30">
+        <div className="rounded-control border border-danger bg-danger-soft p-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+            <p className="flex items-center gap-2 text-sm font-semibold text-danger-ink">
               <span className="pulse-dot h-2.5 w-2.5 shrink-0 rounded-full bg-red-500" />
               Recording · {formatDuration(seconds)}
             </p>
@@ -202,16 +202,16 @@ export default function AudioNoteRecorder({
           type="button"
           onClick={start}
           disabled={disabled}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-control border border-dashed border-line-strong px-4 py-3 text-sm font-semibold text-muted transition-colors hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink disabled:opacity-50"
         >
           <IconMic width={16} height={16} />
           Record a voice note
         </button>
       )}
 
-      {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-danger-ink">{error}</p>}
       {!value && !recording && !error && (
-        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1.5 text-xs text-faint">
           Speak in whichever language is easiest — the pharmacist listens to it themselves.
         </p>
       )}

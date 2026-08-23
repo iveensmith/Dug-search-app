@@ -86,10 +86,10 @@ function RegisterForm() {
       <SiteHeader />
       <main className="animate-fade-up mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">
+          <h1 className="text-2xl font-bold text-ink">
             {isPharmacy ? 'Create a pharmacy owner account' : 'Create your account'}
           </h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted">
             {isPharmacy ? 'Then add your outlet — free, takes a minute' : 'For patients — free, takes a minute'}
           </p>
         </div>
@@ -158,7 +158,7 @@ function RegisterForm() {
             </Field>
           )}
 
-          {error && <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          {error && <p className="text-sm font-medium text-danger-ink">{error}</p>}
 
           <Button type="submit" loading={busy} className="w-full" size="lg">
             {busy ? 'Creating account…' : 'Sign up'}
@@ -166,11 +166,11 @@ function RegisterForm() {
         </form>
       </Card>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-6 text-center text-sm text-muted">
           Already have an account?{' '}
           <Link
             href={isPharmacy ? '/login?portal=pharmacy' : '/login'}
-            className="font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+            className="font-medium text-brand-ink underline underline-offset-2"
           >
             Log in
           </Link>

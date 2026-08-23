@@ -131,9 +131,9 @@ function AddOnFields({
           it cannot be turned into something a patient can act on. Leaving
           it unset is a real answer and stays the default. */}
       <div>
-        <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <p className="mb-1.5 text-sm font-medium text-muted">
           How much do you have?{' '}
-          <span className="font-normal text-gray-500 dark:text-gray-400">
+          <span className="font-normal text-faint">
             (optional — patients see this)
           </span>
         </p>
@@ -147,15 +147,15 @@ function AddOnFields({
               title={l.ownerHint}
               className={`min-h-10 cursor-pointer rounded-full border px-3.5 text-sm font-semibold transition-colors ${
                 level === l.key
-                  ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                  ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+                  : 'border-line bg-surface text-muted hover:border-line-brand'
               }`}
             >
               {l.ownerLabel}
             </button>
           ))}
         </div>
-        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1.5 text-xs text-faint">
           {STOCK_LEVELS.find((l) => l.key === level)?.ownerHint ??
             'Leave blank and patients just see “In stock”.'}
         </p>
@@ -211,8 +211,8 @@ function LgaCard({
 
   return (
     <Card className="mb-4">
-      <p className="font-semibold text-gray-900 dark:text-gray-100">As registered</p>
-      <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+      <p className="font-semibold text-ink">As registered</p>
+      <p className="mt-0.5 text-sm text-muted">
         What an admin checked against your PCN licence. Fixed once approved — correcting any of it
         means deleting this outlet and registering again.
       </p>
@@ -229,10 +229,10 @@ function LgaCard({
         ).map(([label, value]) => (
           <div
             key={label}
-            className="flex items-baseline justify-between gap-4 border-b border-gray-100 pb-2.5 last:border-0 last:pb-0 dark:border-gray-800"
+            className="flex items-baseline justify-between gap-4 border-b border-line-soft pb-2.5 last:border-0 last:pb-0"
           >
-            <dt className="shrink-0 text-gray-500 dark:text-gray-400">{label}</dt>
-            <dd className="min-w-0 text-right font-medium text-gray-900 dark:text-gray-100">
+            <dt className="shrink-0 text-faint">{label}</dt>
+            <dd className="min-w-0 text-right font-medium text-ink">
               {value}
             </dd>
           </div>
@@ -243,8 +243,8 @@ function LgaCard({
           registered before LGAs existed have none, and searches filter by
           LGA — without this they would be invisible to patients for good. */}
       {!pharmacy.lga && (
-        <div className="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
-          <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+        <div className="mt-4 border-t border-line-soft pt-4">
+          <div className="mb-3 flex items-start gap-2 rounded-control border border-warn bg-warn-soft p-3 text-sm text-warn-ink">
             <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0" />
             <p>
               Required — patients search by LGA, so your pharmacy won&apos;t appear in their
@@ -263,7 +263,7 @@ function LgaCard({
               ))}
             </Select>
           </Field>
-          {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+          {error && <p className="mt-2 text-sm font-medium text-danger-ink">{error}</p>}
           <Button size="sm" className="mt-3" onClick={save} loading={saving}>
             {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save LGA'}
           </Button>
@@ -318,7 +318,7 @@ function PhoneCard({
 
   return (
     <Card className="mb-4">
-      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Phone</p>
+      <p className="mb-2 font-semibold text-ink">Phone</p>
       <Field label="Number patients call" htmlFor="pharmacy-phone">
         <Input
           id="pharmacy-phone"
@@ -328,7 +328,7 @@ function PhoneCard({
           placeholder="e.g. 0803 123 4567"
         />
       </Field>
-      {error && <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-sm font-medium text-danger-ink">{error}</p>}
       <Button
         size="sm"
         className="mt-3"
@@ -377,9 +377,9 @@ function DeleteOutletCard({ pharmacy }: { pharmacy: Dashboard['pharmacy'] }) {
   }
 
   return (
-    <Card className="mt-6 border-red-200 dark:border-red-900/60">
-      <p className="font-semibold text-gray-900 dark:text-gray-100">Delete this outlet</p>
-      <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+    <Card className="mt-6 border-danger">
+      <p className="font-semibold text-ink">Delete this outlet</p>
+      <p className="mt-0.5 text-sm text-muted">
         The way to correct anything registered above. Your login stays, so you can register the
         corrected outlet straight after — it goes back through approval as a new listing.
       </p>
@@ -390,11 +390,11 @@ function DeleteOutletCard({ pharmacy }: { pharmacy: Dashboard['pharmacy'] }) {
           Delete outlet
         </Button>
       ) : (
-        <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3.5 dark:border-red-900/60 dark:bg-red-950/30">
-          <p className="text-sm font-semibold text-red-800 dark:text-red-300">
+        <div className="mt-3 rounded-control border border-danger bg-danger-soft p-3.5">
+          <p className="text-sm font-semibold text-danger-ink">
             This cannot be undone.
           </p>
-          <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+          <p className="mt-1 text-sm text-danger-ink">
             Your stock list, every patient rating and your reservation history are deleted with it.
             Ratings do not carry over to a new listing.
           </p>
@@ -409,7 +409,7 @@ function DeleteOutletCard({ pharmacy }: { pharmacy: Dashboard['pharmacy'] }) {
             </Field>
           </div>
           {error && (
-            <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
+            <p className="mt-2 text-sm font-medium text-danger-ink">{error}</p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
@@ -468,8 +468,8 @@ function HoursCard({
 
   return (
     <Card id="hours" className="mb-4 scroll-mt-24">
-      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Hours</p>
-      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <p className="mb-2 font-semibold text-ink">Hours</p>
+      <label className="flex items-center gap-2 text-sm text-muted">
         <input
           type="checkbox"
           checked={open24h}
@@ -563,8 +563,8 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
   return (
     <>
       <Card className="mb-4">
-        <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Download your stock</p>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mb-2 font-semibold text-ink">Download your stock</p>
+        <p className="mb-3 text-sm text-muted">
           Export your current inventory ({itemCount} {itemCount === 1 ? 'drug' : 'drugs'}) as a CSV
           file — edit it offline and re-upload it below to update in bulk.
         </p>
@@ -573,13 +573,13 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
           {exporting ? 'Preparing…' : 'Download stock CSV'}
         </Button>
         {exportError && (
-          <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">{exportError}</p>
+          <p className="mt-2 text-sm font-medium text-danger-ink">{exportError}</p>
         )}
       </Card>
 
     <Card>
-      <p className="mb-2 font-semibold text-gray-900 dark:text-gray-100">Bulk upload from CSV</p>
-      <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+      <p className="mb-2 font-semibold text-ink">Bulk upload from CSV</p>
+      <p className="mb-3 text-sm text-muted">
         Columns: genericName, strength, form, packSize, category, brand, quantity, expiryDate,
         inStock — only the first three are required.
       </p>
@@ -587,13 +587,13 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
         Download template CSV
       </Button>
 
-      <div className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-gray-300 p-3 dark:border-gray-700">
-        <IconUpload width={18} height={18} className="shrink-0 text-gray-400 dark:text-gray-500" />
+      <div className="mt-4 flex items-center gap-2 rounded-control border border-dashed border-line-strong p-3">
+        <IconUpload width={18} height={18} className="shrink-0 text-faint" />
         <input
           ref={fileRef}
           type="file"
           accept=".csv,text/csv"
-          className="w-full text-sm text-gray-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-emerald-700 file:px-4 file:py-2 file:font-semibold file:text-white file:hover:bg-emerald-800 dark:text-gray-400 dark:file:bg-emerald-500 dark:file:text-emerald-950"
+          className="w-full text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand file:px-4 file:py-2 file:font-semibold file:text-on-brand file:hover:bg-brand-hover"
         />
       </div>
       <Button className="mt-3 w-full" loading={busy} onClick={upload}>
@@ -601,13 +601,13 @@ function BulkUploadPanel({ onImported, itemCount }: { onImported: () => void; it
       </Button>
 
       {result && (
-        <div className="mt-4 rounded-xl border border-gray-200 p-3 text-sm dark:border-gray-800">
-          <p className="font-medium text-gray-900 dark:text-gray-100">
+        <div className="mt-4 rounded-control border border-line p-3 text-sm">
+          <p className="font-medium text-ink">
             {result.created} added, {result.updated} updated
             {result.errors.length > 0 ? `, ${result.errors.length} skipped` : ''}
           </p>
           {result.errors.length > 0 && (
-            <ul className="mt-2 space-y-1 text-xs text-red-600 dark:text-red-400">
+            <ul className="mt-2 space-y-1 text-xs text-danger-ink">
               {result.errors.slice(0, 20).map((e, i) => (
                 <li key={i}>
                   Row {e.row}: {e.message}
@@ -957,8 +957,8 @@ function PharmacyDashboard() {
   if (loadError) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <p className="text-gray-700 dark:text-gray-300">{loadError}</p>
-        <Link href="/" className="mt-4 inline-block text-emerald-700 underline underline-offset-2 dark:text-emerald-400">
+        <p className="text-muted">{loadError}</p>
+        <Link href="/" className="mt-4 inline-block text-brand-ink underline underline-offset-2">
           Back to search
         </Link>
       </div>
@@ -966,7 +966,7 @@ function PharmacyDashboard() {
   }
 
   if (!data) {
-    return <p className="py-16 text-center text-gray-500 dark:text-gray-400">Loading dashboard…</p>
+    return <p className="py-16 text-center text-faint">Loading dashboard…</p>
   }
 
   const { pharmacy, items } = data
@@ -999,7 +999,7 @@ function PharmacyDashboard() {
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
 
       {pharmacy.verificationStatus === 'PENDING' && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+        <div className="flex items-start gap-3 rounded-control border border-warn bg-warn-soft p-4 text-sm text-warn-ink">
           <IconAlertCircle width={18} height={18} className="mt-0.5 shrink-0" />
           <div>
             <p className="font-semibold">Awaiting approval</p>
@@ -1012,7 +1012,7 @@ function PharmacyDashboard() {
       )}
 
       {pharmacy.verificationStatus === 'REJECTED' && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+        <div className="flex items-start gap-3 rounded-control border border-danger bg-danger-soft p-4 text-sm text-danger-ink">
           <IconAlertCircle width={18} height={18} className="mt-0.5 shrink-0" />
           <div>
             <p className="font-semibold">Registration rejected</p>
@@ -1038,7 +1038,7 @@ function PharmacyDashboard() {
             onSaved={(hours) => setData((d) => (d ? { ...d, pharmacy: { ...d.pharmacy, ...hours } } : d))}
           />
 
-          <nav className="mb-4 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5">
+          <nav className="mb-4 flex gap-1 overflow-x-auto rounded-control bg-sunken p-1">
             {(
               [
                 ['inventory', `Inventory (${inventoryTotal})`],
@@ -1052,8 +1052,8 @@ function PharmacyDashboard() {
                 onClick={() => setTab(key)}
                 className={`flex-1 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   tab === key
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-50'
-                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+                    ? 'bg-surface text-ink shadow-card'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 {label}
@@ -1075,16 +1075,16 @@ function PharmacyDashboard() {
                         className="mt-0.5 shrink-0 text-amber-500"
                       />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <p className="text-sm font-semibold text-ink">
                           {staleCount} {staleCount === 1 ? 'drug has' : 'drugs have'} gone stale
                         </p>
-                        <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                        <p className="mt-0.5 text-sm text-muted">
                           Listings older than 24 hours drop below fresher ones in patient searches.
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted">
                       Your whole list was confirmed in the last 24 hours.
                     </p>
                   )}
@@ -1103,10 +1103,10 @@ function PharmacyDashboard() {
                       Confirm all still in stock
                     </Button>
                   ) : (
-                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
+                    <div className="mt-3 rounded-control border border-warn bg-warn-soft p-3">
                       {/* Names what is being claimed, in the owner's own
                           terms. A patient may travel on the strength of it. */}
-                      <p className="text-sm text-amber-900 dark:text-amber-200">
+                      <p className="text-sm text-warn-ink">
                         You&apos;re telling patients that all{' '}
                         <strong>{inStockCount}</strong> of your in-stock drugs are on your shelf
                         right now. Only confirm what you have actually got.
@@ -1128,7 +1128,7 @@ function PharmacyDashboard() {
                   )}
 
                   {confirmNote && (
-                    <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <p className="mt-2 text-sm font-medium text-muted">
                       {confirmNote}
                     </p>
                   )}
@@ -1146,7 +1146,7 @@ function PharmacyDashboard() {
                       reason inventories here stay half-empty. */}
                   <Link
                     href="/pharmacy/import"
-                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300"
+                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted"
                   >
                     <IconUpload width={16} height={16} />
                     Import from a file
@@ -1155,7 +1155,7 @@ function PharmacyDashboard() {
                       then nobody has to remember to export anything. */}
                   <Link
                     href="/pharmacy/api"
-                    className="mt-2 block cursor-pointer text-center text-sm font-semibold text-gray-500 underline underline-offset-2 dark:text-gray-400"
+                    className="mt-2 block cursor-pointer text-center text-sm font-semibold text-faint underline underline-offset-2"
                   >
                     Connect your own software
                   </Link>
@@ -1163,11 +1163,11 @@ function PharmacyDashboard() {
               ) : (
                 <Card>
                   <div className="mb-3 flex items-center justify-between">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">Add a drug</p>
+                    <p className="font-semibold text-ink">Add a drug</p>
                     <button
                       onClick={resetForm}
                       aria-label="Cancel"
-                      className="cursor-pointer rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-white/10"
+                      className="cursor-pointer rounded-full p-1.5 text-faint hover:bg-sunken"
                     >
                       <IconX width={16} height={16} />
                     </button>
@@ -1185,7 +1185,7 @@ function PharmacyDashboard() {
                         />
                       </Field>
                       {suggestions.length > 0 && (
-                        <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+                        <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-control border border-line dark:divide-gray-800">
                           {suggestions.map((d) => {
                             const already = items.some((i) => i.drug.id === d.id)
                             return (
@@ -1193,16 +1193,16 @@ function PharmacyDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => pickDrug(d)}
-                                  className="flex w-full cursor-pointer items-center justify-between gap-2 bg-white px-4 py-2.5 text-left hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-white/5"
+                                  className="flex w-full cursor-pointer items-center justify-between gap-2 bg-surface px-4 py-2.5 text-left hover:bg-sunken"
                                 >
                                   <div className="min-w-0">
-                                    <p className="font-medium text-gray-900 dark:text-gray-100">{drugLabel(d)}</p>
+                                    <p className="font-medium text-ink">{drugLabel(d)}</p>
                                     {d.brandNames.length > 0 && (
-                                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">Brands: {d.brandNames.join(', ')}</p>
+                                      <p className="truncate text-xs text-faint">Brands: {d.brandNames.join(', ')}</p>
                                     )}
                                   </div>
                                   {already && (
-                                    <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">Already listed</span>
+                                    <span className="shrink-0 text-xs text-faint">Already listed</span>
                                   )}
                                 </button>
                               </li>
@@ -1210,12 +1210,12 @@ function PharmacyDashboard() {
                           })}
                         </ul>
                       )}
-                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      <p className="mt-2 text-xs text-faint">
                         Can&apos;t find it?{' '}
                         <button
                           type="button"
                           onClick={() => setMode('new')}
-                          className="cursor-pointer font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                          className="cursor-pointer font-medium text-brand-ink underline underline-offset-2"
                         >
                           Add a new drug
                         </button>
@@ -1225,14 +1225,14 @@ function PharmacyDashboard() {
 
                   {mode === 'search' && selectedDrug && (
                     <form onSubmit={submitAdd} className="space-y-4">
-                      <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/30">
-                        <p className="text-sm font-medium text-emerald-900 dark:text-emerald-300">
+                      <div className="flex items-center justify-between rounded-control border border-line-brand bg-brand-soft px-4 py-3">
+                        <p className="text-sm font-medium text-brand-ink">
                           {drugLabel(selectedDrug)}
                         </p>
                         <button
                           type="button"
                           onClick={() => setSelectedDrug(null)}
-                          className="cursor-pointer text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                          className="cursor-pointer text-xs font-medium text-brand-ink underline underline-offset-2"
                         >
                           Change
                         </button>
@@ -1261,7 +1261,7 @@ function PharmacyDashboard() {
                       <button
                         type="button"
                         onClick={() => setMode('search')}
-                        className="cursor-pointer text-xs font-medium text-emerald-700 underline underline-offset-2 dark:text-emerald-400"
+                        className="cursor-pointer text-xs font-medium text-brand-ink underline underline-offset-2"
                       >
                         ← Back to search
                       </button>
@@ -1326,7 +1326,7 @@ function PharmacyDashboard() {
                             </option>
                           ))}
                         </Select>
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-xs text-faint">
                           Helps patients recognise the drug. Only set this if you&apos;re sure.
                         </p>
                       </Field>
@@ -1353,12 +1353,12 @@ function PharmacyDashboard() {
 
               <div className="mt-6">
                 <div className="mb-2 flex items-baseline justify-between">
-                  <h2 className="font-semibold text-gray-900 dark:text-gray-100">Your drugs ({inventoryTotal})</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{inStockCount} in stock</p>
+                  <h2 className="font-semibold text-ink">Your drugs ({inventoryTotal})</h2>
+                  <p className="text-sm text-faint">{inStockCount} in stock</p>
                 </div>
 
                 {items.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-faint">
                     No drugs listed yet — tap &ldquo;Add drug&rdquo; above to add your first one.
                   </p>
                 ) : (
@@ -1367,7 +1367,7 @@ function PharmacyDashboard() {
                       <li key={item.id}>
                         <Card padded={false} className="flex items-center justify-between gap-3 p-3">
                           <div className="min-w-0">
-                            <p className="flex items-center gap-2 truncate font-medium text-gray-900 dark:text-gray-100">
+                            <p className="flex items-center gap-2 truncate font-medium text-ink">
                               <span className="truncate">{drugLabel(item.drug)}</span>
                               {/* Read-only here. Prescription status is a
                                   regulatory fact about the medicine, not
@@ -1375,16 +1375,16 @@ function PharmacyDashboard() {
                                   stock — an admin owns it. */}
                               <DispensingBadge value={item.drug.dispensing} short className="shrink-0" />
                             </p>
-                            <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                            <p className="truncate text-xs text-faint">
                               {item.brand ?? (item.drug.brandNames.length > 0 ? item.drug.brandNames.join(', ') : null) ?? 'No brand noted'}
                             </p>
                             {item.expiryDate && (
-                              <p className={`text-xs ${isExpired(item.expiryDate) ? 'font-medium text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                              <p className={`text-xs ${isExpired(item.expiryDate) ? 'font-medium text-danger-ink' : 'text-faint'}`}>
                                 {isExpired(item.expiryDate) ? 'Expired ' : 'Expires '}
                                 {new Date(item.expiryDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             )}
-                            <label className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <label className="mt-1 flex items-center gap-1.5 text-xs text-faint">
                               Qty:
                               <input
                                 key={item.quantity}
@@ -1393,7 +1393,7 @@ function PharmacyDashboard() {
                                 defaultValue={item.quantity ?? ''}
                                 placeholder="—"
                                 onBlur={(e) => updateQuantity(item, e.target.value)}
-                                className="w-16 rounded-md border border-gray-300 bg-white px-1.5 py-0.5 text-xs text-gray-900 outline-none focus:border-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                className="w-16 rounded-md border border-line-strong bg-surface px-1.5 py-0.5 text-xs text-ink outline-none focus:border-focus"
                               />
                             </label>
                           </div>
@@ -1403,8 +1403,8 @@ function PharmacyDashboard() {
                               aria-pressed={item.inStock}
                               className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                                 item.inStock
-                                  ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950'
-                                  : 'bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                                  ? 'bg-brand text-on-brand'
+                                  : 'bg-line text-muted'
                               }`}
                             >
                               {item.inStock ? 'In stock' : 'Out of stock'}
@@ -1412,7 +1412,7 @@ function PharmacyDashboard() {
                             <button
                               onClick={() => remove(item)}
                               aria-label={`Remove ${drugLabel(item.drug)}`}
-                              className="cursor-pointer rounded-full p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                              className="cursor-pointer rounded-full p-2 text-faint transition-colors hover:bg-danger-soft hover:text-danger"
                             >
                               <IconTrash width={16} height={16} />
                             </button>
@@ -1437,14 +1437,14 @@ function PharmacyDashboard() {
 
           {tab === 'searches' && (
             <div>
-              <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mb-3 text-sm text-muted">
                 Recent patient searches in {searchScope ?? (pharmacy.lga ? `${pharmacy.lga} LGA` : stateLabel(pharmacy.state))}{' '}
                 — see what&apos;s in local demand.
               </p>
               {!searches ? (
-                <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading…</p>
+                <p className="py-8 text-center text-faint">Loading…</p>
               ) : searches.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-faint">
                   No searches logged in your area yet.
                 </p>
               ) : (
@@ -1453,10 +1453,10 @@ function PharmacyDashboard() {
                     <li key={s.id}>
                       <Card className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <p className="truncate text-sm font-medium text-ink">
                             {s.drug ? drugLabel(s.drug) : `“${s.queryText}”`}
                           </p>
-                          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                          <p className="mt-0.5 text-xs text-faint">
                             {new Date(s.createdAt).toLocaleString()}
                           </p>
                         </div>

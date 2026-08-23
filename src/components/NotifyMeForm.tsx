@@ -40,14 +40,14 @@ export default function NotifyMeForm({ drugId, state }: Props) {
   return (
     <Card className="mt-4">
       {sent ? (
-        <p className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+        <p className="flex items-center gap-2 text-sm font-medium text-brand-ink">
           <IconCheck width={16} height={16} />
           We&apos;ll email you when a pharmacy nearby has it in stock.
         </p>
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <label htmlFor="notify-email" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="notify-email" className="mb-1.5 block text-sm font-medium text-muted">
               Notify me when it&apos;s in stock
             </label>
             <Input

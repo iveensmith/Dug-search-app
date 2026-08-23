@@ -75,7 +75,7 @@ export default function PrescriptionImage({ src, alt }: { src: string; alt: stri
           className="max-h-80 w-full rounded-lg object-contain"
         />
       </button>
-      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Tap the photo to see it full size</p>
+      <p className="mt-1 text-xs text-faint">Tap the photo to see it full size</p>
 
       {open && (
         <div

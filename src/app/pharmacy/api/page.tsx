@@ -96,11 +96,11 @@ export default function ApiKeysPage() {
 
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <Card className="mt-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted">
             If your shop already tracks stock somewhere — a POS, a spreadsheet macro, something
             built for you — it can send that stock here instead of anyone retyping it. Create a key,
             give it to whoever maintains that software, and point them at{' '}
-            <Link href="/docs/api" className="font-semibold text-emerald-700 underline dark:text-emerald-400">
+            <Link href="/docs/api" className="font-semibold text-brand-ink underline">
               the instructions
             </Link>
             .
@@ -109,7 +109,7 @@ export default function ApiKeysPage() {
 
         {issued && (
           <Card className="mt-4 border-emerald-300 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-950/30">
-            <p className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-300">
+            <p className="flex items-center gap-2 font-bold text-brand-ink">
               <IconCheck width={16} height={16} />
               &ldquo;{issued.label}&rdquo; created
             </p>
@@ -118,7 +118,7 @@ export default function ApiKeysPage() {
               be shown — if it is lost, revoke it and make another.
             </p>
             <div className="mt-3 flex items-center gap-2">
-              <code className="min-w-0 flex-1 overflow-x-auto rounded-lg bg-white px-3 py-2 font-mono text-xs break-all dark:bg-gray-900">
+              <code className="min-w-0 flex-1 overflow-x-auto rounded-lg bg-surface px-3 py-2 font-mono text-xs break-all">
                 {issued.raw}
               </code>
               <button
@@ -126,7 +126,7 @@ export default function ApiKeysPage() {
                   navigator.clipboard?.writeText(issued.raw)
                   setCopied(true)
                 }}
-                className="shrink-0 cursor-pointer rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white dark:bg-emerald-500 dark:text-emerald-950"
+                className="shrink-0 cursor-pointer rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-on-brand"
               >
                 {copied ? 'Copied' : 'Copy'}
               </button>
@@ -136,7 +136,7 @@ export default function ApiKeysPage() {
                 setIssued(null)
                 setCopied(false)
               }}
-              className="mt-3 cursor-pointer text-sm font-semibold text-emerald-900 underline dark:text-emerald-300"
+              className="mt-3 cursor-pointer text-sm font-semibold text-brand-ink underline"
             >
               I have saved it
             </button>
@@ -160,7 +160,7 @@ export default function ApiKeysPage() {
             </Button>
           </form>
           {error && (
-            <p className="mt-2 flex items-start gap-2 text-sm text-red-700 dark:text-red-400">
+            <p className="mt-2 flex items-start gap-2 text-sm text-danger-ink">
               <IconAlertCircle width={16} height={16} className="mt-0.5 shrink-0" />
               {error}
             </p>
@@ -170,11 +170,11 @@ export default function ApiKeysPage() {
         <WebhookCard />
 
         <div className="mt-5">
-          <h2 className="px-1 text-sm font-bold text-gray-900 dark:text-gray-100">Your keys</h2>
+          <h2 className="px-1 text-sm font-bold text-ink">Your keys</h2>
           {keys === null ? (
-            <p className="mt-2 px-1 text-sm text-gray-500 dark:text-gray-400">Loading…</p>
+            <p className="mt-2 px-1 text-sm text-faint">Loading…</p>
           ) : keys.length === 0 ? (
-            <p className="mt-2 rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+            <p className="mt-2 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-faint">
               No keys yet.
             </p>
           ) : (
@@ -182,14 +182,14 @@ export default function ApiKeysPage() {
               {keys.map((k) => (
                 <li
                   key={k.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-800"
+                  className="flex items-center justify-between gap-3 rounded-control border border-line p-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{k.label}</p>
-                    <p className="mt-0.5 font-mono text-xs text-gray-500 dark:text-gray-400">
+                    <p className="truncate font-semibold text-ink">{k.label}</p>
+                    <p className="mt-0.5 font-mono text-xs text-faint">
                       {k.prefix}…
                     </p>
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    <p className="mt-0.5 text-xs text-faint">
                       {k.lastUsedAt
                         ? `Last used ${new Date(k.lastUsedAt).toLocaleDateString()}`
                         : 'Never used'}
@@ -198,7 +198,7 @@ export default function ApiKeysPage() {
                   <button
                     onClick={() => revoke(k.id, k.label)}
                     aria-label={`Revoke ${k.label}`}
-                    className="shrink-0 cursor-pointer rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+                    className="shrink-0 cursor-pointer rounded-lg p-2 text-faint hover:bg-danger-soft hover:text-danger"
                   >
                     <IconTrash width={16} height={16} />
                   </button>
