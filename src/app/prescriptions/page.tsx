@@ -406,8 +406,14 @@ export default function PrescriptionsPage() {
             return (
               <li key={u.id}>
                 <Link href={`/prescriptions/${u.id}`}>
-                  <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-md">
-                    <div className="min-w-0">
+                  {/* The badge column is shrink-0, so on a narrow phone the label
+                      absorbs every pixel the badge takes and truncates.
+                      At 320px that left it 64px — too little for even
+                      "Voice note". Below 360px the row stacks instead,
+                      giving the label the full card width; at 360 and up
+                      nothing changes. */}
+                  <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-md max-[359px]:flex-col max-[359px]:items-start max-[359px]:gap-2">
+                    <div className="min-w-0 max-[359px]:w-full">
                       <p className="truncate text-sm font-medium text-ink">
                         {/* "Prescription", not "Prescription question": the
                             row shares its width with the status badge, so
