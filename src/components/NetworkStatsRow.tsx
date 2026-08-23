@@ -41,7 +41,14 @@ export default function NetworkStatsRow() {
       {items.map(({ value, label }) => (
         // Reversed so the figure reads first while the markup keeps the
         // order a definition list requires: term, then description.
-        <div key={label} className="flex flex-col-reverse">
+        //
+        // justify-end is what keeps the three figures on one line. The
+        // grid stretches every cell to the tallest, and in a
+        // column-reverse flex the default packs content to the bottom —
+        // so on a phone, where "Verified pharmacies" wraps to two lines
+        // and "States covered" does not, the figures ended up 14px apart.
+        // In column-reverse, flex-end is the top.
+        <div key={label} className="flex flex-col-reverse justify-end">
           <dt className="mt-1 text-[0.7rem] font-semibold leading-tight text-emerald-50 sm:text-xs md:text-muted">
             {label}
           </dt>
