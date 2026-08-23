@@ -6,56 +6,376 @@
    working unchanged while adding a manual light/dark toggle on top. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-:root {
-  --background: #f8faf9;
-  --foreground: #0f172a;
+/* ═══════════════════════════════════════════════════════════════════════
+   1 · PRIMITIVES — raw ramps. Never used directly in components.
+   These are theme-independent, so they live in a plain @theme block:
+   Tailwind emits them at :root (keeping `var(--color-brand-200)` working
+   for ::selection below) *and* generates `bg-brand-700`-style utilities.
+   ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand: emerald (pharmacy/health) + a restrained blue accent (trust/info) */
+@theme {
+  /* Brand — emerald. The five steps that already existed keep their exact
+     values; 300/400/500/800/900/950 are new, so nothing shifts. */
   --color-brand-50: #ecfdf5;
   --color-brand-100: #d1fae5;
   --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
   --color-brand-600: #059669;
   --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+  --color-brand-950: #022c22;
 
-  /* Browser chrome (scrollbars, form controls) should follow the theme */
+  /* Ink — neutrals carrying a trace of the brand hue rather than Tailwind's
+     blue-leaning slate. Keeps greys from reading cold next to the emerald.
+     950 is #0a0f0d, the same near-black the dark theme already shipped. */
+  --color-ink-50: #f7f9f8;
+  --color-ink-100: #eef2f0;
+  --color-ink-200: #e1e7e4;
+  --color-ink-300: #cbd4d0;
+  --color-ink-400: #98a6a0;
+  --color-ink-500: #6b7b75;
+  --color-ink-600: #4e5d57;
+  --color-ink-700: #3a4742;
+  --color-ink-800: #26302c;
+  --color-ink-900: #161d1a;
+  --color-ink-950: #0a0f0d;
+
+  /* ── Radius ──────────────────────────────────────────────────────────
+     Named by what they wrap, not by t-shirt size, so a component can't
+     drift: a card is `rounded-card` wherever it appears. */
+  --radius-field: 14px;
+  --radius-control: 16px;
+  --radius-card: 20px;
+  --radius-sheet: 28px;
+
+  /* ── Elevation ───────────────────────────────────────────────────────
+     Shadows tinted with the ink hue rather than pure black — black shadows
+     on a warm-neutral surface read as grey smudge. */
+  --shadow-card: 0 1px 2px 0 rgb(10 20 16 / 0.05), 0 0 1px 0 rgb(10 20 16 / 0.04);
+  --shadow-raised: 0 2px 6px -1px rgb(10 20 16 / 0.07), 0 1px 2px 0 rgb(10 20 16 / 0.04);
+  --shadow-sheet: 0 8px 20px -4px rgb(10 20 16 / 0.10), 0 2px 6px -2px rgb(10 20 16 / 0.05);
+  --shadow-modal: 0 16px 40px -8px rgb(10 20 16 / 0.16), 0 4px 10px -4px rgb(10 20 16 / 0.06);
+  --shadow-brand: 0 6px 16px -4px rgb(4 120 87 / 0.28);
+
+  /* ── Type scale ──────────────────────────────────────────────────────
+     New names only — `text-sm` / `text-base` keep Tailwind's defaults, so
+     every existing class list is untouched. Line heights land on the 4pt
+     grid; tracking tightens as size grows. */
+  --text-display: 2.5rem;
+  --text-display--line-height: 2.875rem;
+  --text-display--letter-spacing: -0.015em;
+  --text-display--font-weight: 700;
+
+  --text-h1: 2rem;
+  --text-h1--line-height: 2.375rem;
+  --text-h1--letter-spacing: -0.012em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: 1.625rem;
+  --text-h2--line-height: 2rem;
+  --text-h2--letter-spacing: -0.008em;
+  --text-h2--font-weight: 700;
+
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.75rem;
+  --text-h3--letter-spacing: -0.005em;
+  --text-h3--font-weight: 600;
+
+  --text-title-lg: 1.125rem;
+  --text-title-lg--line-height: 1.5rem;
+  --text-title-lg--letter-spacing: -0.003em;
+  --text-title-lg--font-weight: 600;
+
+  --text-title: 1rem;
+  --text-title--line-height: 1.375rem;
+  --text-title--letter-spacing: -0.002em;
+  --text-title--font-weight: 600;
+
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.625rem;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.375rem;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.125rem;
+
+  --text-label: 0.75rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.02em;
+  --text-label--font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   2 · SEMANTIC TOKENS — what components actually reference.
+   Raw values here; the @theme inline block at the bottom turns each into
+   a utility. Because they're `inline`, `bg-surface` compiles to
+   `background-color: var(--surface)` and re-resolves when the theme flips.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Surfaces */
+  --canvas: #f8faf9;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: #eef2f0;
+  --inverse: #0a0f0d;
+
+  /* Text */
+  --ink: #161d1a;
+  --muted: #4e5d57;
+  --faint: #5f6f68;
+  --on-brand: #ffffff;
+  --on-inverse: #ffffff;
+
+  /* Brand / action */
+  --brand: #047857;
+  --brand-hover: #065f46;
+  --brand-press: #064e3b;
+  --brand-soft: #ecfdf5;
+  --brand-ink: #047857;
+
+  /* Lines */
+  --line: #e1e7e4;
+  --line-soft: #eef2f0;
+  --line-strong: #cbd4d0;
+  --focus: #059669;
+
+  /* Status */
+  --ok: #059669;
+  --ok-soft: #ecfdf5;
+  --ok-ink: #047857;
+  --warn: #f59e0b;
+  --warn-soft: #fffbeb;
+  --warn-ink: #b45309;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-ink: #b91c1c;
+  --info: #2563eb;
+  --info-soft: #eff6ff;
+  --info-ink: #1d4ed8;
+
+  /* Legacy aliases — every existing `bg-background` / `text-foreground`
+     keeps working. To revert body text to the previous slate, change
+     --ink to #0f172a; nothing else needs touching. */
+  --background: var(--canvas);
+  --foreground: var(--ink);
+
   color-scheme: light;
+}
+
+/* Dark values, declared once so the system-preference block and the explicit
+   [data-theme="dark"] block can't drift apart. Declaring them alone changes
+   nothing — the two blocks below are what actually swap the theme over. */
+:root {
+  --dark-canvas: #0a0f0d;
+  --dark-surface: #111815;
+  --dark-raised: #1a2320;
+  --dark-sunken: #070b09;
+  --dark-inverse: #e7f3ee;
+  --dark-ink: #e7f3ee;
+  --dark-muted: #9fb3aa;
+  --dark-faint: #7a8d85;
+  --dark-on-brand: #022c22;
+  --dark-on-inverse: #0a0f0d;
+  --dark-brand: #10b981;
+  --dark-brand-hover: #34d399;
+  --dark-brand-press: #6ee7b7;
+  --dark-brand-soft: #0d2b21;
+  --dark-brand-ink: #34d399;
+  --dark-line: #2a3733;
+  --dark-line-soft: #1c2622;
+  --dark-line-strong: #3c4b46;
+  --dark-focus: #34d399;
+  --dark-ok: #10b981;
+  --dark-ok-soft: #0d2b21;
+  --dark-ok-ink: #6ee7b7;
+  --dark-warn: #f59e0b;
+  --dark-warn-soft: #2e2109;
+  --dark-warn-ink: #fbbf24;
+  --dark-danger: #ef4444;
+  --dark-danger-soft: #2d1414;
+  --dark-danger-ink: #fca5a5;
+  --dark-info: #3b82f6;
+  --dark-info-soft: #10203a;
+  --dark-info-ink: #93c5fd;
 }
 
 /* System-preference default, only when the user hasn't explicitly chosen */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --background: #0a0f0d;
-    --foreground: #e7f3ee;
+    --canvas: var(--dark-canvas);
+    --surface: var(--dark-surface);
+    --raised: var(--dark-raised);
+    --sunken: var(--dark-sunken);
+    --inverse: var(--dark-inverse);
+    --ink: var(--dark-ink);
+    --muted: var(--dark-muted);
+    --faint: var(--dark-faint);
+    --on-brand: var(--dark-on-brand);
+    --on-inverse: var(--dark-on-inverse);
+    --brand: var(--dark-brand);
+    --brand-hover: var(--dark-brand-hover);
+    --brand-press: var(--dark-brand-press);
+    --brand-soft: var(--dark-brand-soft);
+    --brand-ink: var(--dark-brand-ink);
+    --line: var(--dark-line);
+    --line-soft: var(--dark-line-soft);
+    --line-strong: var(--dark-line-strong);
+    --focus: var(--dark-focus);
+    --ok: var(--dark-ok);
+    --ok-soft: var(--dark-ok-soft);
+    --ok-ink: var(--dark-ok-ink);
+    --warn: var(--dark-warn);
+    --warn-soft: var(--dark-warn-soft);
+    --warn-ink: var(--dark-warn-ink);
+    --danger: var(--dark-danger);
+    --danger-soft: var(--dark-danger-soft);
+    --danger-ink: var(--dark-danger-ink);
+    --info: var(--dark-info);
+    --info-soft: var(--dark-info-soft);
+    --info-ink: var(--dark-info-ink);
     color-scheme: dark;
   }
 }
 
 /* Explicit choice (ThemeToggle) always wins over system preference */
 :root[data-theme="dark"] {
-  --background: #0a0f0d;
-  --foreground: #e7f3ee;
+  --canvas: var(--dark-canvas);
+  --surface: var(--dark-surface);
+  --raised: var(--dark-raised);
+  --sunken: var(--dark-sunken);
+  --inverse: var(--dark-inverse);
+  --ink: var(--dark-ink);
+  --muted: var(--dark-muted);
+  --faint: var(--dark-faint);
+  --on-brand: var(--dark-on-brand);
+  --on-inverse: var(--dark-on-inverse);
+  --brand: var(--dark-brand);
+  --brand-hover: var(--dark-brand-hover);
+  --brand-press: var(--dark-brand-press);
+  --brand-soft: var(--dark-brand-soft);
+  --brand-ink: var(--dark-brand-ink);
+  --line: var(--dark-line);
+  --line-soft: var(--dark-line-soft);
+  --line-strong: var(--dark-line-strong);
+  --focus: var(--dark-focus);
+  --ok: var(--dark-ok);
+  --ok-soft: var(--dark-ok-soft);
+  --ok-ink: var(--dark-ok-ink);
+  --warn: var(--dark-warn);
+  --warn-soft: var(--dark-warn-soft);
+  --warn-ink: var(--dark-warn-ink);
+  --danger: var(--dark-danger);
+  --danger-soft: var(--dark-danger-soft);
+  --danger-ink: var(--dark-danger-ink);
+  --info: var(--dark-info);
+  --info-soft: var(--dark-info-soft);
+  --info-ink: var(--dark-info-ink);
   color-scheme: dark;
 }
+
 :root[data-theme="light"] {
-  --background: #f8faf9;
-  --foreground: #0f172a;
+  --canvas: #f8faf9;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: #eef2f0;
+  --inverse: #0a0f0d;
+  --ink: #161d1a;
+  --muted: #4e5d57;
+  --faint: #5f6f68;
+  --on-brand: #ffffff;
+  --on-inverse: #ffffff;
+  --brand: #047857;
+  --brand-hover: #065f46;
+  --brand-press: #064e3b;
+  --brand-soft: #ecfdf5;
+  --brand-ink: #047857;
+  --line: #e1e7e4;
+  --line-soft: #eef2f0;
+  --line-strong: #cbd4d0;
+  --focus: #059669;
+  --ok: #059669;
+  --ok-soft: #ecfdf5;
+  --ok-ink: #047857;
+  --warn: #f59e0b;
+  --warn-soft: #fffbeb;
+  --warn-ink: #b45309;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-ink: #b91c1c;
+  --info: #2563eb;
+  --info-soft: #eff6ff;
+  --info-ink: #1d4ed8;
   color-scheme: light;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   3 · UTILITY GENERATION
+   `inline` is what makes theming work: the utility inlines var(--surface),
+   which re-resolves on theme flip. Without it the value would be frozen
+   at :root and dark mode would do nothing.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 @theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-inverse: var(--inverse);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-on-brand: var(--on-brand);
+  --color-on-inverse: var(--on-inverse);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-press: var(--brand-press);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-strong: var(--line-strong);
+  --color-focus: var(--focus);
+
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-ink: var(--ok-ink);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-ink: var(--warn-ink);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-ink: var(--danger-ink);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-ink: var(--info-ink);
+
+  /* Legacy — keeps existing bg-background / text-foreground working */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --font-sans: var(--font-open-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   4 · BASE  (unchanged from v1 apart from token references)
+   ═══════════════════════════════════════════════════════════════════════ */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--ink);
   /* The fallback list is a real fallback, not decoration: it is what a
      patient reads for the first few hundred milliseconds, and on a slow
      Nigerian connection sometimes for longer. Segoe UI and Roboto are the
@@ -63,6 +383,13 @@ body {
   font-family: var(--font-open-sans), "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Every interactive element gets the same focus treatment — one ring, one
+   token, visible on both themes. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 ::selection {
@@ -89,13 +416,13 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--foreground) 18%, transparent);
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--foreground) 30%, transparent);
+  background: color-mix(in srgb, var(--ink) 30%, transparent);
   background-clip: content-box;
 }
 
@@ -113,16 +440,43 @@ body {
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--surface);
+  color: var(--ink);
 }
 .leaflet-container a.leaflet-popup-close-button {
-  color: color-mix(in srgb, var(--foreground) 55%, transparent);
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
 }
 
-/* --- Motion ---------------------------------------------------------- */
-/* Small, fast entrance animations. All of these are neutralized by the
-   prefers-reduced-motion block at the bottom of this file. */
+/* ═══════════════════════════════════════════════════════════════════════
+   5 · SKELETONS — loading states as a first-class token, not an ad-hoc grey
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  border-radius: var(--radius-field);
+  background-image: linear-gradient(
+    90deg,
+    var(--sunken) 25%,
+    color-mix(in srgb, var(--sunken) 55%, var(--surface)) 37%,
+    var(--sunken) 63%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   6 · MOTION  (unchanged from v1)
+   Small, fast entrance animations. All of these are neutralized by the
+   prefers-reduced-motion block at the bottom of this file.
+   ═══════════════════════════════════════════════════════════════════════ */
 
 @keyframes fade-up {
   from {
