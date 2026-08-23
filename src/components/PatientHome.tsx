@@ -1374,7 +1374,7 @@ export default function PatientHome() {
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               How it works
             </p>
-            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
+            <h2 className="mx-auto mt-4 max-w-lg text-balance text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
               Three steps between you and{' '}
               <span className="text-brand-ink">your medicine</span>
             </h2>
@@ -1423,9 +1423,13 @@ export default function PatientHome() {
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               Questions
             </p>
-            <h2 className="mx-auto mt-4 max-w-lg text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
-              The things people ask before they{' '}
-              <span className="text-brand-ink">trust us</span>
+            <h2 className="mx-auto mt-4 max-w-lg text-balance text-center text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">
+              {/* Not "…before they trust us": naming the doubt invites it,
+                  and a page about finding medicine should not open its FAQ
+                  by conceding that trust is the question. This says the
+                  same thing from the other end — these are the answers
+                  people actually want — without the flinch. */}
+              What patients <span className="text-brand-ink">ask us most</span>
             </h2>
             <div className="mx-auto mt-12 max-w-2xl space-y-3">
               {FAQ.map(({ q, a }) => (
