@@ -193,7 +193,7 @@ export default function SearchBox({
           <IconSearch
             width={18}
             height={18}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-faint"
           />
           <input
             type="search"
@@ -222,7 +222,7 @@ export default function SearchBox({
             // or generic" is the thing a patient holding a box needs to
             // know — the name on it is usually the brand.
             placeholder={placeholder ?? 'Brand or generic name'}
-            className="w-full rounded-xl border-2 border-gray-300 bg-white py-3.5 pl-10 pr-4 text-base text-gray-900 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-950 dark:disabled:bg-gray-800"
+            className="w-full rounded-control border-2 border-line-strong bg-surface py-3.5 pl-10 pr-4 text-base text-ink shadow-sm outline-none transition-colors placeholder:text-faint focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:bg-sunken disabled:text-faint dark:focus:border-emerald-400 dark:focus:ring-emerald-950"
             aria-label="Search for a drug"
             autoComplete="off"
             disabled={disabled}
@@ -233,7 +233,7 @@ export default function SearchBox({
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-white/10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-faint hover:bg-sunken hover:text-muted"
             >
               <IconX width={16} height={16} />
             </button>
@@ -246,10 +246,10 @@ export default function SearchBox({
             disabled={disabled}
             aria-label={listening ? 'Stop listening' : 'Search by voice'}
             aria-pressed={listening}
-            className={`flex min-h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl border transition-colors disabled:opacity-50 ${
+            className={`flex min-h-[52px] w-[52px] shrink-0 items-center justify-center rounded-control border transition-colors disabled:opacity-50 ${
               listening
-                ? 'border-emerald-600 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
-                : 'border-gray-300 text-gray-500 hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-emerald-700 dark:hover:text-emerald-400'
+                ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+                : 'border-line-strong text-faint hover:border-emerald-300 hover:text-brand-ink dark:hover:border-emerald-700'
             }`}
           >
             <IconMic width={20} height={20} />
@@ -263,14 +263,14 @@ export default function SearchBox({
       </div>
 
       {listening && (
-        <p className="animate-fade-in mt-2 flex items-center gap-2 rounded-xl border border-emerald-500 bg-emerald-50 px-3.5 py-2.5 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+        <p className="animate-fade-in mt-2 flex items-center gap-2 rounded-control border border-emerald-500 bg-brand-soft px-3.5 py-2.5 text-sm font-semibold text-brand-ink">
           <span className="pulse-dot h-2 w-2 shrink-0 rounded-full bg-emerald-500" data-live="true" />
           Listening — say the medicine name
         </p>
       )}
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-[1000] mt-1.5 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+        <ul className="absolute z-[1000] mt-1.5 w-full overflow-hidden rounded-control border border-line bg-surface shadow-lg">
           {suggestions.map((d, i) => (
             <li key={d.id}>
               <button
@@ -280,14 +280,14 @@ export default function SearchBox({
                 }}
                 onMouseEnter={() => setHighlighted(i)}
                 className={`flex w-full cursor-pointer items-center gap-3.5 px-4 py-3 text-left transition-colors ${
-                  i === highlighted ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-white dark:bg-gray-900'
+                  i === highlighted ? 'bg-brand-soft' : 'bg-surface'
                 }`}
               >
-                <span className="flex shrink-0 items-center justify-center rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
+                <span className="flex shrink-0 items-center justify-center rounded-control bg-brand-soft p-2.5 text-emerald-600 dark:text-emerald-400">
                   <IconPill width={18} height={18} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-gray-900 dark:text-gray-100">
+                  <span className="block truncate font-semibold text-ink">
                     {drugLabel(d)}
                   </span>
                   {/* Why a search for "Aquaclav" is answering with
@@ -295,12 +295,12 @@ export default function SearchBox({
                       answer reads as the wrong one, and the brand the
                       patient is holding is the only word they trust. */}
                   {d.stockedAs ? (
-                    <span className="block truncate text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    <span className="block truncate text-sm font-medium text-brand-ink">
                       Stocked as {d.stockedAs}
                     </span>
                   ) : (
                     d.brandNames.length > 0 && (
-                      <span className="block truncate text-sm text-gray-500 dark:text-gray-400">
+                      <span className="block truncate text-sm text-faint">
                         {d.brandNames.join(', ')}
                       </span>
                     )
@@ -312,7 +312,7 @@ export default function SearchBox({
                     The full wording is one tap away on the results. */}
                 <DispensingBadge value={d.dispensing} short className="shrink-0" />
                 {d.category && (
-                  <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-white/10 dark:text-gray-300">
+                  <span className="shrink-0 rounded-full bg-sunken px-2.5 py-1 text-xs font-semibold text-muted">
                     {d.category}
                   </span>
                 )}
