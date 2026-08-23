@@ -10,11 +10,11 @@ export default function OpenStatusBadge({ open24h, opensAt, closesAt, className 
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
         open
-          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-          : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'
+          ? 'bg-ok-soft text-ok-ink'
+          : 'bg-sunken text-faint'
       } ${className}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${open ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${open ? 'bg-ok' : 'bg-line-strong'}`} />
       {open ? 'Open now' : 'Closed'}
     </span>
   )

@@ -15,9 +15,12 @@ import { dispensingClass, type DispensingTone } from '@/lib/dispensing'
  * reassurance and should never outweigh the drug's own name.
  */
 const TONE: Record<DispensingTone, string> = {
-  strong: 'bg-amber-100 text-amber-900 dark:bg-amber-500/15 dark:text-amber-300',
-  quiet: 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300',
-  plain: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400',
+  strong: 'bg-warn-soft text-warn-ink',
+  // quiet and plain share a fill and separate on text weight of colour —
+  // muted then faint — because collapsing both onto one token would erase
+  // the step between them that the note above is about.
+  quiet: 'bg-sunken text-muted',
+  plain: 'bg-sunken text-faint',
 }
 
 export default function DispensingBadge({
