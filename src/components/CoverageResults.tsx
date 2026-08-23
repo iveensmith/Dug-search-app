@@ -63,7 +63,7 @@ export default function CoverageResults({
         return (
           <li
             key={r.id}
-            className="rounded-card border border-line bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-sheet dark:hover:border-emerald-800"
+            className="rounded-card border border-line bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-sheet"
           >
             <div className="flex items-start gap-3.5">
               <span className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-brand-soft text-brand-ink">
@@ -158,7 +158,7 @@ export default function CoverageResults({
                 href={`tel:${r.phone.replace(/\s/g, '')}`}
                 onClick={(e) => onCall(e, r.phone)}
                 aria-label={`Call ${r.name}`}
-                className="flex flex-1 items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-emerald-300 hover:text-brand-ink dark:hover:border-emerald-700"
+                className="flex flex-1 items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
               >
                 <IconPhone width={16} height={16} />
                 {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}

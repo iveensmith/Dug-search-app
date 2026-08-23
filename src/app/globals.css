@@ -142,6 +142,7 @@
   --line: #e1e7e4;
   --line-soft: #eef2f0;
   --line-strong: #cbd4d0;
+  --line-brand: #6ee7b7;
   --focus: #059669;
 
   /* Status */
@@ -189,6 +190,7 @@
   --dark-line: #2a3733;
   --dark-line-soft: #1c2622;
   --dark-line-strong: #3c4b46;
+  --dark-line-brand: #047857;
   --dark-focus: #34d399;
   --dark-ok: #10b981;
   --dark-ok-soft: #0d2b21;
@@ -225,6 +227,7 @@
     --line: var(--dark-line);
     --line-soft: var(--dark-line-soft);
     --line-strong: var(--dark-line-strong);
+    --line-brand: var(--dark-line-brand);
     --focus: var(--dark-focus);
     --ok: var(--dark-ok);
     --ok-soft: var(--dark-ok-soft);
@@ -262,6 +265,7 @@
   --line: var(--dark-line);
   --line-soft: var(--dark-line-soft);
   --line-strong: var(--dark-line-strong);
+  --line-brand: var(--dark-line-brand);
   --focus: var(--dark-focus);
   --ok: var(--dark-ok);
   --ok-soft: var(--dark-ok-soft);
@@ -297,6 +301,7 @@
   --line: #e1e7e4;
   --line-soft: #eef2f0;
   --line-strong: #cbd4d0;
+  --line-brand: #6ee7b7;
   --focus: #059669;
   --ok: #059669;
   --ok-soft: #ecfdf5;
@@ -342,6 +347,7 @@
   --color-line: var(--line);
   --color-line-soft: var(--line-soft);
   --color-line-strong: var(--line-strong);
+  --color-line-brand: var(--line-brand);
   --color-focus: var(--focus);
 
   --color-ok: var(--ok);

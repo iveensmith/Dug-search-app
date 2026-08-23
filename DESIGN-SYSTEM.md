@@ -40,7 +40,7 @@ Every semantic token generates `bg-*`, `text-*`, `border-*` and `ring-*` in one 
 Light resolves to emerald-700 with white text; dark to emerald-500 with near-black text. **The token already handles the swap — don't add a `dark:` class next to it.**
 
 ### Lines
-`border-line-soft` hairlines · `border-line` default · `border-line-strong` hover · `ring-focus` focus
+`border-line-soft` hairlines · `border-line` default · `border-line-strong` hover · `border-line-brand` brand hover hint · `ring-focus` focus
 
 ### Status
 Each tone has a solid, a soft fill, and a readable ink: `ok` · `warn` · `danger` · `info`
@@ -90,6 +90,7 @@ Find-and-replace, roughly in this order. Every line on the right also deletes th
 | `rounded-xl` on controls | `rounded-control` |
 | `rounded-2xl` on cards | `rounded-card` |
 | `rounded-3xl` on bands | `rounded-sheet` |
+| `hover:border-emerald-200`,`hover:border-emerald-300` / `dark:hover:border-emerald-700`,`dark:hover:border-emerald-800` | `hover:border-line-brand` |
 | `focus-visible:ring-emerald-500` | `focus-visible:ring-focus` |
 
 Highest-value files first: `SearchBox`, `CoverageResults`, `ResultFilters`, `StockLevelBadge`, `OpenStatusBadge`, `DispensingBadge`, `PatientHome`, `SiteHeader`, `TabBar`.

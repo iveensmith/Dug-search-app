@@ -249,7 +249,7 @@ export default function SearchBox({
             className={`flex min-h-[52px] w-[52px] shrink-0 items-center justify-center rounded-control border transition-colors disabled:opacity-50 ${
               listening
                 ? 'border-brand bg-brand text-on-brand'
-                : 'border-line-strong text-faint hover:border-emerald-300 hover:text-brand-ink dark:hover:border-emerald-700'
+                : 'border-line-strong text-faint hover:border-line-brand hover:text-brand-ink'
             }`}
           >
             <IconMic width={20} height={20} />
