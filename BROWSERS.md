@@ -1,74 +1,93 @@
 # Which browsers MediQuest runs on
 
-Written after an iPhone 6 report: "a lot of things were not working."
+Written after an iPhone 6 report — "a lot of things were not working" —
+and then rewritten, because the first answer was to warn those phones
+away and the right answer was to make the app run on them.
 
 ## The floor
 
-**Safari 16.4+ / iOS 16.4+**, Chrome 111+, Firefox 128+.
+**iOS 12 / Safari 12**, Chrome 64+, Firefox 63+.
 
-That number is not a preference. It is what the two things this app is
-built on require, and it was measured from the built output rather than
-looked up.
+That is a real floor, not an aspiration: every JS chunk is verified to
+parse as ES2018, and the stylesheet no longer depends on a feature that
+makes an old Safari discard it.
 
-## What the build actually ships
+## What was actually wrong
 
-Counted in `.next/static/chunks` after `next build`:
+Two separate things, and only one of them was what it looked like.
 
-| Feature | In the bundle | Needs |
+**The bundle would not parse.** It shipped 237 `??` and 166 `?.`, which
+Safari below 13.1 cannot read. A script that fails to parse does not run
+at all, so React never hydrated and every control was dead — on a page
+that Next had server-rendered and which therefore *looked* fine. That is
+the worst failure mode there is: a working-looking page, in front of
+someone trying to find medicine.
+
+Fixed by setting `browserslist` in `package.json`, which is all it takes
+to make SWC compile the app and its dependencies down. Cost: about 140 KB
+more JS.
+
+**The stylesheet would be discarded.** Tailwind v4 wraps almost
+everything in `@layer`, and a browser that does not know cascade layers
+throws away the whole block rather than degrading — so below Safari 15.4
+the page arrived unstyled. Fixed with `@csstools/postcss-cascade-layers`,
+which rewrites layers into plain rules with matching specificity (the
+`:not(#\#)` selectors in the output are its doing). Cost: about 45 KB
+more CSS.
+
+## What was never wrong
+
+`color-mix()` — and this matters, because the first version of the
+browser warning tested for it and was therefore wrong.
+
+Tailwind already wraps every `color-mix()` in `@supports` with a plain
+fallback beside it. A browser without `color-mix` takes the fallback and
+renders perfectly well. Testing for it flagged phones on which the app
+worked, and showed them a red banner saying it would not — which is worse
+than showing nothing at all. A screenshot from a real handset is what
+exposed it: the page in the photo was rendering correctly, banner and
+all.
+
+The lesson worth keeping: a feature test is only as good as the link
+between the feature and the thing that actually breaks.
+
+## What still degrades, and how much
+
+| Feature | Needs | Missing it costs |
 |---|---|---|
-| `@property` | 70 uses | Safari **16.4** |
-| `color-mix()` | 181 uses | Safari **16.2** |
-| `@layer` | 5 uses | Safari 15.4 |
-| `dvh` units | 12 uses | Safari 15.4 |
-| flex/grid `gap` | 16 uses | Safari 14.1 |
-| `:where()` | 168 uses | Safari 14 |
-| `??` (nullish) | 237 uses | Safari **13.1** |
-| `?.` (optional chaining) | 166 uses | Safari **13.1** |
-| `Object.hasOwn` | 7 uses | Safari 15.4 |
+| `color-mix()` | Safari 16.2 | Some translucent fills fall back to a flat colour |
+| `@property` | Safari 16.4 | Some gradients and shadows lose their animation |
+| `:where()` | Safari 14 | Dark-mode rules stop applying — light theme only |
+| flex `gap` | Safari 14.1 | Spacing between some controls collapses |
+| `dvh` | Safari 15.4 | Full-height sections fall back to `vh` |
+| `text-wrap: balance` | Safari 17.4 | Headings wrap unevenly |
 
-`@property` and `color-mix()` come from Tailwind v4 — they are how the
-semantic token layer resolves. `??` and `?.` come from the app and its
-dependencies through Next 16's default browser target, which does not
-transpile them.
-
-## What an old iPhone actually sees
-
-Not a blank page, which is what makes it confusing.
-
-Next server-renders even client components, so the HTML arrives and the
-page *looks* right. Then the bundle fails to parse, React never hydrates,
-and nothing responds: the state picker does nothing, the search button
-does nothing, the theme toggle does nothing. Meanwhile Safari drops every
-`@layer` block it cannot parse, so most of the styling is gone too.
+None of these stop the app working. `Object.hasOwn` and `Array.at()`,
+which would have thrown at runtime, are polyfilled in the head script.
 
 | Device | Max iOS | Result |
 |---|---|---|
-| iPhone 6 / 6 Plus | 12.5.7 | Nothing works — fails the JS floor and the CSS floor |
-| iPhone 6s / 7 / SE (1st gen) | 15.8 | Interactive, but `@property` and `color-mix()` fail, so colours and translucency break |
-| iPhone 8 / X | 16.7 | Supported |
-| iPhone XS and newer | 17+ | Supported |
+| iPhone 6 / 6 Plus | 12.5 | Runs; light theme only, some spacing collapses |
+| iPhone 6s / 7 / SE (1st gen) | 15.8 | Runs; a few flat fills instead of translucent |
+| iPhone 8 and newer | 16.7+ | Everything |
 
-Android is less exposed: Chrome updates independently of the OS, so even
-an old handset usually has a current Chrome.
+## The warning banner
 
-## What we do about it
-
-`src/app/layout.tsx` runs `OLD_BROWSER_SCRIPT` in `<head>`. It
-feature-detects both floors — `new Function('o?.a')` for the syntax, and
-`CSS.supports('color', 'color-mix(...)')` for the stylesheet — and shows
-a plain banner when either fails.
+`OLD_BROWSER_SCRIPT` in `src/app/layout.tsx` now shows a banner only when
+the engine cannot parse ES2018 — that is, when the bundle genuinely will
+not run. Missing colour functions do not earn one.
 
 Three things about it are deliberate:
 
-- **It is ES5.** No `const`, no arrow, no template literal. A browser that
-  cannot parse the warning cannot be warned by it.
-- **It is styled inline.** On these browsers the stylesheet is part of
-  what is broken, so the banner cannot rely on it.
+- **It is ES5.** No `const`, arrow, or template literal. A browser that
+  cannot parse the warning cannot be warned by it. Checked by parsing the
+  emitted script with acorn at `ecmaVersion: 5`.
+- **It is styled inline.** If the stylesheet is the broken thing, the
+  banner cannot rely on it.
 - **It attaches to `<html>`, not `<body>`.** Inserted at
   `DOMContentLoaded` it lands before React hydrates, and React treats an
   unexpected first child of `<body>` as a mismatch — it throws, rebuilds
-  the tree, and the banner vanishes. That would have hit exactly the
-  devices new enough to run React but too old for the stylesheet.
+  the tree, and the banner vanishes.
 
 ## Measuring how much this actually costs
 
@@ -99,26 +118,18 @@ bounded counter increment, 60 posts per IP per hour, and always 204 so a
 prober learns nothing. The worst an abuser achieves is a wrong number in
 the decision below.
 
-## Lowering the floor, if that ever matters
+## Going lower than iOS 12
 
-Raising reach past iPhone 8 is not a small change:
-
-- **The JS half is cheap.** A `browserslist` entry targeting older Safari
-  makes SWC transpile `??` and `?.`. Bundle grows; nothing else moves.
-- **The CSS half is not.** `@property` and `color-mix()` are load-bearing
-  in Tailwind v4 and cannot be polyfilled meaningfully. Supporting Safari
-  below 16.4 means leaving Tailwind v4 — which means unwinding the whole
-  semantic token layer.
-
-Doing only the cheap half is worse than doing neither: the app would come
-alive on a phone whose colours are broken, instead of saying plainly that
-it will not work.
+Below Safari 12 the bundle would need compiling to ES5, which means
+regenerator for async/await and a markedly larger download on connections
+that are already the reason this app exists. Not worth it unless the
+numbers above say otherwise.
 
 ## Re-checking after a dependency bump
 
 ```bash
 npx next build
-# then count the features in .next/static/chunks/*.{css,js}
+# then: node -e "…" to parse every chunk at ecmaVersion 2018
 ```
 
 If the numbers above move, update this file and the banner's thresholds

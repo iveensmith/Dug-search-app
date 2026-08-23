@@ -87,8 +87,36 @@ const THEME_INIT_SCRIPT = `
 const OLD_BROWSER_SCRIPT = `
 (function () {
   try {
+    // Two small APIs the bundle calls that predate nothing else in it.
+    // Cheaper to fill in than to hunt down in a dependency, and both are
+    // exactly specified, so a four-line version is the real behaviour.
+    if (!Object.hasOwn) {
+      Object.hasOwn = function (o, k) {
+        return Object.prototype.hasOwnProperty.call(Object(o), k);
+      };
+    }
+    if (!Array.prototype.at) {
+      Array.prototype.at = function (n) {
+        n = Math.trunc(n) || 0;
+        if (n < 0) n += this.length;
+        return n < 0 || n >= this.length ? undefined : this[n];
+      };
+    }
+
+    // The floor is what the bundle is compiled to, which is ES2018 — see
+    // the browserslist in package.json. Object spread stands in for it:
+    // an engine that parses this parses the bundle.
+    //
+    // It used to test optional chaining, which the bundle no longer
+    // contains, and CSS color-mix, which turned out to prove nothing —
+    // Tailwind already wraps every color-mix in @supports with a plain
+    // fallback, so a browser without it renders fine. That check fired on
+    // phones where the app worked, which is worse than not checking.
     var jsOk = true;
-    try { new Function('var o={};return o?.a'); } catch (e) { jsOk = false; }
+    try { new Function('return {...{a:1}}'); } catch (e) { jsOk = false; }
+
+    // Kept only to tell "works fully" from "works, minus some colour" in
+    // the numbers. Nothing is shown to the visitor for this one.
     var cssOk = true;
     if (window.CSS && CSS.supports) {
       cssOk = CSS.supports('color', 'color-mix(in oklab, red, blue)');
@@ -124,7 +152,9 @@ const OLD_BROWSER_SCRIPT = `
       }
     }
 
-    if (jsOk && cssOk) return;
+    // Only when the app genuinely cannot run. Missing colour functions are
+    // not worth a red banner on a page that works.
+    if (jsOk) return;
     var show = function () {
       if (!document.body || document.getElementById('mq-old-browser')) return;
       var bar = document.createElement('div');
