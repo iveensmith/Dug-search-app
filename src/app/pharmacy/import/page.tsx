@@ -136,7 +136,8 @@ export default function ImportPage() {
     <div className="flex min-h-dvh w-full flex-col">
       <AppHeader
         backHref="/pharmacy"
-        title="Import your stock list"
+        title="Import your"
+        accent="stock list"
         subtitle="From a spreadsheet or a POS export"
         onLogout={logout}
         width="max-w-2xl"

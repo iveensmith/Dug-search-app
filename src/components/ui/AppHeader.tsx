@@ -8,6 +8,19 @@ import { IconLogOut } from '@/components/ui/icons'
 
 type Props = {
   title: ReactNode
+  /**
+   * The tail of the title, in the brand green — the same treatment
+   * PageHeader and the home hero use.
+   *
+   * This bar is translucent and sticky, so the accent sits over whatever
+   * page is scrolling underneath rather than over a known fill. That is
+   * why it is brand-ink and not a lighter green: the same reason TabBar's
+   * labels are text-muted rather than text-faint.
+   *
+   * Leave it off where the title is a name rather than a phrase — an
+   * outlet's own name has no half worth colouring.
+   */
+  accent?: ReactNode
   subtitle?: ReactNode
   onLogout?: () => void
   backHref?: string
@@ -28,6 +41,7 @@ type Props = {
  */
 export default function AppHeader({
   title,
+  accent,
   subtitle,
   onLogout,
   backHref = '/',
@@ -57,7 +71,15 @@ export default function AppHeader({
             step smaller below `sm` to buy back some of the width Poppins
             costs over the Open Sans this replaced. */}
         <div className="min-w-0">
-          <h1 className="line-clamp-2 text-base font-bold text-ink sm:text-lg">{title}</h1>
+          <h1 className="line-clamp-2 text-base font-bold text-ink sm:text-lg">
+            {title}
+            {accent && (
+              <>
+                {' '}
+                <span className="text-brand-ink">{accent}</span>
+              </>
+            )}
+          </h1>
           {subtitle && <p className="line-clamp-2 text-sm text-muted">{subtitle}</p>}
         </div>
       </div>

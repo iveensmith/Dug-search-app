@@ -88,7 +88,11 @@ export default function ApiKeysPage() {
     <div className="flex min-h-dvh w-full flex-col">
       <AppHeader
         backHref="/pharmacy"
-        title="Connect your own software"
+        // One word, because the accent must not break across lines and
+        // "your own software" did at 390px. A split highlight reads as
+        // two unrelated ones.
+        title="Connect your own"
+        accent="software"
         subtitle="Keys for your POS or inventory tool"
         onLogout={logout}
         width="max-w-2xl"

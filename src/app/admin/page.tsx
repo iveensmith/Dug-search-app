@@ -160,7 +160,8 @@ export default function AdminPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
     <AppHeader
-      title="Admin — MediQuest"
+      title="Admin —"
+      accent="MediQuest"
       subtitle={`${pending.length} pending registration${pending.length === 1 ? '' : 's'}`}
       onLogout={logout}
       width="max-w-4xl"

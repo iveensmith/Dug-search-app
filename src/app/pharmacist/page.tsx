@@ -80,7 +80,8 @@ export default function PharmacistPage() {
   return (
     <div className="flex min-h-dvh w-full flex-col">
     <AppHeader
-      title="Pharmacist desk"
+      title="Pharmacist"
+      accent="desk"
       subtitle="Patients' prescription questions — explain, don't prescribe"
       onLogout={logout}
       width="max-w-2xl"
