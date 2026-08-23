@@ -42,10 +42,10 @@ export default function CoverageResults({
   if (results.length === 0) {
     return (
       <Card className="text-center">
-        <p className="font-semibold text-gray-900 dark:text-gray-100">
+        <p className="font-semibold text-ink">
           No pharmacy near you lists any of these
         </p>
-        <p className="mx-auto mt-1.5 max-w-md text-sm text-gray-600 dark:text-gray-400">
+        <p className="mx-auto mt-1.5 max-w-md text-sm text-muted">
           Try searching for them one at a time — a shop that has only one of them still won&apos;t
           show up here, but it will show up on its own.
         </p>
@@ -63,25 +63,25 @@ export default function CoverageResults({
         return (
           <li
             key={r.id}
-            className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-800"
+            className="rounded-card border border-line bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-sheet dark:hover:border-emerald-800"
           >
             <div className="flex items-start gap-3.5">
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-brand-soft text-brand-ink">
                 <IconStore width={24} height={24} />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <Link
                     href={`/pharmacies/${r.id}`}
-                    className="truncate font-bold text-gray-900 transition-colors hover:text-emerald-700 dark:text-gray-50 dark:hover:text-emerald-400"
+                    className="truncate font-bold text-ink transition-colors hover:text-brand-ink"
                   >
                     {r.name}
                   </Link>
-                  <span className="shrink-0 text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">
+                  <span className="shrink-0 text-sm font-bold tabular-nums text-faint">
                     {r.distanceKm.toFixed(1)} km
                   </span>
                 </div>
-                <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-0.5 truncate text-xs text-faint">
                   {r.address}
                   {r.lga ? ` · ${r.lga}` : ''}
                 </p>
@@ -91,8 +91,8 @@ export default function CoverageResults({
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
                       complete
-                        ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950'
-                        : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
+                        ? 'bg-brand text-on-brand'
+                        : 'bg-brand-soft text-brand-ink'
                     }`}
                   >
                     {complete ? `All ${drugs.length}` : `${r.matched} of ${drugs.length}`}
@@ -106,7 +106,7 @@ export default function CoverageResults({
 
             {/* The whole list every time, in the order the patient typed
                 it, so the cards can be read against each other. */}
-            <ul className="mt-3.5 space-y-1.5 border-t border-gray-100 pt-3.5 dark:border-gray-800">
+            <ul className="mt-3.5 space-y-1.5 border-t border-line-soft pt-3.5">
               {drugs.map((d) => {
                 const stocked = has.has(d.id)
                 return (
@@ -115,7 +115,7 @@ export default function CoverageResults({
                       <IconCheck
                         width={15}
                         height={15}
-                        className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                        className="mt-0.5 shrink-0 text-ok"
                       />
                     ) : (
                       <IconX
@@ -128,8 +128,8 @@ export default function CoverageResults({
                       href={`/drugs/${d.id}`}
                       className={
                         stocked
-                          ? 'text-gray-900 underline-offset-2 hover:underline dark:text-gray-100'
-                          : 'text-gray-400 underline-offset-2 hover:underline dark:text-gray-500'
+                          ? 'text-ink underline-offset-2 hover:underline'
+                          : 'text-faint underline-offset-2 hover:underline'
                       }
                     >
                       {drugLabel(d)}
@@ -147,7 +147,7 @@ export default function CoverageResults({
                 one stale line makes the whole card stale. Said plainly
                 rather than hidden behind the badge. */}
             {stockFreshness(r.stockUpdatedAt).tone === 'stale' && (
-              <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+              <p className="mt-3 text-xs text-warn-ink">
                 At least one of these hasn&apos;t been confirmed in over a day — worth calling
                 first.
               </p>
@@ -158,7 +158,7 @@ export default function CoverageResults({
                 href={`tel:${r.phone.replace(/\s/g, '')}`}
                 onClick={(e) => onCall(e, r.phone)}
                 aria-label={`Call ${r.name}`}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-700 dark:hover:text-emerald-400"
+                className="flex flex-1 items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-emerald-300 hover:text-brand-ink dark:hover:border-emerald-700"
               >
                 <IconPhone width={16} height={16} />
                 {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
@@ -172,7 +172,7 @@ export default function CoverageResults({
                   type="button"
                   onClick={() => onDirections(r)}
                   disabled={routeBusyId === r.id}
-                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+                  className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover disabled:opacity-60"
                 >
                   <IconRoute width={16} height={16} />
                   {routeBusyId === r.id ? 'Finding…' : 'Directions'}
@@ -182,7 +182,7 @@ export default function CoverageResults({
                   href={directionsUrl(r.latitude, r.longitude)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover"
                 >
                   <IconRoute width={16} height={16} />
                   Directions
@@ -193,7 +193,7 @@ export default function CoverageResults({
             {/* Only worth saying on a shop that is not the best on offer —
                 on the top card it would be discouraging noise. */}
             {!complete && r.matched < best && (
-              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-3 text-xs text-faint">
                 Another pharmacy above has {best} of {drugs.length}.
               </p>
             )}
