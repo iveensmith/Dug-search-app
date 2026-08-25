@@ -120,12 +120,12 @@ export default function WebhookCard() {
       </p>
 
       {secret && (
-        <div className="mt-3 rounded-full border border-emerald-300 bg-emerald-50/60 p-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+        <div className="mt-3 rounded-full border border-terracotta-300 bg-terracotta-50/60 p-3 dark:border-terracotta-800 dark:bg-terracotta-950/30">
           <p className="flex items-center gap-2 text-sm font-bold text-brand-ink">
             <IconCheck width={15} height={15} />
             Saved. Here is your signing secret
           </p>
-          <p className="mt-1 text-sm text-emerald-900/90 dark:text-emerald-200/90">
+          <p className="mt-1 text-sm text-terracotta-900/90 dark:text-terracotta-200/90">
             Your server uses this to check that an event really came from us. Shown once.
           </p>
           <code className="mt-2 block overflow-x-auto rounded-lg bg-surface px-3 py-2 font-mono text-xs break-all">

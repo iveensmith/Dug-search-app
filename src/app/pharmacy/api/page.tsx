@@ -112,12 +112,12 @@ export default function ApiKeysPage() {
         </Card>
 
         {issued && (
-          <Card className="mt-4 border-emerald-300 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-950/30">
+          <Card className="mt-4 border-terracotta-300 bg-terracotta-50/60 dark:border-terracotta-800 dark:bg-terracotta-950/30">
             <p className="flex items-center gap-2 font-bold text-brand-ink">
               <IconCheck width={16} height={16} />
               &ldquo;{issued.label}&rdquo; created
             </p>
-            <p className="mt-1.5 text-sm text-emerald-900/90 dark:text-emerald-200/90">
+            <p className="mt-1.5 text-sm text-terracotta-900/90 dark:text-terracotta-200/90">
               Copy it now. We only keep a scrambled copy, so this is the one and only time it can
               be shown — if it is lost, revoke it and make another.
             </p>

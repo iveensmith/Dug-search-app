@@ -62,10 +62,10 @@ export default function NetworkPulse({ showCounts = true, placement = 'float' }:
 
   return (
     <div
-      className={`${PLACEMENT[placement]} select-none rounded-2xl border border-line-brand bg-white/95 p-4 shadow-lg backdrop-blur-sm dark:bg-gray-900/95`}
+      className={`${PLACEMENT[placement]} select-none rounded-2xl border border-line-brand bg-raised/95 p-4 shadow-lg backdrop-blur-sm`}
     >
       <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-ink">
-        <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+        <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta-500" />
         Live network
       </p>
 

@@ -49,7 +49,7 @@ export default function NetworkStatsRow() {
         // and "States covered" does not, the figures ended up 14px apart.
         // In column-reverse, flex-end is the top.
         <div key={label} className="flex flex-col-reverse justify-end">
-          <dt className="mt-1 text-[0.7rem] font-semibold leading-tight text-emerald-50 sm:text-xs md:text-muted">
+          <dt className="mt-1 text-[0.7rem] font-semibold leading-tight text-terracotta-50 sm:text-xs md:text-muted">
             {label}
           </dt>
           <dd className="text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl md:text-ink">

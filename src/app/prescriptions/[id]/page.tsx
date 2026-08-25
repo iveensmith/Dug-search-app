@@ -274,7 +274,7 @@ export default function PrescriptionThreadPage() {
                   />
                 </div>
               )}
-              <p className={`mt-1 text-right text-[10px] ${m.mine ? 'text-emerald-100 dark:text-emerald-900' : 'text-faint'}`}>
+              <p className={`mt-1 text-right text-[10px] ${m.mine ? 'text-terracotta-100 dark:text-terracotta-900' : 'text-faint'}`}>
                 {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>

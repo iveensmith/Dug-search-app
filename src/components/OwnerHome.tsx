@@ -157,7 +157,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           page's did — one weight, one colour, no third signal.
           The band fill stays raw: a mint page band is a page-level wash,
           not a surface, and no token carries it. */}
-      <header className="bg-emerald-50 dark:bg-emerald-950/25">
+      <header className="bg-terracotta-50 dark:bg-terracotta-950/25">
         <div className="mx-auto w-full max-w-5xl px-4 py-10 md:py-14">
         <p className="text-sm font-semibold text-brand-ink">
           Pharmacy dashboard
@@ -238,7 +238,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/pharmacy"
-          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 font-semibold text-on-brand transition-all hover:bg-brand-hover hover:shadow-md hover:shadow-emerald-700/25"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 font-semibold text-on-brand transition-all hover:bg-brand-hover hover:shadow-md hover:shadow-terracotta-700/25"
         >
           <IconClipboardList width={18} height={18} />
           Manage inventory
@@ -248,14 +248,14 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             "Manage inventory" with the form still closed. */}
         <Link
           href="/pharmacy?add=1"
-          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-emerald-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-emerald-400/50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-terracotta-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-terracotta-400/50"
         >
           <IconPlus width={18} height={18} />
           Add a drug
         </Link>
         <Link
           href="/pharmacy/ratings"
-          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-emerald-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-emerald-400/50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-terracotta-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-terracotta-400/50"
         >
           <IconStar width={18} height={18} />
           See your ratings

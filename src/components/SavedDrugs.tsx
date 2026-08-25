@@ -50,7 +50,7 @@ export default function SavedDrugs({
                 type="button"
                 onClick={() => onRemove(d)}
                 aria-label={`Remove ${drugLabel(d)} from saved`}
-                className="ml-1 cursor-pointer rounded-full p-1 text-emerald-700/70 transition-colors hover:bg-brand-soft hover:text-emerald-900 dark:text-emerald-400/70 dark:hover:text-emerald-200"
+                className="ml-1 cursor-pointer rounded-full p-1 text-terracotta-700/70 transition-colors hover:bg-brand-soft hover:text-terracotta-900 dark:text-terracotta-400/70 dark:hover:text-terracotta-200"
               >
                 <IconX width={11} height={11} />
               </button>

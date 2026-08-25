@@ -196,7 +196,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
         behind the card instead and the page still starts the way the rest
         of the site does.
       */}
-      <div className="bg-emerald-50 py-8 dark:bg-emerald-950/25">
+      <div className="bg-terracotta-50 py-8 dark:bg-terracotta-950/25">
       <div className="mx-auto w-full max-w-2xl px-4">
       <Card padded={false} radius="lg" className="overflow-hidden">
         {/* Was a gradient with a pin drawn on it — decoration standing
@@ -307,7 +307,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
                   <dt className="w-36 shrink-0 text-sm leading-tight text-muted">{label}</dt>
                   <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-sunken">
                     <div
-                      className="h-full rounded-full bg-emerald-500"
+                      className="h-full rounded-full bg-terracotta-500"
                       style={{ width: `${(value / 5) * 100}%` }}
                     />
                   </div>

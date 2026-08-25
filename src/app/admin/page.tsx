@@ -400,7 +400,7 @@ function PharmacistsTab({
 function chipClass(on: boolean) {
   return `cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
     on
-      ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+      ? 'border-terracotta-600 bg-brand text-on-brand dark:border-terracotta-500'
       : 'border-line bg-surface text-muted hover:border-line-brand hover:text-brand-ink'
   }`
 }

@@ -98,7 +98,7 @@ function VerifyEmailBody() {
             </p>
             <Link
               href="/account"
-              className="mt-5 inline-block rounded-control border border-emerald-600/60 px-5 py-2.5 text-sm font-semibold text-brand-ink dark:border-emerald-400/50"
+              className="mt-5 inline-block rounded-control border border-terracotta-600/60 px-5 py-2.5 text-sm font-semibold text-brand-ink dark:border-terracotta-400/50"
             >
               Go to my account
             </Link>

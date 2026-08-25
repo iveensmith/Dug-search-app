@@ -14,34 +14,55 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* Brand — emerald. The five steps that already existed keep their exact
-     values; 300/400/500/800/900/950 are new, so nothing shifts. */
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
-  --color-brand-950: #022c22;
+  /* Brand — terracotta. Ramp built around #b05a36 ("Terracotta Seal", the
+     one accent the reference design allows) at step 600 — every other
+     step holds the same hue and moves only lightness/saturation, the way
+     the emerald ramp it replaces did. */
+  --color-brand-50: #fdf5f2;
+  --color-brand-100: #fbebe5;
+  --color-brand-200: #f4d5c7;
+  --color-brand-300: #e9b6a0;
+  --color-brand-400: #d88e6f;
+  --color-brand-500: #c76e48;
+  --color-brand-600: #b05a36;
+  --color-brand-700: #924a2a;
+  --color-brand-800: #793b20;
+  --color-brand-900: #622e18;
+  --color-brand-950: #3b1e11;
 
-  /* Ink — neutrals carrying a trace of the brand hue rather than Tailwind's
-     blue-leaning slate. Keeps greys from reading cold next to the emerald.
-     950 is #0a0f0d, the same near-black the dark theme already shipped. */
-  --color-ink-50: #f7f9f8;
-  --color-ink-100: #eef2f0;
-  --color-ink-200: #e1e7e4;
-  --color-ink-300: #cbd4d0;
-  --color-ink-400: #98a6a0;
-  --color-ink-500: #6b7b75;
-  --color-ink-600: #4e5d57;
-  --color-ink-700: #3a4742;
-  --color-ink-800: #26302c;
-  --color-ink-900: #161d1a;
-  --color-ink-950: #0a0f0d;
+  /* Same ramp again, named for direct utility use (`bg-terracotta-800`,
+     `border-terracotta-600/60`) — Tailwind has no built-in "terracotta"
+     palette the way it does emerald, so components that used to reach
+     for a raw `emerald-*` shade need this to resolve to anything. Kept
+     numerically identical to the brand ramp above on purpose: one accent
+     hue, however it's referenced. */
+  --color-terracotta-50: #fdf5f2;
+  --color-terracotta-100: #fbebe5;
+  --color-terracotta-200: #f4d5c7;
+  --color-terracotta-300: #e9b6a0;
+  --color-terracotta-400: #d88e6f;
+  --color-terracotta-500: #c76e48;
+  --color-terracotta-600: #b05a36;
+  --color-terracotta-700: #924a2a;
+  --color-terracotta-800: #793b20;
+  --color-terracotta-900: #622e18;
+  --color-terracotta-950: #3b1e11;
+
+  /* Ink — warm parchment-and-taupe neutrals rather than Tailwind's
+     blue-leaning slate. 50/100/300 are the reference's own Parchment,
+     Aged Paper and Warm Taupe; the rest fills in the ramp between them
+     at the same hue so nothing reads cold next to the terracotta. */
+  --color-ink-50: #fef9ef;
+  --color-ink-100: #f5eee1;
+  --color-ink-200: #ebe0cb;
+  --color-ink-300: #d1c9bf;
+  --color-ink-400: #b6ac9d;
+  --color-ink-500: #948a7a;
+  --color-ink-600: #746a5c;
+  --color-ink-700: #574e42;
+  --color-ink-800: #3d362d;
+  --color-ink-900: #26211b;
+  --color-ink-950: #16130f;
 
   /* ── Radius ──────────────────────────────────────────────────────────
      Named by what they wrap, not by t-shirt size, so a component can't
@@ -117,35 +138,39 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Surfaces */
-  --canvas: #f8faf9;
-  --surface: #ffffff;
-  --raised: #ffffff;
-  --sunken: #eef2f0;
-  --inverse: #0a0f0d;
+  /* Surfaces — the reference's own Parchment / Aged Paper, never pure
+     white: "never use pure white as a background — it kills the
+     parchment warmth that defines the brand." */
+  --canvas: #fef9ef;
+  --surface: #f5eee1;
+  --raised: #f5eee1;
+  --sunken: #ebe0cb;
+  --inverse: #1b140f;
 
-  /* Text */
-  --ink: #161d1a;
-  --muted: #4e5d57;
-  --faint: #5f6f68;
+  /* Text — Ink / Charcoal / Graphite, in that order of emphasis */
+  --ink: #2a2b2f;
+  --muted: #333333;
+  --faint: #515151;
   --on-brand: #ffffff;
   --on-inverse: #ffffff;
 
-  /* Brand / action */
-  --brand: #047857;
-  --brand-hover: #065f46;
-  --brand-press: #064e3b;
-  --brand-soft: #ecfdf5;
-  --brand-deep: #047857;
+  /* Brand / action — terracotta-700 for fills and text so AA contrast
+     holds against parchment; the reference's own #b05a36 sits at 600 and
+     is used directly nowhere text needs to sit on top of it. */
+  --brand: #924a2a;
+  --brand-hover: #793b20;
+  --brand-press: #622e18;
+  --brand-soft: #fdf5f2;
+  --brand-deep: #924a2a;
   --on-brand-deep: #ffffff;
-  --brand-ink: #047857;
+  --brand-ink: #924a2a;
 
-  /* Lines */
-  --line: #e1e7e4;
-  --line-soft: #eef2f0;
-  --line-strong: #cbd4d0;
-  --line-brand: #6ee7b7;
-  --focus: #059669;
+  /* Lines — Warm Taupe */
+  --line: #d1c9bf;
+  --line-soft: #e5e1dc;
+  --line-strong: #c0b4a5;
+  --line-brand: #e9b6a0;
+  --focus: #b05a36;
 
   /* Status */
   --ok: #059669;
@@ -177,28 +202,31 @@
    [data-theme="dark"] block can't drift apart. Declaring them alone changes
    nothing — the two blocks below are what actually swap the theme over. */
 :root {
-  --dark-canvas: #0a0f0d;
-  --dark-surface: #111815;
-  --dark-raised: #1a2320;
-  --dark-sunken: #070b09;
-  --dark-inverse: #e7f3ee;
-  --dark-ink: #e7f3ee;
-  --dark-muted: #9fb3aa;
-  --dark-faint: #7a8d85;
-  --dark-on-brand: #022c22;
-  --dark-on-inverse: #0a0f0d;
-  --dark-brand: #10b981;
-  --dark-brand-hover: #34d399;
-  --dark-brand-press: #6ee7b7;
-  --dark-brand-soft: #0d2b21;
-  --dark-brand-deep: #065f46;
+  /* The reference names one theme ("light"); this is that palette's own
+     inversion — same warm hue family taken dark, terracotta brightened
+     the way the light brand darkens, so the toggle stays one system. */
+  --dark-canvas: #1b140f;
+  --dark-surface: #241b14;
+  --dark-raised: #241b14;
+  --dark-sunken: #140f0b;
+  --dark-inverse: #fef9ef;
+  --dark-ink: #f5eee1;
+  --dark-muted: #cbb9a8;
+  --dark-faint: #a08d7c;
+  --dark-on-brand: #2b160c;
+  --dark-on-inverse: #1b140f;
+  --dark-brand: #c76e48;
+  --dark-brand-hover: #d88e6f;
+  --dark-brand-press: #e9b6a0;
+  --dark-brand-soft: #3b1e11;
+  --dark-brand-deep: #793b20;
   --dark-on-brand-deep: #ffffff;
-  --dark-brand-ink: #34d399;
-  --dark-line: #2a3733;
-  --dark-line-soft: #1c2622;
-  --dark-line-strong: #3c4b46;
-  --dark-line-brand: #047857;
-  --dark-focus: #34d399;
+  --dark-brand-ink: #d88e6f;
+  --dark-line: #3a2c22;
+  --dark-line-soft: #2a2019;
+  --dark-line-strong: #4d3b2d;
+  --dark-line-brand: #924a2a;
+  --dark-focus: #d88e6f;
   --dark-ok: #10b981;
   --dark-ok-soft: #0d2b21;
   --dark-ok-ink: #6ee7b7;
@@ -303,28 +331,28 @@
 }
 
 :root[data-theme="light"] {
-  --canvas: #f8faf9;
-  --surface: #ffffff;
-  --raised: #ffffff;
-  --sunken: #eef2f0;
-  --inverse: #0a0f0d;
-  --ink: #161d1a;
-  --muted: #4e5d57;
-  --faint: #5f6f68;
+  --canvas: #fef9ef;
+  --surface: #f5eee1;
+  --raised: #f5eee1;
+  --sunken: #ebe0cb;
+  --inverse: #1b140f;
+  --ink: #2a2b2f;
+  --muted: #333333;
+  --faint: #515151;
   --on-brand: #ffffff;
   --on-inverse: #ffffff;
-  --brand: #047857;
-  --brand-hover: #065f46;
-  --brand-press: #064e3b;
-  --brand-soft: #ecfdf5;
-  --brand-deep: #047857;
+  --brand: #924a2a;
+  --brand-hover: #793b20;
+  --brand-press: #622e18;
+  --brand-soft: #fdf5f2;
+  --brand-deep: #924a2a;
   --on-brand-deep: #ffffff;
-  --brand-ink: #047857;
-  --line: #e1e7e4;
-  --line-soft: #eef2f0;
-  --line-strong: #cbd4d0;
-  --line-brand: #6ee7b7;
-  --focus: #059669;
+  --brand-ink: #924a2a;
+  --line: #d1c9bf;
+  --line-soft: #e5e1dc;
+  --line-strong: #c0b4a5;
+  --line-brand: #e9b6a0;
+  --focus: #b05a36;
   --ok: #059669;
   --ok-soft: #ecfdf5;
   --ok-ink: #047857;
@@ -397,8 +425,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-poppins);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -416,7 +445,7 @@ body {
      patient reads for the first few hundred milliseconds, and on a slow
      Nigerian connection sometimes for longer. Segoe UI and Roboto are the
      nearest humanist sans faces already on Windows and Android. */
-  font-family: var(--font-poppins), "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

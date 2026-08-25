@@ -14,7 +14,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
  * list are settled by the order Tailwind emitted them, not the order they
  * are written — so an override wins or loses by luck.
  */
-export type ButtonAccent = 'emerald' | 'deep'
+export type ButtonAccent = 'terracotta' | 'deep'
 
 /**
  * `pill` is the default now: the design this app follows makes every
@@ -47,9 +47,9 @@ const base =
   'focus-visible:ring-offset-2 focus-visible:ring-offset-canvas'
 
 const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline', string>> = {
-  emerald: {
+  terracotta: {
     // `bg-brand` / `text-on-brand` already carry the light↔dark swap: the
-    // token resolves to emerald-700-on-white in light and emerald-500-with-
+    // token resolves to terracotta-700-on-white in light and terracotta-500-with-
     // dark-text in dark, so there is no `dark:` class left to keep in sync.
     primary:
       'bg-brand text-on-brand shadow-card hover:bg-brand-hover hover:shadow-brand active:bg-brand-press',
@@ -59,7 +59,7 @@ const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline',
       'border border-brand/60 text-brand-ink hover:bg-brand-soft active:bg-brand-soft',
   },
   // Same hue, several steps darker. White text rather than the near-black
-  // the light variant uses — emerald-800 is dark enough that dark text on
+  // the light variant uses — terracotta-800 is dark enough that dark text on
   // it fails contrast.
   deep: {
     primary:
@@ -100,7 +100,7 @@ export function buttonClass(
   variant: ButtonVariant = 'primary',
   size: ButtonSize = 'md',
   className = '',
-  accent: ButtonAccent = 'emerald',
+  accent: ButtonAccent = 'terracotta',
   shape: ButtonShape = 'pill',
 ) {
   const look =
@@ -109,7 +109,7 @@ export function buttonClass(
 }
 
 const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = 'primary', size = 'md', accent = 'emerald', shape = 'pill', loading, disabled, className = '', children, ...props },
+  { variant = 'primary', size = 'md', accent = 'terracotta', shape = 'pill', loading, disabled, className = '', children, ...props },
   ref,
 ) {
   return (

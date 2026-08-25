@@ -7,7 +7,7 @@ export default function VerifiedBadge({ className = '' }: { className?: string }
   return (
     <span
       title="This pharmacy's PCN license has been reviewed and approved"
-      className={`inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full bg-terracotta-50 px-2 py-0.5 text-[11px] font-semibold text-terracotta-700 dark:bg-terracotta-500/15 dark:text-terracotta-400 ${className}`}
     >
       <IconShieldCheck width={11} height={11} />
       Verified

@@ -34,9 +34,9 @@ const PORTAL = {
     label: 'Patient',
     subtitle: 'Log in to your account',
     heading: 'Patient account',
-    accent: 'emerald' as const,
+    accent: 'terracotta' as const,
     tab: 'bg-brand text-on-brand',
-    cardEdge: 'border-t-4 border-t-emerald-500 dark:border-t-emerald-400',
+    cardEdge: 'border-t-4 border-t-terracotta-500 dark:border-t-terracotta-400',
     text: 'text-brand-ink',
     chip: 'bg-brand-soft text-brand-ink',
     Icon: IconUser,
@@ -47,7 +47,7 @@ const PORTAL = {
     heading: 'Pharmacy owner account',
     accent: 'deep' as const,
     tab: 'bg-brand-deep text-on-brand-deep',
-    cardEdge: 'border-t-4 border-t-emerald-800 dark:border-t-emerald-600',
+    cardEdge: 'border-t-4 border-t-terracotta-800 dark:border-t-terracotta-600',
     text: 'text-brand-ink',
     chip: 'bg-brand-soft text-brand-ink',
     Icon: IconStore,
@@ -63,13 +63,13 @@ const actionCardClass =
 const CARD_ACCENT = {
   patient: {
     hover: 'hover:border-line-brand',
-    icon: 'bg-brand-soft text-brand-ink group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20',
-    chevron: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400',
+    icon: 'bg-brand-soft text-brand-ink group-hover:bg-terracotta-100 dark:group-hover:bg-terracotta-500/20',
+    chevron: 'group-hover:text-terracotta-600 dark:group-hover:text-terracotta-400',
   },
   pharmacy: {
-    hover: 'hover:border-emerald-700 dark:hover:border-emerald-600',
-    icon: 'bg-brand-soft text-brand-ink group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/50',
-    chevron: 'group-hover:text-emerald-800 dark:group-hover:text-emerald-300',
+    hover: 'hover:border-terracotta-700 dark:hover:border-terracotta-600',
+    icon: 'bg-brand-soft text-brand-ink group-hover:bg-terracotta-200 dark:group-hover:bg-terracotta-800/50',
+    chevron: 'group-hover:text-terracotta-800 dark:group-hover:text-terracotta-300',
   },
 } as const
 

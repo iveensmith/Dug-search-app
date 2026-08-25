@@ -147,7 +147,7 @@ function AddOnFields({
               title={l.ownerHint}
               className={`min-h-10 cursor-pointer rounded-full border px-3.5 text-sm font-semibold transition-colors ${
                 level === l.key
-                  ? 'border-emerald-600 bg-brand text-on-brand dark:border-emerald-500'
+                  ? 'border-terracotta-600 bg-brand text-on-brand dark:border-terracotta-500'
                   : 'border-line bg-surface text-muted hover:border-line-brand'
               }`}
             >
@@ -474,7 +474,7 @@ function HoursCard({
           type="checkbox"
           checked={open24h}
           onChange={(e) => setOpen24h(e.target.checked)}
-          className="h-4 w-4 accent-emerald-600"
+          className="h-4 w-4 accent-terracotta-600"
         />
         Open 24 hours
       </label>

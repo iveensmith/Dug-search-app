@@ -314,7 +314,7 @@ export default function PharmacyRegisterPage() {
                 i === step
                   ? 'font-bold text-brand-ink'
                   : i < step
-                    ? 'text-emerald-700/70 dark:text-emerald-400/70'
+                    ? 'text-terracotta-700/70 dark:text-terracotta-400/70'
                     : 'text-faint'
               }
             >
@@ -508,7 +508,7 @@ export default function PharmacyRegisterPage() {
                     type="checkbox"
                     checked={pinConfirmed}
                     onChange={(e) => setPinConfirmed(e.target.checked)}
-                    className="h-4 w-4 accent-emerald-600"
+                    className="h-4 w-4 accent-terracotta-600"
                   />
                   The pin is on my pharmacy
                 </label>

@@ -225,7 +225,7 @@ export default function ImportPage() {
       </div>
 
       {preview && done === null && (
-        <div className="sticky bottom-0 border-t border-line bg-white/95 px-4 py-3 backdrop-blur-sm dark:bg-gray-950/95">
+        <div className="sticky bottom-0 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur-sm">
           <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-3">
             <p className="text-sm text-muted">
               <span className="font-bold text-ink">{toApply.length}</span>{' '}
@@ -349,7 +349,7 @@ function RowCard({
         skipped
           ? 'border-line bg-canvas opacity-60'
           : willSave
-            ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/60 dark:bg-emerald-950/20'
+            ? 'border-terracotta-200 bg-terracotta-50/50 dark:border-terracotta-900/60 dark:bg-terracotta-950/20'
             : 'border-warn bg-amber-50/50 dark:bg-amber-950/20'
       }`}
     >
@@ -366,7 +366,7 @@ function RowCard({
             {!row.inStock && ' · marked out of stock'}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-white/70 px-2 py-0.5 text-xs font-semibold text-muted dark:bg-black/30">
+        <span className="shrink-0 rounded-full bg-surface/70 px-2 py-0.5 text-xs font-semibold text-muted dark:bg-black/30">
           {STATUS_LABEL[row.status]}
         </span>
       </div>
@@ -393,7 +393,7 @@ function RowCard({
               onClick={() => onChoose(row.line, c.id)}
               className={`block w-full cursor-pointer rounded-lg border px-3 py-2 text-left text-sm ${
                 chosen === c.id
-                  ? 'border-emerald-500 bg-brand-soft font-semibold text-brand-ink'
+                  ? 'border-terracotta-500 bg-brand-soft font-semibold text-brand-ink'
                   : 'border-line bg-surface text-muted'
               }`}
             >

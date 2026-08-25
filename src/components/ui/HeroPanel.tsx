@@ -69,7 +69,7 @@ export default function HeroPanel() {
 
             On a phone the picture is the whole band's background and the
             headline sits on it, so this is a scrim and it has to carry the
-            type. 65% of emerald-950 is about the lightest it can be and
+            type. 65% of terracotta-950 is about the lightest it can be and
             still clear AA against white — measured on the rendered page,
             by sampling the brightest pixel behind the copy, rather than
             reasoned about. A photograph's local contrast varies across the
@@ -82,7 +82,7 @@ export default function HeroPanel() {
           */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-emerald-950/65 md:bg-emerald-800/25 md:dark:bg-emerald-950/60"
+            className="absolute inset-0 bg-terracotta-950/65 md:bg-terracotta-800/25 md:dark:bg-terracotta-950/60"
           />
         </div>
 

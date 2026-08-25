@@ -36,7 +36,7 @@ export const RESERVATION_STATUS_META: Record<ReservationStatusValue, StatusMeta>
   READY: {
     patient: 'Held for you',
     pharmacy: 'Set aside',
-    tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+    tone: 'bg-terracotta-50 text-terracotta-700 dark:bg-terracotta-500/10 dark:text-terracotta-400',
   },
   COLLECTED: {
     patient: 'Collected',

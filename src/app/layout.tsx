@@ -1,32 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Poppins } from "next/font/google";
+import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import TabBar from "@/components/ui/TabBar";
 import AppAlive from "@/components/ui/AppAlive";
 
-// The app's one typeface. `display: swap` so text is readable in the
-// fallback while the file loads rather than invisible — this is a page
-// people open to find medicine, sometimes on a slow connection.
-//
-// Poppins is not a variable font on Google Fonts, so unlike the Open Sans
-// it replaced, every weight is a separate file and has to be named. These
-// five are the ones the app actually uses — 400 body, 500/600 for labels
-// and buttons, 700 headings, 800 the two places that go heavier. Adding a
-// weight here costs another download, so only add one that gets used.
-const poppins = Poppins({
-  variable: "--font-poppins",
+// Body and UI text — nav, buttons, labels, paragraphs. `display: swap` so
+// text is readable in the fallback while the file loads rather than
+// invisible — this is a page people open to find medicine, sometimes on a
+// slow connection. Inter is a variable font on Google Fonts, so one file
+// covers every weight the app uses instead of five separate downloads.
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-// Poppins has no monospace companion, and four places genuinely need
-// one: API keys, webhook payloads, event names and the temporary password
-// an admin reads out. Those are strings people transcribe by hand, where
-// a proportional face makes 0 and O, and 1 and l, the same shape. So the
-// mono stays a mono; everything else is Poppins.
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Editorial headlines only — hero copy, page titles, section headings.
+// Fraunces carries a real italic, which is the point: headings pair a
+// roman clause with an italic word for emphasis, the way a magazine
+// headline does, rather than leaning on bold weight alone. Also variable,
+// so roman and italic share one file per axis.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+// Neither of the above has a monospace companion, and four places
+// genuinely need one: API keys, webhook payloads, event names and the
+// temporary password an admin reads out. Those are strings people
+// transcribe by hand, where a proportional face makes 0 and O, and 1 and
+// l, the same shape.
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -168,7 +175,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

@@ -9,13 +9,15 @@ import { IconLogOut } from '@/components/ui/icons'
 type Props = {
   title: ReactNode
   /**
-   * The tail of the title, in the brand green — the same treatment
-   * PageHeader and the home hero use.
+   * The tail of the title, in the brand terracotta — the same colour
+   * PageHeader and the home hero use for their accent (this bar stays in
+   * Inter, not Fraunces: at 16-18px it reads as UI chrome, not a headline,
+   * and the reference itself reserves the serif's italic for 34px+).
    *
    * This bar is translucent and sticky, so the accent sits over whatever
    * page is scrolling underneath rather than over a known fill. That is
-   * why it is brand-ink and not a lighter green: the same reason TabBar's
-   * labels are text-muted rather than text-faint.
+   * why it is brand-ink and not a lighter terracotta: the same reason
+   * TabBar's labels are text-muted rather than text-faint.
    *
    * Leave it off where the title is a name rather than a phrase — an
    * outlet's own name has no half worth colouring.
@@ -49,7 +51,7 @@ export default function AppHeader({
 }: Props) {
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-line bg-white/80 backdrop-blur-sm dark:bg-gray-950/80">
+    <header className="sticky top-0 z-50 border-b border-line bg-canvas/80 backdrop-blur-sm">
       <WelcomeToast />
       <div className={`mx-auto flex w-full ${width} items-center justify-between gap-3 px-4 py-4`}>
       <div className="flex min-w-0 items-center gap-3">
@@ -65,11 +67,11 @@ export default function AppHeader({
         </Link>
         {/* Two lines, not one with an ellipsis. On a phone this column is
             about 175px wide, and a title like "Connect your own software"
-            needs 254px in Poppins — no type size closes that gap, so a
-            single line could only ever hide half the heading. Clamped at
-            two so a long title cannot keep growing a sticky bar, and a
-            step smaller below `sm` to buy back some of the width Poppins
-            costs over the Open Sans this replaced. */}
+            needs more than that in any of these faces — no type size
+            closes that gap, so a single line could only ever hide half
+            the heading. Clamped at two so a long title cannot keep
+            growing a sticky bar, and a step smaller below `sm` to buy
+            back some width on a narrow phone. */}
         <div className="min-w-0">
           <h1 className="line-clamp-2 text-base font-bold text-ink sm:text-lg">
             {title}

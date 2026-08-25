@@ -60,7 +60,7 @@ export default function PrescriptionImage({ src, alt }: { src: string; alt: stri
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${alt} — open full size`}
-        className="block w-full cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+        className="block w-full cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracotta-600"
       >
         {/* The width/height reserve its space so the conversation
             underneath doesn't jump down the page when the photo arrives. */}
