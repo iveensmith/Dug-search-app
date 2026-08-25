@@ -29,7 +29,7 @@ export default function ApiDocsPage() {
     <div className="flex min-h-dvh w-full flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
-        <h1 className="text-3xl font-bold text-ink">Stock API</h1>
+        <h1 className="font-serif text-3xl font-normal text-ink">Stock API</h1>
         <p className="mt-2 text-muted">
           Send a pharmacy&apos;s stock straight from the software that already tracks it. Everything
           below is one pharmacy&apos;s data — the key decides which, and there is no field to name

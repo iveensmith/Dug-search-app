@@ -101,7 +101,7 @@ export default function OwnerRatings() {
             Back to dashboard
           </Link>
 
-          <h1 className="mt-3 text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
+          <h1 className="mt-3 font-serif text-[2rem] font-normal leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
             Your Ratings
           </h1>
         </div>

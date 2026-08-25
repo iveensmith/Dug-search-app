@@ -76,7 +76,7 @@ function RegisterForm() {
       <SiteHeader />
       <main className="animate-fade-up mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-ink">
+          <h1 className="font-serif text-2xl font-normal text-ink">
             {isPharmacy ? 'Create a pharmacy owner account' : 'Create your account'}
           </h1>
           <p className="mt-1 text-sm text-muted">

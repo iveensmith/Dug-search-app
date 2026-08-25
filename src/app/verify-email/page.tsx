@@ -66,7 +66,7 @@ function VerifyEmailBody() {
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand-ink">
               <IconCheck width={22} height={22} />
             </span>
-            <h1 className="mt-3 text-lg font-bold text-ink">Email confirmed</h1>
+            <h1 className="mt-3 font-serif text-lg font-normal text-ink">Email confirmed</h1>
             <p className="mt-1.5 text-sm text-muted">
               Thanks — we can reach you now if a pharmacist replies, or if you ever need to reset
               your password.
@@ -85,7 +85,7 @@ function VerifyEmailBody() {
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-warn-soft text-warn-ink">
               <IconAlertCircle width={22} height={22} />
             </span>
-            <h1 className="mt-3 text-lg font-bold text-ink">
+            <h1 className="mt-3 font-serif text-lg font-normal text-ink">
               Couldn&apos;t confirm that
             </h1>
             <p className="mt-1.5 text-sm text-muted">{error}</p>
