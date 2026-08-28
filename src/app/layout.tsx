@@ -3,6 +3,7 @@ import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import TabBar from "@/components/ui/TabBar";
 import AppAlive from "@/components/ui/AppAlive";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 // Body and UI text — nav, buttons, labels, paragraphs. `display: swap` so
 // text is readable in the fallback while the file loads rather than
@@ -184,6 +185,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: OLD_BROWSER_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        {/* Fills left-to-right with scroll depth. Pure CSS scroll-driven
+            animation — see .scroll-progress in globals.css. */}
+        <div className="scroll-progress" aria-hidden="true" />
+        <ScrollReveal />
         {children}
         <TabBar />
         {/* Sets window.__mqAlive; the head script reads it. */}

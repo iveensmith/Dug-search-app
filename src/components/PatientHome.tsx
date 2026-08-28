@@ -1363,7 +1363,7 @@ export default function PatientHome() {
                     "PCN-verified / pharmacies". The card spans the full
                     measure now, so the row fits and the stack of four
                     would just be a tall list of short lines. */}
-                <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <ul className="reveal-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {TRUST_BADGES.map(({ label, Icon }) => (
                     <li key={label} className="flex items-center gap-3">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-field bg-brand-soft text-brand-ink">
@@ -1396,7 +1396,7 @@ export default function PatientHome() {
             {/* One column until there is real room — the cards carry a
                 screenshot each and need their full width to be legible, so
                 they only go three-across from `lg`. */}
-            <ol className="mx-auto mt-12 grid max-w-md gap-5 lg:max-w-none lg:grid-cols-3 lg:gap-6">
+            <ol className="reveal-stagger mx-auto mt-12 grid max-w-md gap-5 lg:max-w-none lg:grid-cols-3 lg:gap-6">
               {HOW_IT_WORKS.map(({ title, text }, i) => {
                 const Art = HOW_IT_WORKS_ART[i]
                 return (
@@ -1443,7 +1443,7 @@ export default function PatientHome() {
                   people actually want — without the flinch. */}
               What patients <span className="text-brand-ink">ask us most</span>
             </h2>
-            <div className="mx-auto mt-12 max-w-2xl space-y-3">
+            <div className="reveal-stagger mx-auto mt-12 max-w-2xl space-y-3">
               {FAQ.map(({ q, a }) => (
                 <details
                   key={q}
@@ -1534,7 +1534,7 @@ export default function PatientHome() {
                 A brand name or a generic — we match both, and show which pharmacy near you has it
                 on the shelf.
               </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
+              <div className="reveal-stagger mt-8 flex flex-wrap items-center justify-center gap-2.5">
                 {QUICK_SEARCHES.map((term) => (
                   <button
                     key={term}

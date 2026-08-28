@@ -127,7 +127,7 @@ export default function ResultAnatomy() {
           </div>
 
           {/* The key. */}
-          <ol className="space-y-6">
+          <ol className="reveal-stagger space-y-6">
             {NOTES.map(({ n, label, text }) => (
               <li key={n} className="flex gap-4 border-b border-line-soft pb-6 last:border-b-0 last:pb-0">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-brand/30 bg-brand-soft font-display text-sm font-semibold tabular-nums text-brand">

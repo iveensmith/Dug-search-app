@@ -1,6 +1,24 @@
 'use client'
 
 import { MIN_PHARMACIES_TO_QUOTE, useNetworkStats } from '@/lib/networkStats'
+import { useCountUp } from '@/lib/useCountUp'
+
+function Figure({ value, label }: { value: number; label: string }) {
+  const { ref, value: shown } = useCountUp<HTMLElement>(value)
+  return (
+    <div className="flex flex-col-reverse justify-end">
+      <dt className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.06em] leading-tight text-terracotta-100 sm:text-xs md:text-faint">
+        {label}
+      </dt>
+      <dd
+        ref={ref}
+        className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[2rem] md:text-[2.375rem] md:text-ink"
+      >
+        {shown.toLocaleString()}
+      </dd>
+    </div>
+  )
+}
 
 /**
  * The three numbers under the headline.
@@ -38,24 +56,11 @@ export default function NetworkStatsRow() {
     // are tokens — the base ones have to stay white in both themes, and
     // --ink and --on-brand both flip. Same pairing as the copy above it.
     <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-white/20 pt-5 md:mt-9 md:gap-8 md:border-line md:pt-6">
+      {/* Each figure counts up from zero the first time it scrolls into
+          view — reversed markup so the number reads first while the list
+          stays term-then-description. See useCountUp. */}
       {items.map(({ value, label }) => (
-        // Reversed so the figure reads first while the markup keeps the
-        // order a definition list requires: term, then description.
-        //
-        // justify-end is what keeps the three figures on one line. The
-        // grid stretches every cell to the tallest, and in a
-        // column-reverse flex the default packs content to the bottom —
-        // so on a phone, where "Verified pharmacies" wraps to two lines
-        // and "States covered" does not, the figures ended up 14px apart.
-        // In column-reverse, flex-end is the top.
-        <div key={label} className="flex flex-col-reverse justify-end">
-          <dt className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.06em] leading-tight text-terracotta-100 sm:text-xs md:text-faint">
-            {label}
-          </dt>
-          <dd className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[2rem] md:text-[2.375rem] md:text-ink">
-            {value.toLocaleString()}
-          </dd>
-        </div>
+        <Figure key={label} value={value} label={label} />
       ))}
     </dl>
   )

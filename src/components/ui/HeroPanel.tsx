@@ -33,7 +33,7 @@ export default function HeroPanel() {
             sizes="(min-width: 768px) 56vw, 100vw"
             placeholder="blur"
             priority
-            className="scale-[1.03] object-cover object-[54%_26%] contrast-[1.04] saturate-[0.82] md:object-[46%_18%]"
+            className="parallax-hero scale-[1.12] object-cover object-[54%_26%] contrast-[1.04] saturate-[0.82] md:object-[46%_18%]"
           />
 
           {/*

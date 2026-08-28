@@ -113,7 +113,7 @@ export default function LiveActivityFeed() {
           <div
             className="max-h-[22rem] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_8%,black_92%,transparent)]"
           >
-            <ul className="divide-y divide-line-soft">
+            <ul className="reveal-stagger divide-y divide-line-soft">
               {items.map((it, i) => {
                 const age = Date.now() - new Date(it.at).getTime()
                 const recent = age < DAY
