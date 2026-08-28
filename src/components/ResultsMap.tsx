@@ -43,10 +43,18 @@ export default function ResultsMap({ results, userPos, center, route, onRoute }:
       />
       <FitBounds points={points} />
       {route && (
-        <Polyline
-          positions={route.coords}
-          pathOptions={{ color: '#059669', weight: 5, opacity: 0.8 }}
-        />
+        <>
+          {/* A white casing under the line so the route stays crisp over
+              busy tiles, then the route itself — heavy and deep green. */}
+          <Polyline
+            positions={route.coords}
+            pathOptions={{ color: '#ffffff', weight: 12, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }}
+          />
+          <Polyline
+            positions={route.coords}
+            pathOptions={{ color: '#0a5744', weight: 7, opacity: 1, lineCap: 'round', lineJoin: 'round' }}
+          />
+        </>
       )}
       {/* The pharmacy markers open a popup, so they stay interactive and
           keyboard-reachable — but Leaflet's role="button" arrives without

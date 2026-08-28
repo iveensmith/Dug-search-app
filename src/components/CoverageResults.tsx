@@ -63,21 +63,21 @@ export default function CoverageResults({
         return (
           <li
             key={r.id}
-            className="rounded-card border border-line bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-sheet"
+            className="overflow-hidden rounded-card border border-line border-l-2 border-l-brand bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:border-l-brand hover:shadow-lift"
           >
             <div className="flex items-start gap-3.5">
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-brand-soft text-brand-ink">
-                <IconStore width={24} height={24} />
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-field bg-brand-soft text-brand-ink">
+                <IconStore width={22} height={22} />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <Link
                     href={`/pharmacies/${r.id}`}
-                    className="truncate font-bold text-ink transition-colors hover:text-brand-ink"
+                    className="truncate font-display text-[1.0625rem] font-semibold tracking-[-0.02em] text-ink transition-colors hover:text-brand-ink"
                   >
                     {r.name}
                   </Link>
-                  <span className="shrink-0 text-sm font-bold tabular-nums text-faint">
+                  <span className="shrink-0 font-mono text-[0.8125rem] font-medium tabular-nums text-faint">
                     {r.distanceKm.toFixed(1)} km
                   </span>
                 </div>
@@ -85,14 +85,14 @@ export default function CoverageResults({
                   {r.address}
                   {r.lga ? ` · ${r.lga}` : ''}
                 </p>
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                   {/* The count is the headline, so it leads and it is loud
                       when it is everything. */}
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-[0.04em] ${
                       complete
                         ? 'bg-brand text-on-brand'
-                        : 'bg-brand-soft text-brand-ink'
+                        : 'bg-brand-soft text-brand-ink ring-1 ring-inset ring-brand/15'
                     }`}
                   >
                     {complete ? `All ${drugs.length}` : `${r.matched} of ${drugs.length}`}
@@ -166,7 +166,7 @@ export default function CoverageResults({
                 href={`tel:${r.phone.replace(/\s/g, '')}`}
                 onClick={(e) => onCall(e, r.phone)}
                 aria-label={`Call ${r.name}`}
-                className="flex flex-auto items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
+                className="flex flex-auto items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft"
               >
                 <IconPhone width={16} height={16} />
                 {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
@@ -180,7 +180,7 @@ export default function CoverageResults({
                   type="button"
                   onClick={() => onDirections(r)}
                   disabled={routeBusyId === r.id}
-                  className="flex flex-auto cursor-pointer items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover disabled:opacity-60"
+                  className="flex flex-auto cursor-pointer items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-hover disabled:opacity-60"
                 >
                   <IconRoute width={16} height={16} />
                   {routeBusyId === r.id ? 'Finding…' : 'Directions'}
@@ -190,7 +190,7 @@ export default function CoverageResults({
                   href={directionsUrl(r.latitude, r.longitude)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-auto items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-card transition-colors hover:bg-brand-hover"
+                  className="flex flex-auto items-center justify-center gap-2 rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-hover"
                 >
                   <IconRoute width={16} height={16} />
                   Directions

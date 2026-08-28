@@ -37,7 +37,7 @@ export default function NetworkStatsRow() {
     // hero photograph, on a desktop it sits on mint. Only the `md:` halves
     // are tokens — the base ones have to stay white in both themes, and
     // --ink and --on-brand both flip. Same pairing as the copy above it.
-    <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-white/25 pt-5 md:mt-9 md:gap-8 md:border-line md:pt-6">
+    <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-white/20 pt-5 md:mt-9 md:gap-8 md:border-line md:pt-6">
       {items.map(({ value, label }) => (
         // Reversed so the figure reads first while the markup keeps the
         // order a definition list requires: term, then description.
@@ -49,10 +49,10 @@ export default function NetworkStatsRow() {
         // and "States covered" does not, the figures ended up 14px apart.
         // In column-reverse, flex-end is the top.
         <div key={label} className="flex flex-col-reverse justify-end">
-          <dt className="mt-1 text-[0.7rem] font-semibold leading-tight text-terracotta-50 sm:text-xs md:text-muted">
+          <dt className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.06em] leading-tight text-terracotta-100 sm:text-xs md:text-faint">
             {label}
           </dt>
-          <dd className="text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl md:text-ink">
+          <dd className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[2rem] md:text-[2.375rem] md:text-ink">
             {value.toLocaleString()}
           </dd>
         </div>

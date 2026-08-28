@@ -51,7 +51,7 @@ export default function AppHeader({
 }: Props) {
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-line bg-canvas/80 backdrop-blur-sm">
+    <header className="glass sticky top-0 z-50 border-b border-line/80">
       <WelcomeToast />
       <div className={`mx-auto flex w-full ${width} items-center justify-between gap-3 px-4 py-4`}>
       <div className="flex min-w-0 items-center gap-3">
@@ -73,7 +73,7 @@ export default function AppHeader({
             growing a sticky bar, and a step smaller below `sm` to buy
             back some width on a narrow phone. */}
         <div className="min-w-0">
-          <h1 className="line-clamp-2 text-base font-bold text-ink sm:text-lg">
+          <h1 className="line-clamp-2 font-display text-base font-semibold tracking-[-0.02em] text-ink sm:text-lg">
             {title}
             {accent && (
               <>

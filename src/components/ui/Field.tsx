@@ -7,13 +7,15 @@ import { type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLA
  * Safari zoom the page on focus, which on a one-handed search is jarring.
  */
 export const controlClass =
-  'w-full min-h-12 rounded-field border border-line bg-surface px-4 py-3 text-base text-ink ' +
+  'w-full min-h-12 rounded-field border border-line bg-surface px-3.5 py-3 text-base text-ink ' +
   'outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-faint ' +
-  'focus:border-focus focus:ring-2 focus:ring-focus/25 ' +
+  'hover:border-line-strong ' +
+  'focus:border-focus focus:ring-4 focus:ring-focus/12 ' +
   'disabled:bg-sunken disabled:text-faint disabled:cursor-not-allowed ' +
-  'aria-[invalid=true]:border-danger aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-danger/20'
+  'aria-[invalid=true]:border-danger aria-[invalid=true]:ring-4 aria-[invalid=true]:ring-danger/12'
 
-export const labelClass = 'mb-1.5 block text-caption font-semibold text-muted'
+export const labelClass =
+  'mb-1.5 block text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className = '', ...props }, ref) {

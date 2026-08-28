@@ -1,15 +1,17 @@
 import Link from 'next/link'
 
-const MARK_SIZES = { sm: 28, md: 36, lg: 44 } as const
+const MARK_SIZES = { sm: 26, md: 34, lg: 42 } as const
 
 export function LogoMark({ size = 'md' }: { size?: keyof typeof MARK_SIZES }) {
   const px = MARK_SIZES[size]
   return (
     <svg width={px} height={px} viewBox="0 0 40 40" fill="none" aria-hidden="true" className="shrink-0">
-      <rect width="40" height="40" rx="11" className="fill-brand" />
-      <path d="M20 11a9 9 0 100 18 9 9 0 000-18z" fill="white" fillOpacity="0.16" />
-      <rect x="17.25" y="12" width="5.5" height="16" rx="1.5" fill="white" />
-      <rect x="12" y="17.25" width="16" height="5.5" rx="1.5" fill="white" />
+      {/* Tighter corner than v2 (rx 9, not 11): the mark should read as a
+          stamp — something official — not a friendly app tile. */}
+      <rect width="40" height="40" rx="9" className="fill-brand" />
+      {/* A single clean pharmacy cross, no decorative disc behind it. */}
+      <rect x="16.5" y="10.5" width="7" height="19" rx="1" fill="white" />
+      <rect x="10.5" y="16.5" width="19" height="7" rx="1" fill="white" />
     </svg>
   )
 }
@@ -27,7 +29,7 @@ export default function Logo({ size = 'md', href = '/', tagline, className = '' 
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <LogoMark size={size} />
       <span className="text-left">
-        <span className="block text-xl font-bold leading-tight tracking-tight text-ink">
+        <span className="block font-display text-xl font-semibold leading-tight tracking-[-0.03em] text-ink">
           MediQuest
         </span>
         {tagline && (

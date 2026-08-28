@@ -51,7 +51,10 @@ export default function PharmacyMap({
       />
       <FitBounds points={points} />
       {routeCoords && routeCoords.length > 0 && (
-        <Polyline positions={routeCoords} pathOptions={{ color: '#059669', weight: 5, opacity: 0.8 }} />
+        <>
+          <Polyline positions={routeCoords} pathOptions={{ color: '#ffffff', weight: 12, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }} />
+          <Polyline positions={routeCoords} pathOptions={{ color: '#0a5744', weight: 7, opacity: 1, lineCap: 'round', lineJoin: 'round' }} />
+        </>
       )}
       {/* Leaflet gives every marker role="button" and a tab stop, so each
           one needs a name — an unlabelled button is all a screen reader

@@ -17,15 +17,16 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
 export type ButtonAccent = 'terracotta' | 'deep'
 
 /**
- * `pill` is the default now: the design this app follows makes every
- * button fully rounded, and setting it here is what carries that into the
- * screens nobody redesigns by hand — the owner dashboard, the admin
- * tables, every dialog. `rounded` is kept for anything that needs to sit
- * flush in a group.
+ * `rounded` is the default: a lightly-cornered rectangle (12px) reads as
+ * engineered where a full pill reads as consumer-friendly, and this app
+ * wants the former on every screen nobody redesigns by hand — the owner
+ * dashboard, the admin tables, every dialog. `pill` is kept for the few
+ * places a fully-round control is deliberate (filter chips, the mobile
+ * tab bar's targets).
  *
- * A prop rather than a className override, for the reason spelled out
- * above: two radius utilities in one class list are settled by emission
- * order, not by which one you wrote last.
+ * A prop rather than a className override: two radius utilities in one
+ * class list are settled by emission order, not by which one you wrote
+ * last.
  */
 export type ButtonShape = 'rounded' | 'pill'
 
@@ -40,30 +41,32 @@ const shapes: Record<ButtonShape, string> = {
  * people have to re-learn on every screen.
  */
 const base =
-  'inline-flex items-center justify-center gap-2 font-semibold ' +
-  'transition-[color,background-color,border-color,box-shadow,transform] duration-150 ' +
-  'active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer ' +
+  'inline-flex items-center justify-center gap-2 font-semibold tracking-[-0.01em] ' +
+  'transition-[color,background-color,border-color,box-shadow,transform] duration-200 ' +
+  'ease-[cubic-bezier(0.16,1,0.3,1)] ' +
+  'active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-canvas'
 
 const accented: Record<ButtonAccent, Record<'primary' | 'secondary' | 'outline', string>> = {
   terracotta: {
-    // `bg-brand` / `text-on-brand` already carry the light↔dark swap: the
-    // token resolves to terracotta-700-on-white in light and terracotta-500-with-
-    // dark-text in dark, so there is no `dark:` class left to keep in sync.
+    // `bg-brand` / `text-on-brand` already carry the light↔dark swap, so
+    // there is no `dark:` class left to keep in sync. A soft brand-tinted
+    // shadow on hover — enough that the primary lifts, not so much it
+    // announces itself.
     primary:
-      'bg-brand text-on-brand shadow-card hover:bg-brand-hover hover:shadow-brand active:bg-brand-press',
+      'bg-brand text-on-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] hover:bg-brand-hover hover:shadow-brand active:bg-brand-press active:shadow-none',
     secondary:
       'bg-brand-soft text-brand-ink hover:bg-brand-soft/70 active:bg-brand-soft',
     outline:
-      'border border-brand/60 text-brand-ink hover:bg-brand-soft active:bg-brand-soft',
+      'border border-brand/40 text-brand-ink hover:border-brand/70 hover:bg-brand-soft active:bg-brand-soft',
   },
   // Same hue, several steps darker. White text rather than the near-black
   // the light variant uses — terracotta-800 is dark enough that dark text on
   // it fails contrast.
   deep: {
     primary:
-      'bg-brand-800 text-white shadow-card hover:bg-brand-900 hover:shadow-brand active:bg-brand-950 dark:bg-brand-700 dark:hover:bg-brand-600 dark:active:bg-brand-800',
+      'bg-brand-800 text-white hover:bg-brand-900 active:bg-brand-950 dark:bg-brand-700 dark:hover:bg-brand-600 dark:active:bg-brand-800',
     secondary:
       'bg-brand-100 text-brand-900 hover:bg-brand-200 dark:bg-brand-800/35 dark:text-brand-100 dark:hover:bg-brand-800/50',
     outline:
@@ -101,7 +104,7 @@ export function buttonClass(
   size: ButtonSize = 'md',
   className = '',
   accent: ButtonAccent = 'terracotta',
-  shape: ButtonShape = 'pill',
+  shape: ButtonShape = 'rounded',
 ) {
   const look =
     variant === 'ghost' || variant === 'destructive' ? variants[variant] : accented[accent][variant]
@@ -109,7 +112,7 @@ export function buttonClass(
 }
 
 const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { variant = 'primary', size = 'md', accent = 'terracotta', shape = 'pill', loading, disabled, className = '', children, ...props },
+  { variant = 'primary', size = 'md', accent = 'terracotta', shape = 'rounded', loading, disabled, className = '', children, ...props },
   ref,
 ) {
   return (

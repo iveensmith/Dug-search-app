@@ -36,7 +36,7 @@ const PORTAL = {
     heading: 'Patient account',
     accent: 'terracotta' as const,
     tab: 'bg-brand text-on-brand',
-    cardEdge: 'border-t-4 border-t-terracotta-500 dark:border-t-terracotta-400',
+    cardEdge: 'border-t-2 border-t-brand',
     text: 'text-brand-ink',
     chip: 'bg-brand-soft text-brand-ink',
     Icon: IconUser,
@@ -47,7 +47,7 @@ const PORTAL = {
     heading: 'Pharmacy owner account',
     accent: 'deep' as const,
     tab: 'bg-brand-deep text-on-brand-deep',
-    cardEdge: 'border-t-4 border-t-terracotta-800 dark:border-t-terracotta-600',
+    cardEdge: 'border-t-2 border-t-brand-800',
     text: 'text-brand-ink',
     chip: 'bg-brand-soft text-brand-ink',
     Icon: IconStore,
@@ -55,7 +55,7 @@ const PORTAL = {
 } as const
 
 const actionCardClass =
-  'group flex w-full cursor-pointer items-center gap-3.5 rounded-card border border-line bg-surface p-4 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-md'
+  'group flex w-full cursor-pointer items-center gap-3.5 rounded-card border border-line bg-surface p-4 text-left shadow-card transition-all hover:-translate-y-px hover:shadow-raised'
 
 // Each card takes the colour of the side it leads to, not the side you are
 // on — so "Are you a patient?" stays green while you are looking at the
@@ -161,13 +161,13 @@ function LoginForm() {
       <SiteHeader />
       <main className="animate-fade-up mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="font-serif text-2xl font-normal text-ink">Welcome back</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">Welcome back</h1>
           <p className="mt-1 text-sm text-muted">
             {theme.subtitle}
           </p>
         </div>
 
-        <div className="mb-4 flex overflow-hidden rounded-lg border border-line-strong text-sm">
+        <div className="mb-4 flex overflow-hidden rounded-control border border-line-strong text-sm">
           {(['patient', 'pharmacy'] as const).map((key) => (
             <button
               key={key}

@@ -24,6 +24,9 @@ import SiteFooter from '@/components/ui/SiteFooter'
 import HeroPanel from '@/components/ui/HeroPanel'
 import NetworkPulse from '@/components/NetworkPulse'
 import NetworkStatsRow from '@/components/NetworkStatsRow'
+import { HOW_IT_WORKS_ART } from '@/components/ui/HowItWorksArt'
+import ResultAnatomy from '@/components/ui/ResultAnatomy'
+import LiveActivityFeed from '@/components/LiveActivityFeed'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import VerifiedBadge from '@/components/ui/VerifiedBadge'
@@ -139,7 +142,15 @@ const ReserveDialog = dynamic(() => import('@/components/ReserveDialog'), { ssr:
 const NotifyMeForm = dynamic(() => import('@/components/NotifyMeForm'), { ssr: false })
 
 
-const STATE_STORAGE_KEY = 'mediquest_state'
+// v2: the default state changed to Lagos, so old remembered values are
+// ignored once — a returning visitor gets the new default and re-picks
+// persist as normal.
+const STATE_STORAGE_KEY = 'mediquest_state_v2'
+
+// Where a visitor starts before they pick or share their location — the
+// biggest market, so the most people land somewhere useful. Detection
+// still switches it when they tap "Use my location".
+const DEFAULT_STATE: NigerianStateValue = 'LAGOS'
 
 type Pos = { lat: number; lng: number }
 
@@ -244,12 +255,15 @@ export default function PatientHome() {
   // Distinguishes "signed out" from "not asked yet" — without it the
   // owner CTA would flash on screen for a signed-in patient and vanish.
   const [viewerLoaded, setViewerLoaded] = useState(false)
-  const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(null)
+  const [selectedState, setSelectedState] = useState<NigerianStateValue | null>(DEFAULT_STATE)
   const [selectedLga, setSelectedLga] = useState('')
   const lgaOptions = useLgas(selectedState)
   const [pickerOpen, setPickerOpen] = useState(false) // full state/LGA dropdowns vs the compact chip
   const selectedLgaRef = useRef('') // read inside runSearch (avoids stale closure)
-  const [detectingState, setDetectingState] = useState(true)
+  // The state is known from the start now (the default, or a remembered
+  // pick) — so this is only ever true while the "Use my location" button
+  // is working, never blocking the picker on load.
+  const [detectingState, setDetectingState] = useState(false)
   const [userPos, setUserPos] = useState<Pos | null>(null)
   const [locationDenied, setLocationDenied] = useState(false)
   const [locationHint, setLocationHint] = useState('')
@@ -464,9 +478,14 @@ export default function PatientHome() {
       if (pos && !cancelled) {
         const detected = await detectAreaFromPosition(pos)
         if (detected && !cancelled) {
-          // Only override a remembered/account state when we have nothing saved
-          if (!stored && !accountState) chooseState(detected.state)
-          const forState = stored && isValidState(stored) ? stored : accountState ?? detected.state
+          // The state on load is the default (or a remembered/account
+          // pick) — a quiet background detection no longer switches it
+          // out from under the visitor. Switching state is an explicit
+          // tap on "Use my location" (detectMyArea). What detection still
+          // does silently is fill the LGA, but only when the area it
+          // found is inside the state that's already selected.
+          const forState =
+            stored && isValidState(stored) ? stored : accountState ?? DEFAULT_STATE
           if (detected.lga && forState === detected.state) {
             setSelectedLga(detected.lga)
             selectedLgaRef.current = detected.lga
@@ -881,10 +900,14 @@ export default function PatientHome() {
     <Card
       id="search"
       radius="lg"
-      className="mb-4 scroll-mt-24 border-transparent shadow-[0_2px_4px_rgba(16,24,40,0.04),0_24px_48px_-16px_rgba(6,78,59,0.18)] ring-1 ring-terracotta-100 dark:border-gray-800 dark:shadow-black/20 dark:ring-terracotta-900/40"
+      className="surface-lit relative mb-4 scroll-mt-24 overflow-hidden border-line/70 shadow-lift"
       padded={false}
     >
-      <div className="space-y-4 p-5 sm:p-6">
+      {/* A green hairline along the top edge — the search box is the one
+          thing on the page we want touched, and this marks it as the
+          brand's own surface without a heavy fill. */}
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-brand/70" />
+      <div className="space-y-4 p-5 sm:p-7">
         {/* The panel is two questions and one answer, in that order. It
             used to be a row of controls, which said nothing about what
             the app is for — the whole product is "which shop near me has
@@ -1132,7 +1155,7 @@ export default function PatientHome() {
             column, which is the whole thing the layout is trying to
             escape.
           */}
-          <section className="relative bg-terracotta-50 dark:bg-terracotta-950/25">
+          <section className="relative border-b border-line bg-canvas">
           {/*
             On a phone the photograph is the band's background and the copy
             sits on it, so everything in the flow needs a stacking context
@@ -1141,45 +1164,40 @@ export default function PatientHome() {
             and none of this applies.
           */}
           <div className="relative z-10 mx-auto w-full max-w-5xl px-4">
-          <div className="animate-fade-up pt-10 md:w-[50%] md:pt-16 lg:w-[52%]">
+          <div className="intro pt-12 md:w-[52%] md:pt-20 lg:w-[54%]">
               {/*
                 Light type below `md`, dark from `md` up. The photo is only
                 the background on a phone; on a desktop this copy is on
-                mint and has to go back to reading as ink on paper. Every
-                colour here is paired, and the pairs are what keep both
-                halves legible — see the scrim in HeroPanel, which is heavy
-                enough to hold white text over the brightest part of the
-                picture at better than 9:1.
+                paper and has to go back to reading as ink. Every colour
+                here is paired, and the pairs are what keep both halves
+                legible — see the scrim in HeroPanel.
               */}
-              <p className="text-sm font-semibold text-terracotta-300 md:text-brand-ink">
-                Nationwide Pharmacy Network
+              <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-terracotta-200 md:text-brand-ink">
+                <span className="h-px w-7 bg-current opacity-50" aria-hidden="true" />
+                Nigeria&apos;s pharmacy stock network
               </p>
               {/* text-white, not text-on-brand: below `md` this sits on the
                   photograph and has to stay white in both themes, and
                   --on-brand is near-black in dark. Only the `md:` half,
-                  which sits on mint, is a token.
+                  which sits on paper, is a token.
 
-                  "In Stock" carries the colour because it is the part that
+                  "in stock" carries the colour because it is the part that
                   says what this is for — every pharmacy has medicine, the
-                  question is which one has it today. The accent takes the
-                  same pair as the eyebrow above: terracotta-300 while it is on
-                  the photograph, brand-ink once it is on mint. */}
-              <h1 className="mt-4 text-balance font-serif text-[2.7rem] font-normal leading-[1.05] tracking-tight text-white sm:text-[3.25rem] md:text-ink">
-                Find Medicine{' '}
-                {/* nowrap so the line never breaks between "In" and
-                    "Stock" — it did, and a coloured phrase split across
-                    two lines reads as two unrelated highlights. Two short
-                    words, so it cannot overflow a phone. Italic is the
-                    reference's own move for the emotional word in a
-                    headline — roman sets up the sentence, italic lands it. */}
-                <span className="whitespace-nowrap font-light italic text-terracotta-300 md:text-brand-ink">
-                  In Stock
+                  question is which one has it today. Green while on paper,
+                  the light mint on the photograph so it still reads. */}
+              <h1 className="mt-6 text-balance font-display text-[2.85rem] font-semibold leading-[0.98] tracking-[-0.04em] text-white sm:text-[3.6rem] lg:text-[4rem] md:text-ink">
+                Find the medicine{' '}
+                {/* nowrap so the line never breaks inside the coloured
+                    phrase — split across two lines it reads as two
+                    unrelated highlights. */}
+                <span className="whitespace-nowrap text-terracotta-200 md:text-brand-ink">
+                  that&apos;s in stock
                 </span>{' '}
-                Near You
+                near you.
               </h1>
-              <p className="mt-5 text-[1.05rem] leading-relaxed text-terracotta-50 md:text-muted">
-                Say goodbye to calling pharmacy after pharmacy. Search a drug, see who has it in stock
-                nearby, and get directions or call — free, across Nigeria.
+              <p className="mt-6 max-w-md text-[1.0625rem] leading-relaxed text-terracotta-50 md:text-muted">
+                Stop calling pharmacy after pharmacy. Search a drug, see who has it in stock nearby,
+                and get directions or call — free, across Nigeria.
               </p>
 
               {/* Legitimacy in the first screen, not below the fold. The
@@ -1211,7 +1229,10 @@ export default function PatientHome() {
               <NetworkStatsRow />
           </div>
 
-          <div className="mt-9 md:w-[50%] lg:w-[52%]">
+          <div
+            className="mt-10 md:w-[52%] lg:w-[54%]"
+            style={{ animation: 'intro-rise 0.7s cubic-bezier(0.16,1,0.3,1) 0.5s both' }}
+          >
             {searchPanel}
           </div>
 
@@ -1258,33 +1279,21 @@ export default function PatientHome() {
                   able to help themselves. Brand green, like everything
                   else — it is a different kind of help, not a different
                   product. */}
-              {/* The gradient and its matching border stay raw — a
-                  three-stop wash has no token, and a flat surface here
-                  loses the card. That leaves one trap: Tailwind emits
-                  `dark:border-*` after `hover:border-*`, so the raw dark
-                  border silently ate the hover token in dark mode. The
-                  `dark:hover:` twin is what puts it back — the one place
-                  in the app where a dark: class beside a token is load
-                  bearing rather than a leftover. */}
+              {/* A clean surface card with one green edge — a left rule
+                  that marks it as the same kind of "we'll get you there"
+                  device the result cards use, not a separate product. */}
               <Link
                 href="/prescriptions"
-                className="group relative mt-4 block overflow-hidden rounded-card border border-terracotta-200/80 bg-gradient-to-br from-terracotta-50 via-white to-terracotta-50/50 p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lg sm:mt-5 sm:rounded-3xl sm:p-7 dark:border-terracotta-900/50 dark:from-terracotta-950/50 dark:via-gray-900 dark:to-gray-900 dark:hover:border-line-brand"
+                className="group relative mt-4 block overflow-hidden rounded-card border border-line border-l-2 border-l-brand bg-surface p-4 shadow-card transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-line-brand hover:border-l-brand hover:shadow-lift sm:mt-5 sm:p-7"
               >
-                {/* Soft light behind the corner. pointer-events-none so it
-                    never sits between a thumb and the link. */}
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-terracotta-400/15 blur-3xl dark:bg-terracotta-500/10"
-                />
-
                 <div className="relative flex items-center gap-3.5 sm:items-start sm:gap-5">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-brand text-on-brand shadow-md shadow-terracotta-700/25 transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16 sm:rounded-2xl dark:shadow-terracotta-500/20">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-brand-soft text-brand-ink transition-colors duration-200 group-hover:bg-brand group-hover:text-on-brand sm:h-14 sm:w-14">
                     <IconCamera width={22} height={22} className="sm:hidden" />
-                    <IconClipboardList width={26} height={26} className="hidden sm:block" />
+                    <IconClipboardList width={24} height={24} className="hidden sm:block" />
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-bold tracking-tight text-ink sm:text-xl">
+                    <span className="block font-display text-base font-semibold tracking-[-0.02em] text-ink sm:text-xl">
                       Not sure what you need?
                     </span>
                     {/* Two wordings, one meaning. The phone gets the short
@@ -1357,7 +1366,7 @@ export default function PatientHome() {
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {TRUST_BADGES.map(({ label, Icon }) => (
                     <li key={label} className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-field bg-brand-soft text-brand-ink">
                         <Icon width={16} height={16} />
                       </span>
                       <span className="min-w-0 text-sm font-semibold leading-snug text-ink">
@@ -1372,66 +1381,67 @@ export default function PatientHome() {
 
           <section className="reveal">
             <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ink">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta-500" />
+            <p className="flex items-center justify-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-brand-ink">
+              <span className="h-px w-6 shrink-0 bg-brand/50" />
               How it works
             </p>
-            <h2 className="mx-auto mt-4 max-w-lg text-balance text-center font-serif text-3xl font-normal leading-tight tracking-tight text-ink sm:text-4xl">
+            <h2 className="mx-auto mt-4 max-w-lg text-balance text-center font-display text-3xl font-semibold leading-tight tracking-[-0.025em] text-ink sm:text-4xl">
               Three steps between you and{' '}
-              <span className="font-light italic text-brand-ink">your medicine</span>
+              <span className="text-brand-ink">your medicine</span>
             </h2>
             {/* Numbered rather than iconed-and-numbered: the step number is
                 the thing that says "there are only three of these", which
                 is the whole reassurance this section exists to give. The
                 icon stays, smaller, as a label for the step. */}
-            <ol className="mt-12 grid gap-6 sm:grid-cols-3">
-              {HOW_IT_WORKS.map(({ icon: Icon, title, text }, i) => (
+            {/* One column until there is real room — the cards carry a
+                screenshot each and need their full width to be legible, so
+                they only go three-across from `lg`. */}
+            <ol className="mx-auto mt-12 grid max-w-md gap-5 lg:max-w-none lg:grid-cols-3 lg:gap-6">
+              {HOW_IT_WORKS.map(({ title, text }, i) => {
+                const Art = HOW_IT_WORKS_ART[i]
+                return (
                 <li
                   key={title}
-                  className="rounded-[1.75rem] bg-surface p-7 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.12)] ring-1 ring-gray-100 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_20px_40px_-12px_rgba(5,150,105,0.22)] dark:shadow-none dark:ring-gray-800"
+                  className="overflow-hidden rounded-card border border-line bg-surface p-4 shadow-card transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lift"
                 >
-                  <div className="flex items-center gap-3">
-                    {/* extrabold, not black: Open Sans stops at 800, and
-                        asking for 900 gets a synthesised weight that reads
-                        as a smeared version of the same thing.
-
-                        Full strength, not the 25% watermark it was. At
-                        that opacity it measured 1.36:1 against the card —
-                        large text needs 3:1, and a step number nobody can
-                        read is not a decoration, it is the one thing that
-                        says how far through the three steps you are. Solid
-                        terracotta-600 is 3.77:1 and looks more like the
-                        reference besides. */}
-                    <span className="text-[2.5rem] font-extrabold leading-none tracking-tighter text-brand-ink">
-                      0{i + 1}
-                    </span>
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
-                      <Icon width={18} height={18} />
-                    </span>
+                  <Art />
+                  <div className="p-2 pt-4">
+                    <div className="flex items-baseline gap-2.5">
+                      {/* The step number is the reassurance this section
+                          exists to give — "there are only three". */}
+                      <span className="font-display text-[1.5rem] font-semibold leading-none tabular-nums tracking-[-0.04em] text-brand">
+                        {i + 1}
+                      </span>
+                      <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink">{title}</p>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{text}</p>
                   </div>
-                  <p className="mt-5 text-lg font-bold text-ink">{title}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{text}</p>
                 </li>
-              ))}
+                )
+              })}
             </ol>
             </div>
           </section>
 
+          <ResultAnatomy />
+
+          <LiveActivityFeed />
+
           {/* Native <details> so the accordion works before hydration and
               stays keyboard- and screen-reader-correct for free. */}
-          <section className="reveal rounded-[2rem] bg-terracotta-50/80 md:rounded-[3.5rem] dark:bg-terracotta-950/25">
+          <section className="reveal border-b border-line bg-canvas">
             <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-            <p className="flex items-center justify-center gap-2 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-ink">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta-500" />
+            <p className="flex items-center justify-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-brand-ink">
+              <span className="h-px w-6 shrink-0 bg-brand/50" />
               Questions
             </p>
-            <h2 className="mx-auto mt-4 max-w-lg text-balance text-center font-serif text-3xl font-normal leading-tight tracking-tight text-ink sm:text-4xl">
+            <h2 className="mx-auto mt-4 max-w-lg text-balance text-center font-display text-3xl font-semibold leading-tight tracking-[-0.025em] text-ink sm:text-4xl">
               {/* Not "…before they trust us": naming the doubt invites it,
                   and a page about finding medicine should not open its FAQ
                   by conceding that trust is the question. This says the
                   same thing from the other end — these are the answers
                   people actually want — without the flinch. */}
-              What patients <span className="font-light italic text-brand-ink">ask us most</span>
+              What patients <span className="text-brand-ink">ask us most</span>
             </h2>
             <div className="mx-auto mt-12 max-w-2xl space-y-3">
               {FAQ.map(({ q, a }) => (
@@ -1460,11 +1470,23 @@ export default function PatientHome() {
           {viewerLoaded && !viewerRole && (
             <section className="reveal">
               <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
-              <div className="rounded-[2rem] bg-brand-deep p-8 shadow-xl shadow-terracotta-800/25 sm:rounded-[2.5rem] sm:p-12">
-                <h2 className="max-w-lg font-serif text-2xl font-normal leading-tight tracking-tight text-on-brand-deep sm:text-3xl">
+              <div className="grain relative overflow-hidden rounded-sheet bg-brand-deep p-8 shadow-lift sm:p-12">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full border border-white/10"
+                />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full border border-white/10"
+                />
+                <p className="relative flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/60">
+                  <span className="h-px w-6 bg-white/40" aria-hidden="true" />
+                  For pharmacies
+                </p>
+                <h2 className="relative mt-4 max-w-lg font-display text-2xl font-semibold leading-tight tracking-[-0.025em] text-on-brand-deep sm:text-3xl">
                   Run a pharmacy? Put your shelf on the map.
                 </h2>
-                <p className="mt-3.5 max-w-xl leading-relaxed text-terracotta-50">
+                <p className="relative mt-3.5 max-w-xl leading-relaxed text-white/80">
                   Free to list. Add your stock once, confirm it in a tap, and get found by patients
                   already searching for what you have.
                 </p>
@@ -1478,17 +1500,17 @@ export default function PatientHome() {
                     button on it must not follow the theme. bg-surface
                     turned the primary action near-black in dark and left
                     it quieter than the outlined link beside it. */}
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div className="relative mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/pharmacy/register"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-base font-semibold text-terracotta-800 shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-terracotta-50 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-control bg-white px-6 py-3.5 text-base font-semibold tracking-[-0.01em] text-brand-800 transition-[background-color,transform] duration-150 hover:bg-brand-50 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
                   >
                     <IconStore width={18} height={18} />
                     Register your pharmacy
                   </Link>
                   <Link
                     href="/login"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/40 px-6 py-3.5 text-base font-semibold text-on-brand-deep transition-[background-color,transform] duration-150 hover:bg-white/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-control border border-white/30 px-6 py-3.5 text-base font-semibold tracking-[-0.01em] text-on-brand-deep transition-[background-color,border-color,transform] duration-150 hover:border-white/60 hover:bg-white/10 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
                   >
                     Already listed? Sign in
                     <IconChevronRight width={18} height={18} />
@@ -1498,6 +1520,48 @@ export default function PatientHome() {
               </div>
             </section>
           )}
+
+          {/* Closing band — the page ends by handing the visitor back the
+              one thing it is for. The chips run a real search; the link
+              opens the full box at the top. */}
+          <section className="reveal surface-lit border-y border-line bg-surface">
+            <div className="mx-auto w-full max-w-3xl px-4 py-20 text-center md:py-28">
+              <h2 className="text-balance font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[2.6rem]">
+                Know what you need?{' '}
+                <span className="text-brand-ink">Search it now.</span>
+              </h2>
+              <p className="mx-auto mt-4 max-w-md text-[1.0625rem] leading-relaxed text-muted">
+                A brand name or a generic — we match both, and show which pharmacy near you has it
+                on the shelf.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
+                {QUICK_SEARCHES.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => quickSearch(term)}
+                    className="cursor-pointer rounded-full border border-line-strong bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-card transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-ink"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPanelExpanded(true)
+                  document
+                    .getElementById('search')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  setTimeout(() => searchInputRef.current?.focus(), 400)
+                }}
+                className="mt-7 inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-brand-ink underline-offset-4 hover:underline"
+              >
+                Search for something else
+                <IconChevronRight width={15} height={15} />
+              </button>
+            </div>
+          </section>
         </>
       )}
 
@@ -2020,10 +2084,10 @@ export default function PatientHome() {
                         ? `Saved ${state.label}, tap to remove`
                         : `Save ${state.label}`
                     }
-                    className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                    className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-control border px-4 py-2.5 text-sm font-semibold transition-colors ${
                       isSaved(state.drug.id)
-                        ? 'border-terracotta-600 bg-brand text-on-brand dark:border-terracotta-500'
-                        : 'border-line-strong text-muted hover:border-terracotta-400 hover:text-brand-ink dark:hover:border-terracotta-600'
+                        ? 'border-brand bg-brand text-on-brand'
+                        : 'border-line-strong text-ink hover:border-brand hover:bg-brand-soft'
                     }`}
                   >
                     <IconBookmark width={15} height={15} />
@@ -2047,7 +2111,7 @@ export default function PatientHome() {
                   aria-pressed={sortBy === key}
                   className={`shrink-0 cursor-pointer rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
                     sortBy === key
-                      ? 'border-terracotta-600 bg-brand text-on-brand dark:border-terracotta-500'
+                      ? 'border-brand bg-brand text-on-brand'
                       : 'border-line bg-surface text-muted hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink'
                   }`}
                 >
@@ -2110,21 +2174,21 @@ export default function PatientHome() {
                 {sortedResults.map((r) => (
                   <li
                     key={r.id}
-                    className="rounded-card border border-line bg-surface p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lg"
+                    className="overflow-hidden rounded-card border border-line border-l-2 border-l-brand bg-surface p-5 shadow-card transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-line-brand hover:border-l-brand hover:shadow-lift"
                   >
                     <div className="flex items-start gap-3.5">
-                      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-card bg-brand-soft text-brand-ink">
-                        <IconStore width={24} height={24} />
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-field bg-brand-soft text-brand-ink">
+                        <IconStore width={22} height={22} />
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
                           <Link
                             href={`/pharmacies/${r.id}`}
-                            className="truncate font-bold text-ink transition-colors hover:text-brand-ink"
+                            className="truncate font-display text-[1.0625rem] font-semibold tracking-[-0.02em] text-ink transition-colors hover:text-brand-ink"
                           >
                             {r.name}
                           </Link>
-                          <span className="shrink-0 text-sm font-bold tabular-nums text-faint">
+                          <span className="shrink-0 font-mono text-[0.8125rem] font-medium tabular-nums text-faint">
                             {r.distanceKm.toFixed(1)} km
                           </span>
                         </div>
@@ -2132,7 +2196,7 @@ export default function PatientHome() {
                           {r.address}
                           {r.lga ? ` · ${r.lga}` : ''}
                         </p>
-                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                           <StockPulse stockUpdatedAt={r.stockUpdatedAt} />
                           <StockLevelBadge level={r.stockLevel} />
                           <VerifiedBadge />
@@ -2146,7 +2210,7 @@ export default function PatientHome() {
                       className="mt-3.5 flex cursor-pointer items-center gap-2.5"
                     >
                       <RatingStars value={r.ratingAvg} count={r.ratingCount} />
-                      <span className="text-xs font-bold text-brand-ink">Rate</span>
+                      <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.04em] text-brand-ink">Rate</span>
                     </button>
 
                     {stockFreshness(r.stockUpdatedAt).tone === 'stale' && (
@@ -2169,14 +2233,14 @@ export default function PatientHome() {
                         href={`tel:${r.phone.replace(/\s/g, '')}`}
                         onClick={(e) => handleCall(e, r.phone)}
                         aria-label={`Call ${r.name}`}
-                        className="flex flex-auto items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
+                        className="flex flex-auto items-center justify-center gap-2 rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft"
                       >
                         <IconPhone width={16} height={16} />
                         {copiedPhone === r.phone ? 'Copied ✓' : 'Call'}
                       </a>
                       <Link
                         href={`/pharmacies/${r.id}`}
-                        className="flex flex-auto items-center justify-center rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-muted shadow-card transition-colors hover:border-line-brand hover:text-brand-ink"
+                        className="flex flex-auto items-center justify-center rounded-control border border-line px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft"
                       >
                         Details
                       </Link>

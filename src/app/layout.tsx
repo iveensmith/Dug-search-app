@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import TabBar from "@/components/ui/TabBar";
 import AppAlive from "@/components/ui/AppAlive";
@@ -15,15 +15,16 @@ const inter = Inter({
   display: "swap",
 });
 
-// Editorial headlines only — hero copy, page titles, section headings.
-// Fraunces carries a real italic, which is the point: headings pair a
-// roman clause with an italic word for emphasis, the way a magazine
-// headline does, rather than leaning on bold weight alone. Also variable,
-// so roman and italic share one file per axis.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+// Display face — hero copy, page titles, section headings, the wordmark,
+// and every big figure. Space Grotesk is a humanist grotesque with a
+// slightly technical cut (the low-slung terminals, the tight apertures)
+// that reads as precise and engineered rather than editorial — the right
+// register for a service people rely on in a hurry. Set tight everywhere
+// (see globals.css); emphasis in a headline is carried by colour and
+// weight, never a style change. Variable, one file for every weight.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-display",
   subsets: ["latin"],
-  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -53,8 +54,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8faf9" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0f0d" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e110d" },
   ],
 };
 
@@ -175,7 +176,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

@@ -8,10 +8,10 @@ export default function OpenStatusBadge({ open24h, opensAt, closesAt, className 
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-[0.04em] ring-1 ring-inset ${
         open
-          ? 'bg-ok-soft text-ok-ink'
-          : 'bg-sunken text-faint'
+          ? 'bg-ok-soft text-ok-ink ring-ok/15'
+          : 'bg-sunken text-faint ring-line'
       } ${className}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${open ? 'bg-ok' : 'bg-line-strong'}`} />

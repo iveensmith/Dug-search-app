@@ -83,7 +83,7 @@ export default function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="sticky bottom-0 z-40 border-t border-line bg-surface/85 backdrop-blur-lg md:hidden"
+      className="glass sticky bottom-0 z-40 border-t border-line/80 md:hidden"
     >
       <ul
         className="mx-auto grid max-w-lg px-2 pt-2"

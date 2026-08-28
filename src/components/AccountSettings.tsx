@@ -130,7 +130,7 @@ export default function AccountSettings() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
-          <h1 className="font-serif text-xl font-normal text-ink">My account</h1>
+          <h1 className="font-display text-xl font-semibold text-ink">My account</h1>
           <p className="text-sm text-muted">Your profile and login details</p>
         </header>
 

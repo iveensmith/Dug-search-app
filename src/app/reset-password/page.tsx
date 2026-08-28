@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="mb-8 text-center">
-          <h1 className="font-serif text-2xl font-normal text-ink">Choose a new password</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">Choose a new password</h1>
         </div>
         <Suspense>
           <ResetPasswordForm />

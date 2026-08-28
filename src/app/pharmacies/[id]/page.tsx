@@ -219,7 +219,7 @@ function PharmacyBody({ data, onRate }: { data: Payload; onRate: () => void }) {
           </span>
         </div>
         <div className="p-5">
-          <h1 className="font-serif text-2xl font-normal tracking-tight text-ink">{p.name}</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">{p.name}</h1>
           <p className="mt-1.5 text-sm text-muted">{p.address}</p>
           <p className="mt-0.5 text-sm tabular-nums text-faint">
             {p.phone}

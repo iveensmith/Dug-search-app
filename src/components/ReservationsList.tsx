@@ -112,7 +112,7 @@ export default function ReservationsList() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
-          <h1 className="font-serif text-xl font-normal text-ink">My reservations</h1>
+          <h1 className="font-display text-xl font-semibold text-ink">My reservations</h1>
           <p className="text-sm text-muted">
             Medicines you&apos;ve asked a pharmacy to hold
           </p>

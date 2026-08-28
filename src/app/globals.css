@@ -7,112 +7,140 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ═══════════════════════════════════════════════════════════════════════
+   MEDIQUEST — "Clinical Trust"
+
+   A near-monochrome ink-on-paper system where colour is functional, never
+   decoration. One deep pharmacy green carries every "yes, it's here /
+   verified / go"; amber means "hurry"; red means "no". The brand itself is
+   typographic — Space Grotesk set tight — so on a results page the loudest
+   thing on screen is the stock status, which is what the patient is
+   actually scanning for.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════
    1 · PRIMITIVES — raw ramps. Never used directly in components.
-   These are theme-independent, so they live in a plain @theme block:
-   Tailwind emits them at :root (keeping `var(--color-brand-200)` working
-   for ::selection below) *and* generates `bg-brand-700`-style utilities.
+   Theme-independent, so a plain @theme block: Tailwind emits them at :root
+   (keeping `var(--color-brand-200)` working for ::selection below) *and*
+   generates `bg-brand-700`-style utilities.
    ═══════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* Brand — terracotta. Ramp built around #b05a36 ("Terracotta Seal", the
-     one accent the reference design allows) at step 600 — every other
-     step holds the same hue and moves only lightness/saturation, the way
-     the emerald ramp it replaces did. */
-  --color-brand-50: #fdf5f2;
-  --color-brand-100: #fbebe5;
-  --color-brand-200: #f4d5c7;
-  --color-brand-300: #e9b6a0;
-  --color-brand-400: #d88e6f;
-  --color-brand-500: #c76e48;
-  --color-brand-600: #b05a36;
-  --color-brand-700: #924a2a;
-  --color-brand-800: #793b20;
-  --color-brand-900: #622e18;
-  --color-brand-950: #3b1e11;
+  /* Brand — deep pharmacy green. Anchored on #0B6B53 ("Signal") at step
+     600: a confident blue-leaning green that reads as health, "verified"
+     and "go" all at once. Every step holds the hue and moves only
+     lightness/chroma. */
+  --color-brand-50: #ecf6f1;
+  --color-brand-100: #d4ebe1;
+  --color-brand-200: #a9d6c5;
+  --color-brand-300: #74baa4;
+  --color-brand-400: #3f9a81;
+  --color-brand-500: #1c7f65;
+  --color-brand-600: #0b6b53;
+  --color-brand-700: #0a5744;
+  --color-brand-800: #084537;
+  --color-brand-900: #06342a;
+  --color-brand-950: #04211b;
 
-  /* Same ramp again, named for direct utility use (`bg-terracotta-800`,
-     `border-terracotta-600/60`) — Tailwind has no built-in "terracotta"
-     palette the way it does emerald, so components that used to reach
-     for a raw `emerald-*` shade need this to resolve to anything. Kept
-     numerically identical to the brand ramp above on purpose: one accent
-     hue, however it's referenced. */
-  --color-terracotta-50: #fdf5f2;
-  --color-terracotta-100: #fbebe5;
-  --color-terracotta-200: #f4d5c7;
-  --color-terracotta-300: #e9b6a0;
-  --color-terracotta-400: #d88e6f;
-  --color-terracotta-500: #c76e48;
-  --color-terracotta-600: #b05a36;
-  --color-terracotta-700: #924a2a;
-  --color-terracotta-800: #793b20;
-  --color-terracotta-900: #622e18;
-  --color-terracotta-950: #3b1e11;
+  /* Same ramp under the name a lot of components still reach for
+     directly. Kept numerically identical on purpose — one accent hue,
+     however it is referenced. The word "terracotta" in a class name is
+     now just history; it resolves to green. */
+  --color-terracotta-50: #ecf6f1;
+  --color-terracotta-100: #d4ebe1;
+  --color-terracotta-200: #a9d6c5;
+  --color-terracotta-300: #74baa4;
+  --color-terracotta-400: #3f9a81;
+  --color-terracotta-500: #1c7f65;
+  --color-terracotta-600: #0b6b53;
+  --color-terracotta-700: #0a5744;
+  --color-terracotta-800: #084537;
+  --color-terracotta-900: #06342a;
+  --color-terracotta-950: #04211b;
 
-  /* Ink — warm parchment-and-taupe neutrals rather than Tailwind's
-     blue-leaning slate. 50/100/300 are the reference's own Parchment,
-     Aged Paper and Warm Taupe; the rest fills in the ramp between them
-     at the same hue so nothing reads cold next to the terracotta. */
-  --color-ink-50: #fef9ef;
-  --color-ink-100: #f5eee1;
-  --color-ink-200: #ebe0cb;
-  --color-ink-300: #d1c9bf;
-  --color-ink-400: #b6ac9d;
-  --color-ink-500: #948a7a;
-  --color-ink-600: #746a5c;
-  --color-ink-700: #574e42;
-  --color-ink-800: #3d362d;
-  --color-ink-900: #26211b;
-  --color-ink-950: #16130f;
+  /* Ink — cool paper-and-graphite neutrals with the faintest green cast,
+     so nothing reads blue-cold next to the brand and nothing reads warm
+     either. Paper at the top, near-black at the bottom. */
+  --color-ink-50: #fbfbf9;
+  --color-ink-100: #f3f3f0;
+  --color-ink-200: #e6e6e1;
+  --color-ink-300: #d4d5ce;
+  --color-ink-400: #b3b5ac;
+  --color-ink-500: #888b82;
+  --color-ink-600: #5f6359;
+  --color-ink-700: #444840;
+  --color-ink-800: #2b2e29;
+  --color-ink-900: #191c18;
+  --color-ink-950: #0e110d;
 
   /* ── Radius ──────────────────────────────────────────────────────────
      Named by what they wrap, not by t-shirt size, so a component can't
-     drift: a card is `rounded-card` wherever it appears. */
-  --radius-field: 14px;
-  --radius-control: 16px;
-  --radius-card: 20px;
-  --radius-sheet: 28px;
+     drift. Tighter than v2 — precise rectangles read as engineered,
+     pillows read as consumer-friendly, and this app wants the former. */
+  --radius-field: 10px;
+  --radius-control: 12px;
+  --radius-card: 14px;
+  --radius-sheet: 18px;
 
   /* ── Elevation ───────────────────────────────────────────────────────
-     Shadows tinted with the ink hue rather than pure black — black shadows
-     on a warm-neutral surface read as grey smudge. */
-  --shadow-card: 0 1px 2px 0 rgb(10 20 16 / 0.05), 0 0 1px 0 rgb(10 20 16 / 0.04);
-  --shadow-raised: 0 2px 6px -1px rgb(10 20 16 / 0.07), 0 1px 2px 0 rgb(10 20 16 / 0.04);
-  --shadow-sheet: 0 8px 20px -4px rgb(10 20 16 / 0.10), 0 2px 6px -2px rgb(10 20 16 / 0.05);
-  --shadow-modal: 0 16px 40px -8px rgb(10 20 16 / 0.16), 0 4px 10px -4px rgb(10 20 16 / 0.06);
-  --shadow-brand: 0 6px 16px -4px rgb(4 120 87 / 0.28);
+     A card is told apart from the page by its hairline first; the shadow
+     is a soft contact shadow under it, not a drop. Two layers — a tight
+     dark one for the edge, a wide diffuse one for the ground — and the
+     diffuse layer is tinted green, so a lifted surface warms toward the
+     brand instead of casting a grey smudge. `sheet` and `lift` carry the
+     green further for the surfaces that are meant to feel raised: the
+     search panel, a card under the cursor. */
+  --shadow-card:
+    0 1px 2px -1px rgb(12 15 10 / 0.10),
+    0 2px 8px -3px rgb(10 60 46 / 0.07);
+  --shadow-raised:
+    0 2px 4px -2px rgb(12 15 10 / 0.10),
+    0 8px 24px -8px rgb(10 60 46 / 0.12);
+  --shadow-sheet:
+    0 1px 2px -1px rgb(12 15 10 / 0.08),
+    0 12px 36px -12px rgb(10 60 46 / 0.16),
+    0 4px 12px -6px rgb(12 15 10 / 0.06);
+  --shadow-lift:
+    0 2px 6px -2px rgb(12 15 10 / 0.12),
+    0 18px 48px -12px rgb(10 60 46 / 0.22),
+    0 6px 16px -8px rgb(12 15 10 / 0.10);
+  --shadow-modal:
+    0 4px 10px -4px rgb(12 15 10 / 0.14),
+    0 32px 64px -16px rgb(10 40 32 / 0.32);
+  --shadow-brand: 0 6px 20px -6px rgb(11 107 83 / 0.40);
 
   /* ── Type scale ──────────────────────────────────────────────────────
-     New names only — `text-sm` / `text-base` keep Tailwind's defaults, so
-     every existing class list is untouched. Line heights land on the 4pt
-     grid; tracking tightens as size grows. */
-  --text-display: 2.5rem;
-  --text-display--line-height: 2.875rem;
-  --text-display--letter-spacing: -0.015em;
-  --text-display--font-weight: 700;
+     `text-sm` / `text-base` keep Tailwind's defaults, so existing class
+     lists are untouched. Display sizes carry tight negative tracking —
+     Space Grotesk is built for it and it is most of what makes a headline
+     read as set rather than typed. Line heights land on the 4pt grid. */
+  --text-display: 3.25rem;
+  --text-display--line-height: 3.375rem;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 600;
 
-  --text-h1: 2rem;
-  --text-h1--line-height: 2.375rem;
-  --text-h1--letter-spacing: -0.012em;
-  --text-h1--font-weight: 700;
+  --text-h1: 2.5rem;
+  --text-h1--line-height: 2.75rem;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 600;
 
-  --text-h2: 1.625rem;
-  --text-h2--line-height: 2rem;
-  --text-h2--letter-spacing: -0.008em;
-  --text-h2--font-weight: 700;
+  --text-h2: 1.875rem;
+  --text-h2--line-height: 2.25rem;
+  --text-h2--letter-spacing: -0.024em;
+  --text-h2--font-weight: 600;
 
   --text-h3: 1.375rem;
   --text-h3--line-height: 1.75rem;
-  --text-h3--letter-spacing: -0.005em;
+  --text-h3--letter-spacing: -0.014em;
   --text-h3--font-weight: 600;
 
   --text-title-lg: 1.125rem;
   --text-title-lg--line-height: 1.5rem;
-  --text-title-lg--letter-spacing: -0.003em;
+  --text-title-lg--letter-spacing: -0.008em;
   --text-title-lg--font-weight: 600;
 
   --text-title: 1rem;
   --text-title--line-height: 1.375rem;
-  --text-title--letter-spacing: -0.002em;
+  --text-title--letter-spacing: -0.004em;
   --text-title--font-weight: 600;
 
   --text-body-lg: 1.0625rem;
@@ -126,7 +154,7 @@
 
   --text-label: 0.75rem;
   --text-label--line-height: 1rem;
-  --text-label--letter-spacing: 0.02em;
+  --text-label--letter-spacing: 0.06em;
   --text-label--font-weight: 600;
 }
 
@@ -138,60 +166,63 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Surfaces — the reference's own Parchment / Aged Paper, never pure
-     white: "never use pure white as a background — it kills the
-     parchment warmth that defines the brand." */
-  --canvas: #fef9ef;
-  --surface: #f5eee1;
-  --raised: #f5eee1;
-  --sunken: #ebe0cb;
-  --inverse: #1b140f;
+  /* Surfaces — a crisp white card on a paper ground with a real trace of
+     green in it, so the page reads as this brand's paper rather than
+     default off-white, and a white card lifts off it cleanly. */
+  --canvas: #f5f6f1;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: #ecede6;
+  --inverse: #12160f;
 
-  /* Text — Ink / Charcoal / Graphite, in that order of emphasis */
-  --ink: #2a2b2f;
-  --muted: #333333;
-  --faint: #515151;
+  /* Text — a near-black carrying a clear green undertone (not neutral
+     grey), so every line of copy sits in the brand's hue family. */
+  --ink: #121710;
+  --muted: #4c5247;
+  --faint: #71776b;
   --on-brand: #ffffff;
   --on-inverse: #ffffff;
 
-  /* Brand / action — terracotta-700 for fills and text so AA contrast
-     holds against parchment; the reference's own #b05a36 sits at 600 and
-     is used directly nowhere text needs to sit on top of it. */
-  --brand: #924a2a;
-  --brand-hover: #793b20;
-  --brand-press: #622e18;
-  --brand-soft: #fdf5f2;
-  --brand-deep: #924a2a;
+  /* Brand / action — brand-700 for anything text sits on or beside, so AA
+     holds on white (6.4:1); brand-600 ("Signal") is the pure accent and
+     is used where nothing needs to sit on top of it. */
+  --brand: #0a5744;
+  --brand-hover: #084537;
+  --brand-press: #06342a;
+  --brand-soft: #ecf6f1;
+  --brand-deep: #084537;
   --on-brand-deep: #ffffff;
-  --brand-ink: #924a2a;
+  --brand-ink: #0a5744;
 
-  /* Lines — Warm Taupe */
-  --line: #d1c9bf;
-  --line-soft: #e5e1dc;
-  --line-strong: #c0b4a5;
-  --line-brand: #e9b6a0;
-  --focus: #b05a36;
+  /* Lines — hairlines do the structural work, so they are quiet but
+     present. `line-brand` is the green tint a control picks up on hover. */
+  --line: #e4e3dd;
+  --line-soft: #efefeb;
+  --line-strong: #cfd0c9;
+  --line-brand: #a9d6c5;
+  --focus: #0b6b53;
 
-  /* Status */
-  --ok: #059669;
-  --ok-soft: #ecfdf5;
-  --ok-ink: #047857;
-  --warn: #f59e0b;
-  --warn-soft: #fffbeb;
-  --warn-ink: #b45309;
-  --urgent: #f97316;
-  --urgent-soft: #fff7ed;
+  /* Status. "In stock" is the brand green on purpose — green means "yes,
+     it's here" everywhere in this UI, whether the subject is a pharmacy
+     or a single line on a prescription. */
+  --ok: #0b6b53;
+  --ok-soft: #ecf6f1;
+  --ok-ink: #0a5744;
+  --warn: #b7791f;
+  --warn-soft: #faf1e2;
+  --warn-ink: #8a5a12;
+  --urgent: #c2410c;
+  --urgent-soft: #fbeadf;
   --urgent-ink: #9a3412;
-  --danger: #dc2626;
-  --danger-soft: #fef2f2;
-  --danger-ink: #b91c1c;
+  --danger: #c0322b;
+  --danger-soft: #fbeae9;
+  --danger-ink: #a12922;
   --info: #2563eb;
-  --info-soft: #eff6ff;
+  --info-soft: #eef3ff;
   --info-ink: #1d4ed8;
 
   /* Legacy aliases — every existing `bg-background` / `text-foreground`
-     keeps working. To revert body text to the previous slate, change
-     --ink to #0f172a; nothing else needs touching. */
+     keeps working. */
   --background: var(--canvas);
   --foreground: var(--ink);
 
@@ -202,37 +233,36 @@
    [data-theme="dark"] block can't drift apart. Declaring them alone changes
    nothing — the two blocks below are what actually swap the theme over. */
 :root {
-  /* The reference names one theme ("light"); this is that palette's own
-     inversion — same warm hue family taken dark, terracotta brightened
-     the way the light brand darkens, so the toggle stays one system. */
-  --dark-canvas: #1b140f;
-  --dark-surface: #241b14;
-  --dark-raised: #241b14;
-  --dark-sunken: #140f0b;
-  --dark-inverse: #fef9ef;
-  --dark-ink: #f5eee1;
-  --dark-muted: #cbb9a8;
-  --dark-faint: #a08d7c;
-  --dark-on-brand: #2b160c;
-  --dark-on-inverse: #1b140f;
-  --dark-brand: #c76e48;
-  --dark-brand-hover: #d88e6f;
-  --dark-brand-press: #e9b6a0;
-  --dark-brand-soft: #3b1e11;
-  --dark-brand-deep: #793b20;
+  /* Same system taken dark: near-black ground, the green brightened the
+     way the light brand darkens so the toggle stays one palette. */
+  --dark-canvas: #0b0e0a;
+  --dark-surface: #151a13;
+  --dark-raised: #1c221a;
+  --dark-sunken: #080a07;
+  --dark-inverse: #fbfbf9;
+  --dark-ink: #edf0e9;
+  --dark-muted: #a7ac9f;
+  --dark-faint: #7d8376;
+  --dark-on-brand: #05231b;
+  --dark-on-inverse: #171a15;
+  --dark-brand: #3f9a81;
+  --dark-brand-hover: #55ac95;
+  --dark-brand-press: #74baa4;
+  --dark-brand-soft: #0c2b22;
+  --dark-brand-deep: #0a5744;
   --dark-on-brand-deep: #ffffff;
-  --dark-brand-ink: #d88e6f;
-  --dark-line: #3a2c22;
-  --dark-line-soft: #2a2019;
-  --dark-line-strong: #4d3b2d;
-  --dark-line-brand: #924a2a;
-  --dark-focus: #d88e6f;
-  --dark-ok: #10b981;
-  --dark-ok-soft: #0d2b21;
-  --dark-ok-ink: #6ee7b7;
-  --dark-warn: #f59e0b;
-  --dark-warn-soft: #2e2109;
-  --dark-warn-ink: #fbbf24;
+  --dark-brand-ink: #5bb79b;
+  --dark-line: #2a2e27;
+  --dark-line-soft: #202320;
+  --dark-line-strong: #3b403a;
+  --dark-line-brand: #0a5744;
+  --dark-focus: #55ac95;
+  --dark-ok: #3f9a81;
+  --dark-ok-soft: #0c2b22;
+  --dark-ok-ink: #7fd1b8;
+  --dark-warn: #d9a441;
+  --dark-warn-soft: #2a1e08;
+  --dark-warn-ink: #f0c579;
   --dark-urgent: #f97316;
   --dark-urgent-soft: #2c1608;
   --dark-urgent-ink: #fdba74;
@@ -331,42 +361,42 @@
 }
 
 :root[data-theme="light"] {
-  --canvas: #fef9ef;
-  --surface: #f5eee1;
-  --raised: #f5eee1;
-  --sunken: #ebe0cb;
-  --inverse: #1b140f;
-  --ink: #2a2b2f;
-  --muted: #333333;
-  --faint: #515151;
+  --canvas: #f5f6f1;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: #ecede6;
+  --inverse: #12160f;
+  --ink: #121710;
+  --muted: #4c5247;
+  --faint: #71776b;
   --on-brand: #ffffff;
   --on-inverse: #ffffff;
-  --brand: #924a2a;
-  --brand-hover: #793b20;
-  --brand-press: #622e18;
-  --brand-soft: #fdf5f2;
-  --brand-deep: #924a2a;
+  --brand: #0a5744;
+  --brand-hover: #084537;
+  --brand-press: #06342a;
+  --brand-soft: #ecf6f1;
+  --brand-deep: #084537;
   --on-brand-deep: #ffffff;
-  --brand-ink: #924a2a;
-  --line: #d1c9bf;
-  --line-soft: #e5e1dc;
-  --line-strong: #c0b4a5;
-  --line-brand: #e9b6a0;
-  --focus: #b05a36;
-  --ok: #059669;
-  --ok-soft: #ecfdf5;
-  --ok-ink: #047857;
-  --warn: #f59e0b;
-  --warn-soft: #fffbeb;
-  --warn-ink: #b45309;
-  --urgent: #f97316;
-  --urgent-soft: #fff7ed;
+  --brand-ink: #0a5744;
+  --line: #e4e3dd;
+  --line-soft: #efefeb;
+  --line-strong: #cfd0c9;
+  --line-brand: #a9d6c5;
+  --focus: #0b6b53;
+  --ok: #0b6b53;
+  --ok-soft: #ecf6f1;
+  --ok-ink: #0a5744;
+  --warn: #b7791f;
+  --warn-soft: #faf1e2;
+  --warn-ink: #8a5a12;
+  --urgent: #c2410c;
+  --urgent-soft: #fbeadf;
   --urgent-ink: #9a3412;
-  --danger: #dc2626;
-  --danger-soft: #fef2f2;
-  --danger-ink: #b91c1c;
+  --danger: #c0322b;
+  --danger-soft: #fbeae9;
+  --danger-ink: #a12922;
   --info: #2563eb;
-  --info-soft: #eff6ff;
+  --info-soft: #eef3ff;
   --info-ink: #1d4ed8;
   color-scheme: light;
 }
@@ -426,12 +456,13 @@
   --color-foreground: var(--foreground);
 
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-fraunces);
+  --font-serif: var(--font-display);
+  --font-display: var(--font-display);
   --font-mono: var(--font-jetbrains-mono);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   4 · BASE  (unchanged from v1 apart from token references)
+   4 · BASE
    ═══════════════════════════════════════════════════════════════════════ */
 
 html {
@@ -450,16 +481,110 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Every interactive element gets the same focus treatment — one ring, one
-   token, visible on both themes. */
+/* Display face: Space Grotesk, always set tight. Applied wherever the
+   `font-display` / `font-serif` utility lands (headlines, the wordmark,
+   big figures). The tracking here is the floor; the type scale tightens
+   it further at display sizes.
+
+   Every heading in the app was authored for Fraunces as `font-serif
+   font-normal` with an `italic` accent word. Space Grotesk has no italic,
+   and its 400 is too light to read as a set headline — so rather than
+   rewrite a few dozen call sites, the old combinations are resolved here:
+   the synthesised slant is removed, and `font-normal` / `font-light` on a
+   display element are lifted to a real display weight. `:is()` keeps the
+   specificity above the bare utility so cascade order doesn't matter. */
+.font-display,
+.font-serif {
+  font-family: var(--font-display), "Space Grotesk", var(--font-inter), "Segoe UI", sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+:is(.font-display, .font-serif).italic {
+  font-style: normal;
+}
+:is(.font-display, .font-serif):is(.font-normal, .font-light) {
+  font-weight: 500;
+}
+:is(.font-display, .font-serif).font-medium {
+  font-weight: 560;
+}
+:is(.font-display, .font-serif):is(.font-semibold, .font-bold, .font-extrabold) {
+  font-weight: 640;
+}
+
+/* Tabular figures everywhere a number is compared or scanned — distances,
+   quantities, counts, times. Opt in with `tabular-nums`, but make the mono
+   face itself carry it too. */
+.font-mono {
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* Every interactive element gets the same focus treatment — a crisp ring
+   plus a soft halo in the same hue, so it reads as deliberate rather than
+   the browser default. One token, visible on both themes. */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 16%, transparent);
+}
+
+/* ── Premium surface treatments ──────────────────────────────────────────
+   Used sparingly, on the surfaces meant to feel raised or important. */
+
+/* A whisper of top-light on a raised panel — the search box, a dialog.
+   One percent of white at the top edge fading to nothing; enough that the
+   surface catches the light rather than sitting flat. */
+.surface-lit {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ink) 2.5%, transparent) 0%,
+    transparent 40%
+  );
+  background-color: var(--surface);
+}
+:is(:root[data-theme="dark"], :root:not([data-theme])) .surface-lit {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, white 4%, transparent) 0%,
+    transparent 40%
+  );
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .surface-lit {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, transparent) 0%,
+      transparent 40%
+    );
+  }
+}
+
+/* Sticky chrome — a solid bar. A sticky header has to stay readable with
+   anything scrolling under it, and a see-through one just looks broken;
+   the only concession to glass is a faint 1px inner highlight on the top
+   edge so it catches the light. */
+.glass {
+  background-color: var(--surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+/* Fine grain — a 4% monochrome noise, tiled, for a large flat brand panel
+   (the owner CTA, the hero photo's frame) so it reads as a printed surface
+   rather than a fill. The data URI is a 120px fractal-noise tile. */
+.grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
 ::selection {
   background: var(--color-brand-200);
-  color: var(--color-brand-700);
+  color: var(--color-brand-900);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) ::selection {
@@ -481,13 +606,13 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--ink) 30%, transparent);
+  background: color-mix(in srgb, var(--ink) 28%, transparent);
   background-clip: content-box;
 }
 
@@ -538,21 +663,45 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   6 · MOTION  (unchanged from v1)
-   Small, fast entrance animations. All of these are neutralized by the
+   6 · MOTION
+   Small, fast entrance animations. All neutralized by the
    prefers-reduced-motion block at the bottom of this file.
    ═══════════════════════════════════════════════════════════════════════ */
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
+
+/* The hero's opening move. A short, orchestrated cascade — masthead,
+   headline, lede, panel — each element rising a beat after the one above,
+   on an expo-out curve so it decelerates into place rather than easing
+   linearly. One considered sequence, not scattered effects. */
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.intro > * {
+  animation: intro-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.intro > :nth-child(1) { animation-delay: 0.05s; }
+.intro > :nth-child(2) { animation-delay: 0.13s; }
+.intro > :nth-child(3) { animation-delay: 0.21s; }
+.intro > :nth-child(4) { animation-delay: 0.29s; }
+.intro > :nth-child(5) { animation-delay: 0.37s; }
+.intro > :nth-child(6) { animation-delay: 0.45s; }
 
 @keyframes fade-in {
   from {
@@ -575,19 +724,18 @@ body {
 }
 
 .animate-fade-up {
-  animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out both;
+  animation: fade-in 0.4s ease-out both;
 }
 .animate-toast-in {
-  animation: toast-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Hero graphic: the two circles roll into place like wheels — rotation
-   direction matches travel direction (clockwise when entering from the
-   left, counter-clockwise from the right). transform-box: fill-box makes
-   each group rotate around its own circle's centre. */
+   direction matches travel direction. transform-box: fill-box makes each
+   group rotate around its own circle's centre. */
 @keyframes hero-roll-in-left {
   from {
     opacity: 0;
@@ -632,56 +780,71 @@ body {
    browsers without animation-timeline support simply show the content. */
 @supports (animation-timeline: view()) {
   .reveal {
-    animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-timeline: view();
-    animation-range: entry 0% entry 55%;
+    animation-range: entry 0% entry 48%;
   }
 }
 
 /* Gentle idle float for the hero's example-results card */
 @keyframes float-soft {
   from {
-    transform: rotate(-2deg) translateY(0);
+    transform: translateY(0);
   }
   to {
-    transform: rotate(-2deg) translateY(-8px);
+    transform: translateY(-8px);
   }
 }
 .animate-float {
   animation: float-soft 3.5s ease-in-out infinite alternate;
 }
 
-/* Stock pulse — the ring only animates on a "live" (recently confirmed)
-   claim, so movement itself signals freshness. */
-@keyframes pulse-ring {
+/* ── The stock heartbeat — this system's signature ───────────────────────
+   The whole promise of the product is that stock is real *right now*. So
+   movement is reserved for exactly one thing: a claim a pharmacy confirmed
+   recently enough to still be live. A fresh claim's dot beats; a stale
+   one's sits still. Nothing else on the page animates on a loop, so the
+   pulse is unmistakably "this is current". */
+@keyframes heartbeat-ring {
   0% {
-    transform: scale(0.6);
-    opacity: 0.75;
+    transform: scale(0.55);
+    opacity: 0.7;
   }
   70% {
-    transform: scale(1.5);
+    transform: scale(1.9);
     opacity: 0;
   }
   100% {
     opacity: 0;
   }
 }
+@keyframes heartbeat-core {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
 .pulse-dot {
   position: relative;
+}
+.pulse-dot[data-live='true'] {
+  animation: heartbeat-core 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .pulse-dot[data-live='true']::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -3px;
   border-radius: 9999px;
-  border: 2px solid currentColor;
+  border: 1.5px solid currentColor;
   opacity: 0;
-  animation: pulse-ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: heartbeat-ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
 /* Stagger: children fade up one after another (first 8, then no delay). */
 .stagger > * {
-  animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .stagger > :nth-child(1) { animation-delay: 0ms; }
 .stagger > :nth-child(2) { animation-delay: 60ms; }

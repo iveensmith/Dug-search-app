@@ -62,7 +62,7 @@ export default function SearchHistoryList() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
         <header className="py-6">
-          <h1 className="font-serif text-xl font-normal text-ink">Search history</h1>
+          <h1 className="font-display text-xl font-semibold text-ink">Search history</h1>
           <p className="text-sm text-muted">
             Drugs you&apos;ve searched for while logged in
           </p>

@@ -162,7 +162,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         <p className="text-sm font-semibold text-brand-ink">
           Pharmacy dashboard
         </p>
-        <h1 className="mt-3 font-serif text-[2rem] font-normal leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
+        <h1 className="mt-3 font-display text-[2rem] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
           {displayName ? `Welcome back, ${displayName.split(' ')[0]}` : 'Welcome back'}
         </h1>
         {pharmacy && (

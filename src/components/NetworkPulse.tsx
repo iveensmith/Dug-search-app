@@ -38,7 +38,7 @@ import { IconCheck, IconStore } from '@/components/ui/icons'
 type Placement = 'float' | 'inline'
 
 const PLACEMENT: Record<Placement, string> = {
-  float: 'animate-float absolute bottom-3 left-0 w-64 sm:left-2 sm:w-80 md:bottom-8 md:left-auto md:right-8 md:w-80',
+  float: 'animate-float absolute bottom-3 left-0 w-64 sm:left-2 sm:w-[19rem] md:bottom-8 md:left-auto md:right-8 md:w-[19rem]',
   inline: 'w-full',
 }
 
@@ -62,48 +62,46 @@ export default function NetworkPulse({ showCounts = true, placement = 'float' }:
 
   return (
     <div
-      className={`${PLACEMENT[placement]} select-none rounded-2xl border border-line-brand bg-raised/95 p-4 shadow-lg backdrop-blur-sm`}
+      className={`${PLACEMENT[placement]} select-none rounded-card border border-line bg-surface/95 p-4 shadow-sheet backdrop-blur-md`}
     >
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-ink">
-        <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta-500" />
+      <p className="flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-ok-ink">
+        <span className="pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-ok" data-live="true" />
         Live network
       </p>
 
       {quoteCounts && (
-        <div className="mt-2.5 flex items-start gap-2">
+        <div className="mt-3 flex items-start gap-2">
           <IconStore
-            width={16}
-            height={16}
-            className="mt-0.5 shrink-0 text-brand-ink"
+            width={15}
+            height={15}
+            className="mt-0.5 shrink-0 text-faint"
           />
-          <p className="text-sm leading-snug text-muted">
-            <span className="font-bold text-ink">
+          <p className="text-[0.8125rem] leading-snug text-muted">
+            <span className="font-semibold text-ink tabular-nums">
               {stats.pharmacies.toLocaleString()}
             </span>{' '}
             verified {stats.pharmacies === 1 ? 'pharmacy' : 'pharmacies'} across{' '}
-            <span className="font-bold text-ink">{stats.states}</span>{' '}
+            <span className="font-semibold text-ink tabular-nums">{stats.states}</span>{' '}
             {stats.states === 1 ? 'state' : 'states'}
           </p>
         </div>
       )}
 
       {activity && (
-        <div className={`flex items-start gap-2 ${quoteCounts ? 'mt-2' : 'mt-2.5'}`}>
+        <div className={`flex items-start gap-2 ${quoteCounts ? 'mt-2' : 'mt-3'}`}>
           <IconCheck
-            width={16}
-            height={16}
-            className="mt-0.5 shrink-0 text-brand-ink"
+            width={15}
+            height={15}
+            className="mt-0.5 shrink-0 text-ok"
           />
-          <p className="text-sm leading-snug text-muted">
+          <p className="text-[0.8125rem] leading-snug text-muted">
             Stock confirmed{' '}
-            {activity.lga ? (
-              <span className="font-bold text-ink">in {activity.lga}</span>
-            ) : (
-              <span className="font-bold text-ink">
-                in {stateLabel(activity.state)}
-              </span>
-            )}{' '}
-            {relativeTime(activity.at)}
+            <span className="font-semibold text-ink">
+              in {activity.lga ?? stateLabel(activity.state)}
+            </span>{' '}
+            <span className="whitespace-nowrap font-mono text-[0.75rem] text-faint">
+              {relativeTime(activity.at)}
+            </span>
           </p>
         </div>
       )}

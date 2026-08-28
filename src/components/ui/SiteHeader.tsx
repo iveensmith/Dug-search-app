@@ -86,19 +86,19 @@ export default function SiteHeader() {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-line bg-surface/80 backdrop-blur-sm">
+    <header className="glass sticky top-0 z-50 border-b border-line/80">
       <WelcomeToast />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link
           href={homeHref}
           onClick={handleHomeClick}
-          className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-lg"
+          className="inline-flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-lg"
         >
           <LogoMark size="sm" />
-          <span className="text-lg font-bold tracking-tight text-ink">MediQuest</span>
+          <span className="font-display text-lg font-semibold tracking-[-0.03em] text-ink">MediQuest</span>
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => {
             const active = pathname === link.href
             return (
@@ -111,10 +111,10 @@ export default function SiteHeader() {
                 // colour alone was the only thing marking which page you
                 // were on — which is nothing at all to a reader who cannot
                 // separate those two greens.
-                className={`border-b-2 pb-0.5 text-sm font-semibold transition-colors ${
+                className={`border-b pb-1 text-sm font-medium tracking-[-0.01em] transition-colors ${
                   active
-                    ? 'border-brand text-brand-ink'
-                    : 'border-transparent text-muted hover:text-brand-ink'
+                    ? 'border-brand text-ink'
+                    : 'border-transparent text-muted hover:text-ink'
                 }`}
                 aria-current={active ? 'page' : undefined}
               >
@@ -147,9 +147,9 @@ export default function SiteHeader() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 rounded-full border border-line-strong px-4 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-brand hover:text-brand-ink"
+              className="flex items-center gap-1.5 rounded-control border border-line-strong px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft"
             >
-              <IconUser width={17} height={17} />
+              <IconUser width={16} height={16} />
               Log in
             </Link>
           )}
@@ -190,7 +190,7 @@ export default function SiteHeader() {
                     if (link.href === '/') handleHomeClick(e)
                     setOpen(false)
                   }}
-                  className={`block rounded-lg px-3 py-2.5 text-sm font-semibold uppercase tracking-wide ${
+                  className={`block rounded-field px-3 py-2.5 text-sm font-semibold ${
                     pathname === link.href
                       ? 'bg-brand-soft text-brand-ink'
                       : 'text-muted'

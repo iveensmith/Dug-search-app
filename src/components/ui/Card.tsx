@@ -32,7 +32,7 @@ export default function Card({
   ...props
 }: Props) {
   const lift = interactive
-    ? 'transition-[box-shadow,border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raised active:translate-y-0 active:shadow-card'
+    ? 'transition-[box-shadow,border-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-line-brand hover:shadow-lift active:translate-y-0 active:shadow-card'
     : ''
   return (
     <div

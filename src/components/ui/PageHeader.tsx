@@ -42,22 +42,25 @@ export default function PageHeader({
   width?: 'narrow' | 'wide'
 }) {
   return (
-    <header className="bg-terracotta-50 dark:bg-terracotta-950/25">
+    <header className="border-b border-line bg-canvas">
       <div
         className={`mx-auto w-full px-4 py-10 md:py-14 ${width === 'wide' ? 'max-w-5xl' : 'max-w-2xl'}`}
       >
         {eyebrow && (
-          <p className="text-sm font-semibold text-brand-ink">{eyebrow}</p>
+          <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-brand-ink">
+            <span className="h-px w-6 bg-brand/50" aria-hidden="true" />
+            {eyebrow}
+          </p>
         )}
         {/* text-balance for the reason the home hero has it: these wrap on
             a phone, and an accented tail left alone on its own short line
             reads as a caption rather than part of the heading. */}
-        <h1 className="mt-3 text-balance font-serif text-[2rem] font-normal leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
+        <h1 className="mt-3 text-balance font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[2.4rem]">
           {title}
           {accent && (
             <>
               {' '}
-              <span className="font-light italic text-brand-ink">{accent}</span>
+              <span className="text-brand-ink">{accent}</span>
             </>
           )}
         </h1>
