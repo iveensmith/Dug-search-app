@@ -830,8 +830,8 @@ body {
     animation-range: cover;
   }
   @keyframes parallax-hero {
-    from { transform: translateY(-3.5%) scale(1.12); }
-    to { transform: translateY(4.5%) scale(1.12); }
+    from { transform: translateY(-3%) scale(1.07); }
+    to { transform: translateY(3%) scale(1.07); }
   }
 }
 
