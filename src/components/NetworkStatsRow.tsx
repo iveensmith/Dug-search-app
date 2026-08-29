@@ -1,15 +1,20 @@
 'use client'
 
 import { MIN_PHARMACIES_TO_QUOTE, useNetworkStats } from '@/lib/networkStats'
+import { useCountUp } from '@/lib/useCountUp'
 
-function Figure({ value, label }: { value: number; label: string }) {
+function Figure({ value, label, countKey }: { value: number; label: string; countKey: string }) {
+  const { ref, value: shown } = useCountUp<HTMLElement>(value, { once: countKey })
   return (
     <div className="flex flex-col-reverse justify-end">
       <dt className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.06em] leading-tight text-faint sm:text-xs">
         {label}
       </dt>
-      <dd className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-ink sm:text-[2rem] md:text-[2.375rem]">
-        {value.toLocaleString()}
+      <dd
+        ref={ref}
+        className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-ink sm:text-[2rem] md:text-[2.375rem]"
+      >
+        {shown.toLocaleString()}
       </dd>
     </div>
   )
@@ -24,12 +29,11 @@ function Figure({ value, label }: { value: number; label: string }) {
  * answer. There is no testimonial count because there are no ratings with
  * comments yet, and no "years of experience" because there are none.
  *
- * They render as their final value straight away. An earlier version
- * counted each one up from zero on mount, but the row remounts on every
- * navigation, so the figures visibly reset and re-climbed every time the
- * page was opened — on a row whose whole job is to read as settled fact,
- * that looked like the data was unstable. The `.intro` load cascade
- * already fades the row in; it does not need its own animation on top.
+ * Each figure counts up from zero — but only on the first landing in a
+ * tab (the `once` key on useCountUp). The row remounts on every
+ * navigation, and re-running the climb every time made a steady database
+ * look like it kept resetting; after the first play the numbers are just
+ * there.
  *
  * Vanishes entirely below the same threshold NetworkPulse uses. A small
  * network reassures nobody by announcing its size, and the live "stock
@@ -42,11 +46,20 @@ export default function NetworkStatsRow() {
 
   const items = [
     {
+      key: 'pharmacies',
       value: stats.pharmacies,
       label: stats.pharmacies === 1 ? 'Verified pharmacy' : 'Verified pharmacies',
     },
-    { value: stats.states, label: stats.states === 1 ? 'State covered' : 'States covered' },
-    { value: stats.drugs, label: stats.drugs === 1 ? 'Medicine tracked' : 'Medicines tracked' },
+    {
+      key: 'states',
+      value: stats.states,
+      label: stats.states === 1 ? 'State covered' : 'States covered',
+    },
+    {
+      key: 'drugs',
+      value: stats.drugs,
+      label: stats.drugs === 1 ? 'Medicine tracked' : 'Medicines tracked',
+    },
   ]
 
   return (
@@ -56,8 +69,8 @@ export default function NetworkStatsRow() {
     <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-line pt-5 md:mt-9 md:gap-8 md:pt-6">
       {/* Reversed markup so the number reads first while the list stays
           term-then-description. */}
-      {items.map(({ value, label }) => (
-        <Figure key={label} value={value} label={label} />
+      {items.map(({ key, value, label }) => (
+        <Figure key={key} countKey={`netstat:${key}`} value={value} label={label} />
       ))}
     </dl>
   )
