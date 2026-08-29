@@ -166,20 +166,22 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Surfaces — a crisp white card on a paper ground with a real trace of
-     green in it, so the page reads as this brand's paper rather than
-     default off-white, and a white card lifts off it cleanly. */
-  --canvas: #f5f6f1;
-  --surface: #ffffff;
-  --raised: #ffffff;
-  --sunken: #ecede6;
-  --inverse: #12160f;
+  /* Surfaces — a warm cream-gold paper ground, and a near-white card that
+     lifts off it. The ground carries a real trace of colour so the page
+     reads as this brand's stationery rather than default off-white; here
+     that trace is golden rather than green — softer, and it makes the
+     deep pharmacy green sit on it like ink on good paper. */
+  --canvas: #f8f3e6;
+  --surface: #fffdf8;
+  --raised: #fffdf8;
+  --sunken: #efe7d5;
+  --inverse: #1a1710;
 
-  /* Text — a near-black carrying a clear green undertone (not neutral
-     grey), so every line of copy sits in the brand's hue family. */
-  --ink: #121710;
-  --muted: #4c5247;
-  --faint: #71776b;
+  /* Text — a warm near-black, so every line of copy sits in the paper's
+     hue family rather than reading cold-grey on the cream. */
+  --ink: #171410;
+  --muted: #55514a;
+  --faint: #726d62;
   --on-brand: #ffffff;
   --on-inverse: #ffffff;
 
@@ -195,10 +197,11 @@
   --brand-ink: #0a5744;
 
   /* Lines — hairlines do the structural work, so they are quiet but
-     present. `line-brand` is the green tint a control picks up on hover. */
-  --line: #e4e3dd;
-  --line-soft: #efefeb;
-  --line-strong: #cfd0c9;
+     present. Warmed to sit on the cream ground; `line-brand` stays the
+     green tint a control picks up on hover. */
+  --line: #e8dfca;
+  --line-soft: #f1ead9;
+  --line-strong: #d8ceb5;
   --line-brand: #a9d6c5;
   --focus: #0b6b53;
 
@@ -233,16 +236,18 @@
    [data-theme="dark"] block can't drift apart. Declaring them alone changes
    nothing — the two blocks below are what actually swap the theme over. */
 :root {
-  /* Same system taken dark: near-black ground, the green brightened the
-     way the light brand darkens so the toggle stays one palette. */
-  --dark-canvas: #0b0e0a;
-  --dark-surface: #151a13;
-  --dark-raised: #1c221a;
-  --dark-sunken: #080a07;
+  /* Same system taken dark, pushed deeper: a nearly-black ground so the
+     type reads as bright as possible against it, and the text lifted a
+     shade brighter to match. The green is brightened the way the light
+     brand darkens, so the toggle stays one palette. */
+  --dark-canvas: #080a06;
+  --dark-surface: #12160f;
+  --dark-raised: #191d15;
+  --dark-sunken: #050603;
   --dark-inverse: #fbfbf9;
-  --dark-ink: #edf0e9;
-  --dark-muted: #a7ac9f;
-  --dark-faint: #7d8376;
+  --dark-ink: #f4f6ef;
+  --dark-muted: #b3b8ab;
+  --dark-faint: #878d7e;
   --dark-on-brand: #05231b;
   --dark-on-inverse: #171a15;
   --dark-brand: #3f9a81;
@@ -251,9 +256,9 @@
   --dark-brand-soft: #0c2b22;
   --dark-brand-deep: #0a5744;
   --dark-on-brand-deep: #ffffff;
-  --dark-brand-ink: #5bb79b;
-  --dark-line: #2a2e27;
-  --dark-line-soft: #202320;
+  --dark-brand-ink: #64c5a7;
+  --dark-line: #262a21;
+  --dark-line-soft: #1a1d16;
   --dark-line-strong: #3b403a;
   --dark-line-brand: #0a5744;
   --dark-focus: #55ac95;
@@ -361,14 +366,14 @@
 }
 
 :root[data-theme="light"] {
-  --canvas: #f5f6f1;
-  --surface: #ffffff;
-  --raised: #ffffff;
-  --sunken: #ecede6;
-  --inverse: #12160f;
-  --ink: #121710;
-  --muted: #4c5247;
-  --faint: #71776b;
+  --canvas: #f8f3e6;
+  --surface: #fffdf8;
+  --raised: #fffdf8;
+  --sunken: #efe7d5;
+  --inverse: #1a1710;
+  --ink: #171410;
+  --muted: #55514a;
+  --faint: #726d62;
   --on-brand: #ffffff;
   --on-inverse: #ffffff;
   --brand: #0a5744;
@@ -378,9 +383,9 @@
   --brand-deep: #084537;
   --on-brand-deep: #ffffff;
   --brand-ink: #0a5744;
-  --line: #e4e3dd;
-  --line-soft: #efefeb;
-  --line-strong: #cfd0c9;
+  --line: #e8dfca;
+  --line-soft: #f1ead9;
+  --line-strong: #d8ceb5;
   --line-brand: #a9d6c5;
   --focus: #0b6b53;
   --ok: #0b6b53;
