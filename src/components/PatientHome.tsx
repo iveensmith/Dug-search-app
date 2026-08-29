@@ -21,7 +21,6 @@ import { pickLga } from '@/lib/detectLga'
 import SavedDrugs from '@/components/SavedDrugs'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
-import HeroPanel from '@/components/ui/HeroPanel'
 import NetworkPulse from '@/components/NetworkPulse'
 import NetworkStatsRow from '@/components/NetworkStatsRow'
 import { HOW_IT_WORKS_ART } from '@/components/ui/HowItWorksArt'
@@ -1148,54 +1147,38 @@ export default function PatientHome() {
               inside a 64rem column, and the alternation is most of what
               makes the layout read as designed rather than assembled. */}
           {/*
-            The photograph takes its own half of the screen and runs to the
-            viewport's right edge, so this section is the positioning
-            context and the container inside it deliberately is not — an
-            `absolute right-0` nested in a 64rem column would stop at the
-            column, which is the whole thing the layout is trying to
-            escape.
+            The hero: the message on the left, the search panel on the
+            right. There is no image — the search box is the hero's own
+            subject, so it shares the first screen with the headline rather
+            than sitting below it. On a phone the grid collapses and the two
+            stack in source order (message, then panel), which is the
+            arrangement the hero has always had.
           */}
-          <section className="relative border-b border-line bg-canvas">
-          {/*
-            On a phone the photograph is the band's background and the copy
-            sits on it, so everything in the flow needs a stacking context
-            above it — hence `relative z-10` here and `z-0` on the picture.
-            From `md` the picture goes back to its own half of the screen
-            and none of this applies.
-          */}
-          <div className="relative z-10 mx-auto w-full max-w-5xl px-4">
-          <div className="intro pt-12 md:w-[52%] md:pt-20 lg:w-[54%]">
-              {/*
-                Light type below `md`, dark from `md` up. The photo is only
-                the background on a phone; on a desktop this copy is on
-                paper and has to go back to reading as ink. Every colour
-                here is paired, and the pairs are what keep both halves
-                legible — see the scrim in HeroPanel.
-              */}
-              <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-terracotta-200 md:text-brand-ink">
+          <section className="border-b border-line bg-canvas">
+          <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-16 lg:py-24 xl:py-28">
+          {/* One column until `lg` — the message, then the panel, stacked,
+              exactly as before. From `lg` they sit side by side, message
+              left and panel right, with the message given the wider track. */}
+          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(340px,0.9fr)] lg:gap-14 xl:gap-16">
+            <div className="intro">
+              <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
                 <span className="h-px w-7 bg-current opacity-50" aria-hidden="true" />
                 Nigeria&apos;s pharmacy stock network
               </p>
-              {/* text-white, not text-on-brand: below `md` this sits on the
-                  photograph and has to stay white in both themes, and
-                  --on-brand is near-black in dark. Only the `md:` half,
-                  which sits on paper, is a token.
-
-                  "in stock" carries the colour because it is the part that
+              {/* "in stock" carries the colour because it is the part that
                   says what this is for — every pharmacy has medicine, the
-                  question is which one has it today. Green while on paper,
-                  the light mint on the photograph so it still reads. */}
-              <h1 className="mt-6 text-balance font-display text-[2.85rem] font-semibold leading-[0.98] tracking-[-0.04em] text-white sm:text-[3.6rem] lg:text-[4rem] md:text-ink">
-                Find the medicine{' '}
-                {/* nowrap so the line never breaks inside the coloured
-                    phrase — split across two lines it reads as two
-                    unrelated highlights. */}
-                <span className="whitespace-nowrap text-terracotta-200 md:text-brand-ink">
-                  that&apos;s in stock
-                </span>{' '}
+                  question is which one has it today. From `lg` the line
+                  breaks are set by hand so the coloured phrase always sits
+                  on its own line; below that it wraps naturally with just
+                  the phrase kept whole. */}
+              <h1 className="mt-6 text-balance font-display text-[2.85rem] font-semibold leading-[0.98] tracking-[-0.04em] text-ink sm:text-[3.6rem] lg:[text-wrap:initial] lg:text-[3.95rem] lg:leading-[1] xl:text-[4.5rem]">
+                Find the medicine
+                <br className="hidden lg:block" />{' '}
+                <span className="whitespace-nowrap text-brand-ink">that&apos;s in stock</span>
+                <br className="hidden lg:block" />{' '}
                 near you.
               </h1>
-              <p className="mt-6 max-w-md text-[1.0625rem] leading-relaxed text-terracotta-50 md:text-muted">
+              <p className="mt-6 max-w-md text-[1.0625rem] leading-relaxed text-muted lg:text-[1.125rem]">
                 Stop calling pharmacy after pharmacy. Search a drug, see who has it in stock nearby,
                 and get directions or call — free, across Nigeria.
               </p>
@@ -1205,19 +1188,17 @@ export default function PatientHome() {
                   to explain itself; this is the compressed version, for
                   someone deciding in three seconds whether a health site
                   they have never heard of is worth typing a drug name
-                  into. A quiet row under a rule rather than three pills —
-                  the pills competed with the search panel, and the panel
-                  has to win. */}
-              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/25 pt-5 md:border-line-brand">
+                  into. */}
+              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-line-brand pt-5">
                 {TRUST_BADGES.slice(0, 3).map(({ label, Icon }) => (
                   <li
                     key={label}
-                    className="flex items-start gap-1.5 text-xs font-semibold text-white md:text-muted"
+                    className="flex items-start gap-1.5 text-xs font-semibold text-muted"
                   >
                     <Icon
                       width={14}
                       height={14}
-                      className="mt-px shrink-0 text-terracotta-300 md:text-brand-ink"
+                      className="mt-px shrink-0 text-brand-ink"
                     />
                     {label}
                   </li>
@@ -1227,46 +1208,21 @@ export default function PatientHome() {
               {/* Counted, not claimed — see NetworkStatsRow. It disappears
                   rather than shrink a number. */}
               <NetworkStatsRow />
+            </div>
+
+            {/* The search panel, and the one live signal under it — a small
+                "a real pharmacy confirmed stock just now" card, which is
+                what earns a stranger's first search. */}
+            <div
+              className="lg:pt-1"
+              style={{ animation: 'intro-rise 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both' }}
+            >
+              {searchPanel}
+              <div className="mt-4">
+                <NetworkPulse showCounts={false} placement="inline" />
+              </div>
+            </div>
           </div>
-
-          <div
-            className="mt-10 md:w-[52%] lg:w-[54%]"
-            style={{ animation: 'intro-rise 0.7s cubic-bezier(0.16,1,0.3,1) 0.5s both' }}
-          >
-            {searchPanel}
-          </div>
-
-          {/* The phone's copy of the live card. On a desktop it overlaps
-              the photograph's corner from inside HeroPanel; here the
-              photograph is the whole band, so the card sits under the
-              search panel as an ordinary block instead of hiding behind
-              it. Only one of the two is ever displayed, and they share a
-              single fetch — see lib/networkStats. */}
-          <div className="mt-4 md:hidden">
-            <NetworkPulse showCounts={false} placement="inline" />
-          </div>
-
-          <div className="pb-12 md:pb-20" />
-          </div>
-
-          {/*
-            The photo. The band's background at every width — HeroPanel
-            decides how much of it the picture actually covers and where it
-            dissolves. Absolute, so it adds no height and the search box
-            stays where a thumb can reach it.
-
-            It is a sibling of the copy rather than a child of it, and that
-            is load-bearing: the copy block carries `animate-fade-up`, and
-            an element with a transform animation becomes the containing
-            block for absolutely positioned descendants. Nested inside it,
-            `right-0` stopped at the copy column instead of the viewport
-            and the photo landed on top of the headline. Nothing between
-            here and the section is positioned or transformed.
-          */}
-          <div className="absolute inset-0 z-0">
-            {/* The live card comes with it — see HeroPanel, which also
-                owns the scrim that makes the copy legible on a phone. */}
-            <HeroPanel />
           </div>
           </section>
 

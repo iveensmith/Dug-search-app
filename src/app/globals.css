@@ -818,21 +818,6 @@ body {
     from { transform: scaleX(0); }
     to { transform: scaleX(1); }
   }
-
-  /* The hero photograph drifts slower than the page — a shallow parallax,
-     held to a few percent so it never reads as a gimmick. Replaces the
-     static scale on the <img>. */
-  .parallax-hero {
-    animation-name: parallax-hero;
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-timeline: view();
-    animation-range: cover;
-  }
-  @keyframes parallax-hero {
-    from { transform: translateY(-3%) scale(1.07); }
-    to { transform: translateY(3%) scale(1.07); }
-  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -956,9 +941,5 @@ body {
      more is needed for those.) */
   .scroll-progress {
     display: none !important;
-  }
-  .parallax-hero {
-    animation: none !important;
-    transform: none !important;
   }
 }
