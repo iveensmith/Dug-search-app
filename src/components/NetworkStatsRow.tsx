@@ -1,20 +1,15 @@
 'use client'
 
 import { MIN_PHARMACIES_TO_QUOTE, useNetworkStats } from '@/lib/networkStats'
-import { useCountUp } from '@/lib/useCountUp'
 
 function Figure({ value, label }: { value: number; label: string }) {
-  const { ref, value: shown } = useCountUp<HTMLElement>(value)
   return (
     <div className="flex flex-col-reverse justify-end">
-      <dt className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.06em] leading-tight text-terracotta-100 sm:text-xs md:text-faint">
+      <dt className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.06em] leading-tight text-faint sm:text-xs">
         {label}
       </dt>
-      <dd
-        ref={ref}
-        className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[2rem] md:text-[2.375rem] md:text-ink"
-      >
-        {shown.toLocaleString()}
+      <dd className="font-display text-[1.75rem] font-semibold tabular-nums tracking-[-0.03em] text-ink sm:text-[2rem] md:text-[2.375rem]">
+        {value.toLocaleString()}
       </dd>
     </div>
   )
@@ -29,9 +24,16 @@ function Figure({ value, label }: { value: number; label: string }) {
  * answer. There is no testimonial count because there are no ratings with
  * comments yet, and no "years of experience" because there are none.
  *
+ * They render as their final value straight away. An earlier version
+ * counted each one up from zero on mount, but the row remounts on every
+ * navigation, so the figures visibly reset and re-climbed every time the
+ * page was opened — on a row whose whole job is to read as settled fact,
+ * that looked like the data was unstable. The `.intro` load cascade
+ * already fades the row in; it does not need its own animation on top.
+ *
  * Vanishes entirely below the same threshold NetworkPulse uses. A small
- * network reassures nobody by announcing its size, and the live card over
- * the illustration still says the thing that does reassure — that a real
+ * network reassures nobody by announcing its size, and the live "stock
+ * confirmed" card still says the thing that does reassure — that a real
  * pharmacy confirmed real stock recently.
  */
 export default function NetworkStatsRow() {
@@ -51,14 +53,9 @@ export default function NetworkStatsRow() {
     // Three columns rather than a wrapping row: wrapped, the third figure
     // dropped onto its own line and cost a phone another 90px above the
     // search box, which is the one thing that must not be pushed down.
-    // Light type below `md`, ink from `md` up: on a phone this sits on the
-    // hero photograph, on a desktop it sits on mint. Only the `md:` halves
-    // are tokens — the base ones have to stay white in both themes, and
-    // --ink and --on-brand both flip. Same pairing as the copy above it.
-    <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-white/20 pt-5 md:mt-9 md:gap-8 md:border-line md:pt-6">
-      {/* Each figure counts up from zero the first time it scrolls into
-          view — reversed markup so the number reads first while the list
-          stays term-then-description. See useCountUp. */}
+    <dl className="animate-fade-in mt-7 grid grid-cols-3 gap-4 border-t border-line pt-5 md:mt-9 md:gap-8 md:pt-6">
+      {/* Reversed markup so the number reads first while the list stays
+          term-then-description. */}
       {items.map(({ value, label }) => (
         <Figure key={label} value={value} label={label} />
       ))}
