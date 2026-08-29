@@ -1720,7 +1720,7 @@ export default function PatientHome() {
 
         {state.kind === 'no-match' && (
           <div className="animate-fade-up mt-10 flex flex-col items-center rounded-card border border-warn bg-warn-soft p-6 text-center">
-            <IconAlertCircle className="text-amber-500 dark:text-amber-400" />
+            <IconAlertCircle className="text-warn" />
             <p className="mt-2 font-medium text-warn-ink">
               No drug matching “{state.query}” is in our list yet.
             </p>
@@ -1736,9 +1736,9 @@ export default function PatientHome() {
             noise. An amber rule down the side says "bring this with you"
             without competing with "nobody has it". */}
         {state.kind === 'results' && needsPrescription(state.drug.dispensing) && (
-          <div className="animate-fade-up mb-4 rounded-card border border-line border-l-4 border-l-amber-400 bg-surface p-4 dark:border-l-amber-500">
+          <div className="animate-fade-up mb-4 rounded-card border border-line border-l-4 border-l-warn bg-surface p-4">
             <p className="flex items-center gap-2 text-sm font-bold text-ink">
-              <IconAlertCircle width={16} height={16} className="shrink-0 text-amber-500 dark:text-amber-400" />
+              <IconAlertCircle width={16} height={16} className="shrink-0 text-warn" />
               {dispensingClass('POM')!.label}
             </p>
             <p className="mt-1.5 text-sm text-muted">
@@ -1757,7 +1757,7 @@ export default function PatientHome() {
           <>
             <div className="animate-fade-up rounded-card border border-warn bg-warn-soft p-6">
               <div className="flex items-start gap-3">
-                <IconAlertCircle width={22} height={22} className="mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" />
+                <IconAlertCircle width={22} height={22} className="mt-0.5 shrink-0 text-warn" />
                 <div className="min-w-0">
                   <p className="font-semibold text-warn-ink">
                     No pharmacy in {selectedLga} has {state.label} right now
@@ -2261,7 +2261,7 @@ export default function PatientHome() {
               </ul>
 
               <div
-                className={`map-tiles h-[60dvh] overflow-hidden rounded-2xl border border-gray-200 md:sticky md:top-4 md:h-[70dvh] dark:border-gray-800 ${view === 'list' ? 'hidden md:block' : ''}`}
+                className={`map-tiles h-[60dvh] overflow-hidden rounded-2xl border border-line-strong md:sticky md:top-4 md:h-[70dvh] ${view === 'list' ? 'hidden md:block' : ''}`}
               >
                 <ResultsMap
                   results={sortedResults}

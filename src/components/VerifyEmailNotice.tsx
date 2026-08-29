@@ -54,7 +54,7 @@ export default function VerifyEmailNotice({
         <IconAlertCircle width={16} height={16} className="shrink-0" />
         Confirm your email
       </p>
-      <p className="mt-1.5 text-sm text-amber-900/90 dark:text-amber-200/90">
+      <p className="mt-1.5 text-sm text-warn-ink">
         We sent a link to <span className="font-semibold">{email}</span>. Confirming it means we can
         reach you when a pharmacist replies, and lets you reset your password if you forget it.
         Everything else works without it.

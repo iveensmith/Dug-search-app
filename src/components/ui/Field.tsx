@@ -6,10 +6,13 @@ import { type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLA
  * taller than expected. `text-base` stays — anything under 16px makes iOS
  * Safari zoom the page on focus, which on a one-handed search is jarring.
  */
+// `border-line-strong`, not `border-line`: a field is somewhere you click
+// and type, so its edge has to be more present than a structural hairline
+// — on the warm ground the two were nearly the same weight.
 export const controlClass =
-  'w-full min-h-12 rounded-field border border-line bg-surface px-3.5 py-3 text-base text-ink ' +
+  'w-full min-h-12 rounded-field border border-line-strong bg-surface px-3.5 py-3 text-base text-ink ' +
   'outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-faint ' +
-  'hover:border-line-strong ' +
+  'hover:border-brand/45 ' +
   'focus:border-focus focus:ring-4 focus:ring-focus/12 ' +
   'disabled:bg-sunken disabled:text-faint disabled:cursor-not-allowed ' +
   'aria-[invalid=true]:border-danger aria-[invalid=true]:ring-4 aria-[invalid=true]:ring-danger/12'

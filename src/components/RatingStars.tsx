@@ -55,7 +55,7 @@ export default function RatingStars({
   const label = score === null ? 'Not yet rated' : `${score.toFixed(1)} out of 5`
   return (
     <span className={`inline-flex items-center gap-1 ${className}`} title={label}>
-      <span className="inline-flex text-amber-500 dark:text-amber-400" aria-hidden="true">
+      <span className="inline-flex text-warn" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((i) => (
           <Star key={i} width={size} height={size} filled={Math.min(1, Math.max(0, (score ?? 0) - i))} />
         ))}

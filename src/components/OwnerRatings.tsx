@@ -179,7 +179,7 @@ export default function OwnerRatings() {
                     </dt>
                     <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-sunken">
                       <div
-                        className="h-full rounded-full bg-amber-400 dark:bg-amber-500"
+                        className="h-full rounded-full bg-warn"
                         style={{ width: `${(value / 5) * 100}%` }}
                       />
                     </div>

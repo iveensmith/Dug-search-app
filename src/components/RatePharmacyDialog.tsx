@@ -168,8 +168,8 @@ export default function RatePharmacyDialog({
                         aria-pressed={scores[key] === n}
                         className={`h-10 flex-1 cursor-pointer rounded-lg border text-sm font-semibold transition-colors ${
                           (scores[key] ?? 0) >= n
-                            ? 'border-amber-400 bg-warn-soft text-warn-ink dark:border-amber-500/60'
-                            : 'border-line text-faint hover:border-gray-300'
+                            ? 'border-warn bg-warn-soft text-warn-ink'
+                            : 'border-line-strong text-faint hover:border-brand/45'
                         }`}
                       >
                         {n}

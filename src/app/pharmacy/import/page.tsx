@@ -322,7 +322,7 @@ function PreviewList({
 function Pill({ children, tone }: { children: React.ReactNode; tone: 'good' | 'warn' | 'mute' }) {
   const tones = {
     good: 'bg-brand-soft text-brand-ink',
-    warn: 'bg-amber-100 text-warn-ink dark:bg-amber-500/15',
+    warn: 'bg-warn-soft text-warn-ink',
     mute: 'bg-sunken text-muted',
   }
   return <span className={`rounded-full px-2.5 py-1 font-semibold ${tones[tone]}`}>{children}</span>
@@ -350,7 +350,7 @@ function RowCard({
           ? 'border-line bg-canvas opacity-60'
           : willSave
             ? 'border-terracotta-200 bg-terracotta-50/50 dark:border-terracotta-900/60 dark:bg-terracotta-950/20'
-            : 'border-warn bg-amber-50/50 dark:bg-amber-950/20'
+            : 'border-warn bg-warn-soft/60'
       }`}
     >
       <div className="flex items-start justify-between gap-3">

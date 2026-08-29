@@ -530,7 +530,7 @@ export default function PharmacyRegisterPage() {
 
           {step === 2 && (
             <>
-              <dl className="divide-y divide-gray-100 rounded-control border border-line dark:divide-gray-800">
+              <dl className="divide-y divide-line-soft rounded-control border border-line">
                 {[
                   ['Pharmacy', form.pharmacyName],
                   ['Area', selectedState ? `${selectedLga}, ${stateLabel(selectedState)}` : ''],

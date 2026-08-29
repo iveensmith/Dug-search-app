@@ -1072,7 +1072,7 @@ function PharmacyDashboard() {
                       <IconAlertCircle
                         width={16}
                         height={16}
-                        className="mt-0.5 shrink-0 text-amber-500"
+                        className="mt-0.5 shrink-0 text-warn"
                       />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-ink">
@@ -1185,7 +1185,7 @@ function PharmacyDashboard() {
                         />
                       </Field>
                       {suggestions.length > 0 && (
-                        <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-control border border-line dark:divide-gray-800">
+                        <ul className="mt-2 divide-y divide-line-soft overflow-hidden rounded-control border border-line">
                           {suggestions.map((d) => {
                             const already = items.some((i) => i.drug.id === d.id)
                             return (

@@ -145,7 +145,7 @@ export default function CheckEmailBanner() {
           aria-label="Dismiss"
           className={`-m-1 shrink-0 cursor-pointer rounded-lg p-1 ${
             failedToSend
-              ? 'text-warn-ink hover:bg-amber-100 dark:hover:bg-amber-900/40'
+              ? 'text-warn-ink hover:bg-warn-soft'
               : 'text-brand-ink hover:bg-brand-soft'
           }`}
         >

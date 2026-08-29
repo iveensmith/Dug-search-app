@@ -101,7 +101,7 @@ export default function StaffNumbersCard() {
           No numbers yet. Stock can only be changed from this dashboard.
         </p>
       ) : (
-        <ul className="mt-4 divide-y divide-gray-100 rounded-control border border-line dark:divide-gray-800">
+        <ul className="mt-4 divide-y divide-line-soft rounded-control border border-line">
           {staff.map((s) => (
             <li key={s.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
               <div className="min-w-0">

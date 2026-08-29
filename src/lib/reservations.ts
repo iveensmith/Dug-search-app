@@ -28,30 +28,32 @@ type StatusMeta = {
 }
 
 export const RESERVATION_STATUS_META: Record<ReservationStatusValue, StatusMeta> = {
+  // Tokens, not raw palette: every one of these flips with the theme on
+  // its own, so there is no `dark:` half to keep in sync.
   PENDING: {
     patient: 'Waiting on the pharmacy',
     pharmacy: 'New request',
-    tone: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+    tone: 'bg-warn-soft text-warn-ink',
   },
   READY: {
     patient: 'Held for you',
     pharmacy: 'Set aside',
-    tone: 'bg-terracotta-50 text-terracotta-700 dark:bg-terracotta-500/10 dark:text-terracotta-400',
+    tone: 'bg-ok-soft text-ok-ink',
   },
   COLLECTED: {
     patient: 'Collected',
     pharmacy: 'Collected',
-    tone: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300',
+    tone: 'bg-sunken text-faint',
   },
   CANCELLED: {
     patient: 'You cancelled this',
     pharmacy: 'Patient cancelled',
-    tone: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300',
+    tone: 'bg-sunken text-faint',
   },
   DECLINED: {
     patient: 'Pharmacy could not hold it',
     pharmacy: 'You declined',
-    tone: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+    tone: 'bg-danger-soft text-danger-ink',
   },
   // Not a failure on either side, and worded so neither reads blame. It
   // also must not imply the medicine is gone — the hold lapsed, the stock
@@ -59,7 +61,7 @@ export const RESERVATION_STATUS_META: Record<ReservationStatusValue, StatusMeta>
   EXPIRED: {
     patient: 'Hold expired',
     pharmacy: 'Hold expired',
-    tone: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300',
+    tone: 'bg-sunken text-faint',
   },
 }
 

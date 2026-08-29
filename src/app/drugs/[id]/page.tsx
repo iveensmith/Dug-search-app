@@ -59,7 +59,7 @@ function DispensingNote({ value }: { value: string | null | undefined }) {
         <IconAlertCircle width={16} height={16} className="shrink-0" />
         {c.label}
       </p>
-      <p className="mt-1.5 text-sm text-amber-900/90 dark:text-amber-200/90">{c.note}</p>
+      <p className="mt-1.5 text-sm text-warn-ink">{c.note}</p>
       <Link
         href="/prescriptions"
         className="mt-2.5 inline-block text-sm font-bold text-warn-ink underline underline-offset-2"

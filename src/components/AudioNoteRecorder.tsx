@@ -180,10 +180,10 @@ export default function AudioNoteRecorder({
         <div className="rounded-control border border-danger bg-danger-soft p-3">
           <div className="flex items-center justify-between gap-3">
             <p className="flex items-center gap-2 text-sm font-semibold text-danger-ink">
-              <span className="pulse-dot h-2.5 w-2.5 shrink-0 rounded-full bg-red-500" />
+              <span className="pulse-dot h-2.5 w-2.5 shrink-0 rounded-full bg-danger" />
               Recording · {formatDuration(seconds)}
             </p>
-            <span className="text-xs text-red-700/80 dark:text-red-400/80">
+            <span className="text-xs text-danger-ink">
               up to {formatDuration(MAX_AUDIO_SECONDS)}
             </span>
           </div>

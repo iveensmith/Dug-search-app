@@ -662,7 +662,7 @@ function GapsTab({ analytics }: { analytics: Analytics | null }) {
           <p className="text-sm text-muted">total searches</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{analytics.noResultSearches}</p>
+          <p className="text-3xl font-bold text-warn-ink">{analytics.noResultSearches}</p>
           <p className="text-sm text-muted">found nothing</p>
         </Card>
       </div>

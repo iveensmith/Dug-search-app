@@ -105,7 +105,7 @@ function ActionCardBody({
       <IconChevronRight
         width={18}
         height={18}
-        className={`shrink-0 text-gray-300 transition-all group-hover:translate-x-0.5 dark:text-gray-600 ${a.chevron}`}
+        className={`shrink-0 text-line-strong transition-all group-hover:translate-x-0.5 ${a.chevron}`}
       />
     </>
   )
