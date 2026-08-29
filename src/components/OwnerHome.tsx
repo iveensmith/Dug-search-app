@@ -30,7 +30,7 @@ type Pharmacy = {
 }
 
 const statTileClass =
-  'rounded-[1.5rem] bg-surface p-4 text-center shadow-[0_1px_2px_rgba(16,24,40,0.04),0_10px_28px_-14px_rgba(16,24,40,0.14)] ring-1 ring-line dark:shadow-none sm:p-5'
+  'rounded-card border border-line bg-surface p-4 text-center shadow-card sm:p-5'
 
 type RecentSearch = { id: string; drug: DrugSuggestion | null; youStock: boolean }
 
@@ -39,7 +39,7 @@ type Scope = { kind: 'lga' | 'state'; label: string }
 type Gap = { drug: DrugSuggestion; count: number }
 
 const quickActionClass =
-  'inline-flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink'
+  'inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-line-brand hover:bg-brand-soft hover:text-brand-ink'
 
 const QUICK_ACTIONS: {
   label: string
@@ -137,7 +137,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
           </p>
           <Link
             href="/pharmacy/register"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-on-brand transition-colors hover:bg-brand-hover"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-control bg-brand px-4 py-2.5 font-semibold text-on-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] transition-colors hover:bg-brand-hover"
           >
             Add your outlet
           </Link>
@@ -152,17 +152,16 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
 
   return (
     <div className="animate-fade-up">
-      {/* The greeting sits on the same mint field the patient side opens
-          on. The eyebrow loses its italic for the same reason the home
-          page's did — one weight, one colour, no third signal.
-          The band fill stays raw: a mint page band is a page-level wash,
-          not a surface, and no token carries it. */}
-      <header className="bg-terracotta-50 dark:bg-terracotta-950/25">
+      {/* The greeting band matches the patient hero — same paper ground,
+          same hairline under it — so the two sides of the app read as one
+          place seen from different accounts. */}
+      <header className="border-b border-line bg-canvas">
         <div className="mx-auto w-full max-w-5xl px-4 py-10 md:py-14">
-        <p className="text-sm font-semibold text-brand-ink">
+        <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+          <span className="h-px w-7 bg-current opacity-50" aria-hidden="true" />
           Pharmacy dashboard
         </p>
-        <h1 className="mt-3 font-display text-[2rem] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[2.4rem]">
+        <h1 className="mt-4 font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[2.4rem]">
           {displayName ? `Welcome back, ${displayName.split(' ')[0]}` : 'Welcome back'}
         </h1>
         {pharmacy && (
@@ -212,7 +211,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             key={label as string}
             className={statTileClass}
           >
-            <dd className="text-2xl font-bold text-ink sm:text-3xl">
+            <dd className="font-display text-2xl font-semibold tabular-nums tracking-[-0.02em] text-ink sm:text-3xl">
               {counts === null ? '—' : (value as number)}
             </dd>
             <dt className="mt-1 text-xs font-medium text-faint sm:text-sm">
@@ -224,7 +223,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
         {/* A number to glance at, nothing to click — the way through to the
             ratings is the button below, where the other actions live. */}
         <div className={statTileClass}>
-          <dd className="text-2xl font-bold text-ink sm:text-3xl">
+          <dd className="font-display text-2xl font-semibold tabular-nums tracking-[-0.02em] text-ink sm:text-3xl">
             {ratingSummary === null || ratingSummary.count === 0
               ? '—'
               : ratingSummary.overall!.toFixed(1)}
@@ -238,7 +237,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/pharmacy"
-          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 font-semibold text-on-brand transition-all hover:bg-brand-hover hover:shadow-md hover:shadow-terracotta-700/25"
+          className="flex flex-1 items-center justify-center gap-2 rounded-control bg-brand px-5 py-3 font-semibold text-on-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] transition-all hover:bg-brand-hover hover:shadow-brand"
         >
           <IconClipboardList width={18} height={18} />
           Manage inventory
@@ -248,14 +247,14 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
             "Manage inventory" with the form still closed. */}
         <Link
           href="/pharmacy?add=1"
-          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-terracotta-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-terracotta-400/50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-control border border-brand/40 px-5 py-3 font-semibold text-brand-ink transition-colors hover:border-brand/70 hover:bg-brand-soft"
         >
           <IconPlus width={18} height={18} />
           Add a drug
         </Link>
         <Link
           href="/pharmacy/ratings"
-          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-terracotta-600/60 px-5 py-3 font-semibold text-brand-ink transition-colors hover:bg-brand-soft dark:border-terracotta-400/50"
+          className="flex flex-1 items-center justify-center gap-2 rounded-control border border-brand/40 px-5 py-3 font-semibold text-brand-ink transition-colors hover:border-brand/70 hover:bg-brand-soft"
         >
           <IconStar width={18} height={18} />
           See your ratings
@@ -263,7 +262,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       </div>
 
       <section className="mt-12">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-ink">
+        <h2 className="flex items-center gap-2 font-display text-lg font-semibold tracking-[-0.01em] text-ink">
           <IconSearch width={18} height={18} className="text-brand-ink" />
           Local demand you&apos;re missing
         </h2>
@@ -318,7 +317,7 @@ export default function OwnerHome({ displayName }: { displayName: string | null 
       </section>
 
       <section className="mt-12 border-t border-line pt-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-faint">
+        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-faint">
           Quick actions
         </p>
         {/* Each of these has to land somewhere specific. They all used to

@@ -400,8 +400,8 @@ function PharmacistsTab({
 function chipClass(on: boolean) {
   return `cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
     on
-      ? 'border-terracotta-600 bg-brand text-on-brand dark:border-terracotta-500'
-      : 'border-line bg-surface text-muted hover:border-line-brand hover:text-brand-ink'
+      ? 'border-brand bg-brand text-on-brand'
+      : 'border-line-strong bg-surface text-muted hover:border-line-brand hover:text-brand-ink'
   }`
 }
 
@@ -658,11 +658,15 @@ function GapsTab({ analytics }: { analytics: Analytics | null }) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-ink">{analytics.totalSearches}</p>
+          <p className="font-display text-3xl font-semibold tabular-nums tracking-[-0.02em] text-ink">
+            {analytics.totalSearches}
+          </p>
           <p className="text-sm text-muted">total searches</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-warn-ink">{analytics.noResultSearches}</p>
+          <p className="font-display text-3xl font-semibold tabular-nums tracking-[-0.02em] text-warn-ink">
+            {analytics.noResultSearches}
+          </p>
           <p className="text-sm text-muted">found nothing</p>
         </Card>
       </div>

@@ -89,9 +89,8 @@ export default function OwnerRatings() {
 
   return (
     <div className="animate-fade-up">
-      {/* Same mint band as the dashboard. The fill stays raw for the
-          reason bands always do; the copy on it is tokenised. */}
-      <header className="bg-terracotta-50 dark:bg-terracotta-950/25">
+      {/* Same paper band as the dashboard header. */}
+      <header className="border-b border-line bg-canvas">
         <div className="mx-auto w-full max-w-3xl px-4 py-10 md:py-14">
           <Link
             href="/pharmacy/overview"

@@ -147,8 +147,8 @@ function AddOnFields({
               title={l.ownerHint}
               className={`min-h-10 cursor-pointer rounded-full border px-3.5 text-sm font-semibold transition-colors ${
                 level === l.key
-                  ? 'border-terracotta-600 bg-brand text-on-brand dark:border-terracotta-500'
-                  : 'border-line bg-surface text-muted hover:border-line-brand'
+                  ? 'border-brand bg-brand text-on-brand'
+                  : 'border-line-strong bg-surface text-muted hover:border-line-brand'
               }`}
             >
               {l.ownerLabel}
@@ -474,7 +474,7 @@ function HoursCard({
           type="checkbox"
           checked={open24h}
           onChange={(e) => setOpen24h(e.target.checked)}
-          className="h-4 w-4 accent-terracotta-600"
+          className="h-4 w-4 accent-brand"
         />
         Open 24 hours
       </label>
@@ -1146,7 +1146,7 @@ function PharmacyDashboard() {
                       reason inventories here stay half-empty. */}
                   <Link
                     href="/pharmacy/import"
-                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-muted"
+                    className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-control border border-line-strong px-4 py-2.5 text-sm font-semibold text-muted transition-colors hover:border-brand/50 hover:bg-brand-soft hover:text-brand-ink"
                   >
                     <IconUpload width={16} height={16} />
                     Import from a file
@@ -1404,7 +1404,7 @@ function PharmacyDashboard() {
                               className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                                 item.inStock
                                   ? 'bg-brand text-on-brand'
-                                  : 'bg-line text-muted'
+                                  : 'bg-sunken text-muted hover:bg-line-strong'
                               }`}
                             >
                               {item.inStock ? 'In stock' : 'Out of stock'}
