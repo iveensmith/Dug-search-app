@@ -62,8 +62,15 @@ export default function LiveActivityFeed() {
 
   const HOUR = 3_600_000
   const DAY = 24 * HOUR
-  const lastHour = items.filter((i) => Date.now() - new Date(i.at).getTime() < HOUR).length
-  const today = items.filter((i) => Date.now() - new Date(i.at).getTime() < DAY).length
+  const ages = items.map((i) => Date.now() - new Date(i.at).getTime())
+  const lastHour = ages.filter((a) => a < HOUR).length
+  const today = ages.filter((a) => a < DAY).length
+
+  // If nothing on the network has been confirmed in a day, the section
+  // cannot honestly claim to be live — so it doesn't show. Better a
+  // shorter page than a "confirming as you read this" headline over a
+  // feed whose freshest entry is from yesterday.
+  if (today === 0) return null
 
   return (
     <section className="reveal border-b border-line bg-canvas">
@@ -74,8 +81,17 @@ export default function LiveActivityFeed() {
             Live on the network
           </p>
           <h2 className="mt-4 text-balance font-display text-3xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-4xl">
-            Pharmacies are confirming stock{' '}
-            <span className="text-brand-ink">as you read this</span>
+            {lastHour > 0 ? (
+              <>
+                Pharmacies are confirming stock{' '}
+                <span className="text-brand-ink">as you read this</span>
+              </>
+            ) : (
+              <>
+                Pharmacies confirm stock{' '}
+                <span className="text-brand-ink">through the day</span>
+              </>
+            )}
           </h2>
           <p className="mt-5 text-sm leading-relaxed text-muted">
             {lastHour > 0 ? (

@@ -35,10 +35,10 @@ function Figure({ value, label, countKey }: { value: number; label: string; coun
  * look like it kept resetting; after the first play the numbers are just
  * there.
  *
- * Vanishes entirely below the same threshold NetworkPulse uses. A small
- * network reassures nobody by announcing its size, and the live "stock
- * confirmed" card still says the thing that does reassure — that a real
- * pharmacy confirmed real stock recently.
+ * Vanishes entirely below MIN_PHARMACIES_TO_QUOTE. A small network
+ * reassures nobody by announcing its size, and the "Live on the network"
+ * section still says the thing that does reassure — that real pharmacies
+ * confirmed real stock recently.
  */
 export default function NetworkStatsRow() {
   const stats = useNetworkStats()

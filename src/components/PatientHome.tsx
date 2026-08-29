@@ -21,7 +21,6 @@ import { pickLga } from '@/lib/detectLga'
 import SavedDrugs from '@/components/SavedDrugs'
 import SiteHeader, { HOME_RESET_EVENT } from '@/components/ui/SiteHeader'
 import SiteFooter from '@/components/ui/SiteFooter'
-import NetworkPulse from '@/components/NetworkPulse'
 import NetworkStatsRow from '@/components/NetworkStatsRow'
 import { HOW_IT_WORKS_ART } from '@/components/ui/HowItWorksArt'
 import ResultAnatomy from '@/components/ui/ResultAnatomy'
@@ -979,7 +978,7 @@ export default function PatientHome() {
                       ? 'Pick a state first'
                       : lgaOptions.length === 0
                         ? 'Loading areas…'
-                        : `Select your LGA in ${selectedLabel}`}
+                        : 'Select your area'}
                   </option>
                   {lgaOptions.map((lga) => (
                     <option key={lga} value={lga}>
@@ -1155,11 +1154,16 @@ export default function PatientHome() {
             arrangement the hero has always had.
           */}
           <section className="border-b border-line bg-canvas">
-          <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-16 lg:py-24 xl:py-28">
+          {/* Asymmetric padding: a tight top so the headline sits near the
+              header rather than floating in the lower half, a generous
+              bottom so the band still breathes into the page. */}
+          <div className="mx-auto w-full max-w-6xl px-4 pt-9 pb-16 sm:pt-11 sm:pb-20 lg:pt-14 lg:pb-24 xl:pt-16 xl:pb-28">
           {/* One column until `lg` — the message, then the panel, stacked,
               exactly as before. From `lg` they sit side by side, message
-              left and panel right, with the message given the wider track. */}
-          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(340px,0.9fr)] lg:gap-14 xl:gap-16">
+              left and panel right, with the message given the wider track;
+              the panel is centred against the taller text column so neither
+              side trails empty space. */}
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(340px,0.9fr)] lg:gap-14 xl:gap-16">
             <div className="intro">
               <p className="flex items-center gap-2.5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
                 <span className="h-px w-7 bg-current opacity-50" aria-hidden="true" />
@@ -1210,17 +1214,14 @@ export default function PatientHome() {
               <NetworkStatsRow />
             </div>
 
-            {/* The search panel, and the one live signal under it — a small
-                "a real pharmacy confirmed stock just now" card, which is
-                what earns a stranger's first search. */}
-            <div
-              className="lg:pt-1"
-              style={{ animation: 'intro-rise 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both' }}
-            >
+            {/* Just the search panel. The live "a pharmacy confirmed stock
+                just now" proof used to sit under it as a second card, but a
+                quiet network made it stale — "confirmed 10 hours ago" over
+                a dot that isn't pulsing reads worse than nothing. The
+                dedicated "Live on the network" section downpage carries
+                that proof, and only when it is genuinely live. */}
+            <div style={{ animation: 'intro-rise 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both' }}>
               {searchPanel}
-              <div className="mt-4">
-                <NetworkPulse showCounts={false} placement="inline" />
-              </div>
             </div>
           </div>
           </div>
@@ -1400,9 +1401,12 @@ export default function PatientHome() {
               What patients <span className="text-brand-ink">ask us most</span>
             </h2>
             <div className="reveal-stagger mx-auto mt-12 max-w-2xl space-y-3">
-              {FAQ.map(({ q, a }) => (
+              {FAQ.map(({ q, a }, i) => (
                 <details
                   key={q}
+                  // First one open so the section shows an answer, not four
+                  // shut bars — the one people most want is "how current".
+                  open={i === 0}
                   className="group rounded-card border border-line bg-surface shadow-card transition-colors open:border-line-brand"
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-left font-semibold text-ink marker:content-none [&::-webkit-details-marker]:hidden">
@@ -1420,10 +1424,13 @@ export default function PatientHome() {
             </div>
           </section>
 
-          {/* Owner recruitment — only for signed-out visitors, matching the
-              header: a signed-in patient can't register a premises, so
-              offering them one would be a dead end. */}
-          {viewerLoaded && !viewerRole && (
+          {/* The supply side. A stock network is only as good as the shops
+              in it, so the page makes the ask out loud rather than leaving
+              it to a footer link. Hidden only from accounts that already
+              have a pharmacy — everyone else gets a real path (a patient
+              who taps through lands on "create a pharmacy owner account",
+              not a dead end). */}
+          {viewerLoaded && viewerRole !== 'PHARMACY_OWNER' && (
             <section className="reveal">
               <div className="mx-auto w-full max-w-5xl px-4 py-16 md:py-24">
               <div className="grain relative overflow-hidden rounded-sheet bg-brand-deep p-8 shadow-lift sm:p-12">
@@ -1443,20 +1450,37 @@ export default function PatientHome() {
                   Run a pharmacy? Put your shelf on the map.
                 </h2>
                 <p className="relative mt-3.5 max-w-xl leading-relaxed text-white/80">
-                  Free to list. Add your stock once, confirm it in a tap, and get found by patients
-                  already searching for what you have.
+                  Patients are already searching your area for what you stock. List free, keep your
+                  shelf current in a tap, and be the result they call.
                 </p>
+
+                {/* Three lines of substance so the panel is an offer, not
+                    just a button. */}
+                <ul className="relative mt-7 grid gap-3 sm:grid-cols-3 sm:gap-5">
+                  {[
+                    ['Free to list', 'No fee, no commission on what a patient buys.'],
+                    ['One tap to confirm', 'Mark an item in or out of stock from your phone.'],
+                    ['PCN-verified', 'We check your licence before you appear in a search.'],
+                  ].map(([label, detail]) => (
+                    <li key={label} className="flex gap-2.5">
+                      <IconCheck
+                        width={16}
+                        height={16}
+                        className="mt-0.5 shrink-0 text-white/70"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-on-brand-deep">{label}</span>
+                        <span className="mt-0.5 block text-xs leading-snug text-white/65">{detail}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
                 {/* Colours are written out rather than taken from
                     buttonClass(): the variants there assume a light page
-                    background, and on emerald their text colours collide
-                    with the overrides.
-
-                    They are also raw rather than tokens, and that is the
-                    point: this panel is deep terracotta in both themes, so a
-                    button on it must not follow the theme. bg-surface
-                    turned the primary action near-black in dark and left
-                    it quieter than the outlined link beside it. */}
-                <div className="relative mt-7 flex flex-wrap gap-3">
+                    background, and on this deep-green panel their text
+                    colours collide with the overrides. */}
+                <div className="relative mt-8 flex flex-wrap gap-3">
                   <Link
                     href="/pharmacy/register"
                     className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-control bg-white px-6 py-3.5 text-base font-semibold tracking-[-0.01em] text-brand-800 transition-[background-color,transform] duration-150 hover:bg-brand-50 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-deep"
@@ -1568,70 +1592,12 @@ export default function PatientHome() {
         ) : null)}
 
       <div className="mt-8 flex-1">
-        {state.kind === 'idle' && selectedState && (
-          <Card padded={false} className="animate-fade-in overflow-hidden">
-            {(userPos || locationDenied) && (
-              <>
-                <div className="flex items-start gap-3.5 p-4">
-                  <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                      userPos
-                        ? 'bg-brand-soft text-brand-ink'
-                        : 'bg-warn-soft text-amber-600 dark:text-amber-400'
-                    }`}
-                  >
-                    <IconMapPin width={19} height={19} />
-                  </span>
-                  <div className="min-w-0 pt-0.5">
-                    <p className="text-sm font-semibold text-ink">
-                      {userPos ? 'Using your location' : 'Location is off'}
-                    </p>
-                    <p className="mt-0.5 text-sm text-faint">
-                      {userPos ? (
-                        'Distances and directions start from where you are'
-                      ) : (
-                        <>
-                          Measuring from {stateLabel(selectedState)}&apos;s capital.{' '}
-                          <button
-                            onClick={enableLocation}
-                            disabled={locating}
-                            className="cursor-pointer font-medium text-brand-ink underline underline-offset-2 disabled:opacity-50"
-                          >
-                            {locating ? 'Getting your location…' : 'Use my location'}
-                          </button>
-                        </>
-                      )}
-                    </p>
-                    {!userPos && locationHint && (
-                      <p className="mt-1 text-xs text-warn-ink">{locationHint}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="border-t border-line-soft" />
-              </>
-            )}
-            <div className="flex items-start gap-3.5 p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-sunken text-faint">
-                <IconSearch width={19} height={19} />
-              </span>
-              <div className="min-w-0 pt-0.5">
-                <p className="text-sm font-semibold text-ink">
-                  Search by generic name or brand
-                </p>
-                <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-faint">
-                  Try
-                  <span className="rounded-full bg-sunken px-2.5 py-0.5 text-xs font-medium text-muted">
-                    Paracetamol
-                  </span>
-                  or
-                  <span className="rounded-full bg-sunken px-2.5 py-0.5 text-xs font-medium text-muted">
-                    Panadol
-                  </span>
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
+        {/* The idle state used to end with a "tips" card here — location
+            status and a "try Paracetamol or Panadol" hint. Both are
+            already in the search panel at the top of the page (the chips,
+            the "Use my location" button), and stranded at the foot of a
+            long marketing page after the restructure it only added
+            clutter. Removed. */}
 
         {state.kind === 'loading' && (
           <ul className="space-y-3" aria-label="Searching pharmacies" aria-live="polite">

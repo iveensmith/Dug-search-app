@@ -12,9 +12,9 @@ import { limitPublicRead } from '@/lib/publicReadLimit'
  * database holding forty is exactly that.
  *
  * The consequence is that early on these numbers are small. That is the
- * caller's problem to present honestly (see NetworkPulse, which leads
- * with live activity until the counts are worth quoting) — not this
- * route's problem to solve by inventing a bigger one.
+ * caller's problem to present honestly (see NetworkStatsRow, which
+ * vanishes rather than quote a small coverage count) — not this route's
+ * problem to solve by inventing a bigger one.
  *
  * Public and identical for everyone, so it is cached at the edge for a
  * minute. Nothing here identifies a patient, and the freshest fact it
